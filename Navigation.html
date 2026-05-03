@@ -6,9 +6,9 @@
         ADMIN: Kevin (Werewolf3788)
         CLIENT: Scott (S&K Venture Signs)
         STANDARDS: Responsive, No-Minify, G-Tag Integrated
-        TECHNICAL: Locked Header (148px), Locked Footer (237px)
+        TECHNICAL: Locked Header (125px -> 75px Ultra-Slim Scroll), Locked Footer (237px)
         ANALYTICS: Boss Analytics G-H6Q756MVE8
-        UPDATE: Ultra-Wide Optimization (2496px Sync); Responsive Desktop Scaling
+        UPDATE: V6.5 - Synchronized Divider Bar / Height-Tracking Transition
     -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,16 +20,16 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-H6Q756MVE8', {
-        'page_type': 'global_framework_v5.6',
+        'page_type': 'global_framework_v6.5',
         'content_group': 'brand_assets',
-        'layout_version': '5.6'
+        'layout_version': '6.5'
       });
     </script>
 
-    <!-- External Assets with Smart Cache Buster ?v=1.0 -->
-    <script src="https://cdn.tailwindcss.com?v=1.0"></script>
-    <script src="https://unpkg.com/lucide@latest?v=1.0"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@600;700&display=swap&v=1.0" rel="stylesheet">
+    <!-- External Assets with Smart Cache Buster ?v=1.9 -->
+    <script src="https://cdn.tailwindcss.com?v=1.9"></script>
+    <script src="https://unpkg.com/lucide@latest?v=1.9"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@600;700&display=swap&v=1.9" rel="stylesheet">
 
     <style>
         :root {
@@ -44,10 +44,20 @@
             --sk-separator: #BBA28C;
             
             /* Precision Dimensions Locked */
-            --header-height: 148px;
+            --header-height: 125px;
+            --header-scrolled-height: 75px; 
             --footer-height: 237px;
             --menu-gap: 26px; 
-            --ultra-wide-max: 2496px; /* Optimized for User Visual (Image df4fcf.png) */
+            --ultra-wide-max: 2496px;
+
+            /* Precision Logo Scaling (px / 24.96 for vw | px / 9.29 for vh) */
+            --logo-w-vw: 14.82vw; /* 370px */
+            --logo-h-vh: 11.52vh; /* 107px */
+            --logo-x-vw: 16.55vw; /* 413px from left */
+            --logo-y-vh: 1.72vh;  /* 16px from top */
+
+            /* Precision Nav Spacing (438px gap from screen edge) */
+            --nav-right-vw: 17.55vw; 
         }
 
         /* Base Typography & Global Standards */
@@ -68,11 +78,17 @@
 
         /* --- SECTION: HEADER CONSTRUCTION --- */
         header#main-header {
-            transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+            /* V6.5: Explicit sync of border and height for 'Divider Bar' movement */
+            transition: 
+                background-color 0.4s ease, 
+                height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                border-color 0.4s ease,
+                box-shadow 0.4s ease;
             border-bottom: 4px solid var(--sk-separator);
             height: var(--header-height) !important;
             display: flex;
-            align-items: center;
+            align-items: flex-start; 
+            overflow: visible; /* Ensures divider remains visually crisp */
         }
 
         /* Initial State (Maroon Theme) */
@@ -81,38 +97,57 @@
             color: #FFFFFF;
         }
 
-        /* Scrolled State (White Theme) */
+        /* Scrolled State (White Theme + Ultra-Slim Height) */
         .header-scrolled {
+            height: var(--header-scrolled-height) !important;
             background-color: white;
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
             color: #000000;
+            /* Divider Bar is part of the header, so it moves up with the height change */
             border-bottom: 4px solid var(--sk-separator);
         }
 
         /* Logo Branding */
         #header-logo {
-            width: 420px;
-            max-width: 100%;
-            height: auto;
-            transition: all 0.4s ease;
+            width: var(--logo-w-vw);
+            height: var(--logo-h-vh);
+            margin-left: var(--logo-x-vw);
+            margin-top: var(--logo-y-vh);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            object-fit: contain;
         }
 
-        /* Navigation Container with Precision Ultra-Wide Spacing */
+        /* Scrolled Logo Adjustment */
+        .header-scrolled #header-logo {
+            transform: scale(0.8);
+            margin-top: 5px;
+        }
+
+        /* Navigation Container */
         .header-inner-wrap {
             width: 100%;
-            /* max-width expanded to 2496px per user visual image df4fcf.png */
             max-width: var(--ultra-wide-max); 
-            margin: 0 auto;
-            padding: 0 32px;
+            margin: 0; 
+            padding: 0; 
             display: flex;
             align-items: center;
-            justify-content: space-between; /* Elements move closer together on smaller desktop screens */
+            justify-content: flex-start; 
         }
 
         .nav-container {
             display: flex;
             align-items: center;
             gap: var(--menu-gap);
+            margin-left: auto; 
+            margin-right: var(--nav-right-vw); 
+            padding-top: 35px; 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* --- SECTION: SCROLL ANIMATION (Shift Left) --- */
+        .header-scrolled .nav-container {
+            margin-right: calc(var(--nav-right-vw) + 40px); 
+            padding-top: 15px; 
         }
 
         .nav-link {
@@ -139,30 +174,50 @@
             color: var(--sk-maroon);
         }
 
-        /* Header Phone Display Style */
-        .header-phone {
-            color: var(--sk-gold);
+        /* --- SECTION: SAVE-CONTACT BUTTON --- */
+        .header-phone-btn {
+            background-color: var(--sk-gold);
+            color: var(--sk-maroon) !important;
             font-family: "Open Sans", sans-serif;
             font-size: 18px;
             font-weight: 800;
             text-decoration: none;
-            transition: all 0.3s ease;
+            padding: 10px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 0px rgb(180, 140, 30);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            border: none;
+            outline: none;
+            position: relative;
+            top: 0;
         }
 
-        .header-phone:hover {
-            color: white;
+        .header-phone-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 0px rgb(180, 140, 30);
+            background-color: #ffd25a;
         }
 
-        .header-scrolled .header-phone {
-            color: var(--sk-maroon);
+        .header-phone-btn:active {
+            top: 4px;
+            box-shadow: 0 0px 0px rgb(180, 140, 30);
+            background-color: var(--sk-nav-gold);
         }
 
-        .header-scrolled .header-phone:hover {
-            color: var(--sk-nav-gold);
+        .header-scrolled .header-phone-btn {
+            background-color: var(--sk-maroon);
+            color: var(--sk-gold) !important;
+            box-shadow: 0 4px 0px rgba(0,0,0,0.25);
+            padding: 6px 16px; 
+            font-size: 16px;
         }
 
-        /* --- SECTION: FOOTER CONSTRUCTION (Locked 237px) --- */
+        /* --- FOOTER CONSTRUCTION --- */
         footer#main-footer {
             background-color: var(--sk-maroon);
             color: white;
@@ -176,88 +231,75 @@
         }
 
         .footer-grid {
-            /* max-width synchronized to 2496px for consistent ultra-wide visual */
             max-width: var(--ultra-wide-max); 
             margin: 0 auto;
             width: 100%;
             display: grid;
             grid-template-columns: repeat(3, 1fr); 
             text-align: center;
-            gap: 0px; 
         }
 
-        /* Footer Label: Georgia Precision Style */
         .footer-label {
             display: block;
             color: rgb(255, 255, 255); 
-            font-family: Georgia, Georgia, "Times New Roman", serif;
+            font-family: Georgia, serif;
             font-size: 14px; 
             font-weight: 500; 
             height: 24.5px; 
             line-height: 24.5px; 
-            margin: 0 0 24px 0; /* Precision 24px Gap below label */
-            padding: 0; 
+            margin: 0 0 24px 0; 
             text-align: center; 
-            -webkit-font-smoothing: antialiased; 
-            vertical-align: baseline;
-            unicode-bidi: isolate;
         }
 
-        /* Footer Value: Abril Fatface Precision Style Sync */
         .footer-value {
             display: block;
             color: rgb(255, 255, 255); 
-            font-family: "Abril Fatface", display; 
+            font-family: "Abril Fatface", serif; 
             font-size: 18px; 
             font-weight: 500; 
             line-height: 25.2px; 
-            height: auto; 
-            padding-bottom: 10px; 
             text-align: center;
             text-decoration: none;
             transition: color 0.3s ease;
-            -webkit-font-smoothing: antialiased;
-            vertical-align: baseline;
-            unicode-bidi: isolate;
         }
 
         .footer-value:hover {
             color: var(--sk-gold); 
         }
 
-        /* Copyright Section: Precision Style Sync (Image dfa6a0.png) */
         .copyright-bar {
             width: 100%;
             text-align: center;
-            margin-top: 89px; /* Precise 89px Gap from value row */
+            margin-top: 89px; 
             display: block;
             color: rgb(255, 255, 255); 
-            font-family: Georgia, Georgia, "Times New Roman", serif;
+            font-family: Georgia, serif;
             font-size: 18px; 
             font-weight: 700; 
-            height: 35.2px; 
             line-height: 25.2px; 
-            padding-bottom: 10px;
-            -webkit-font-smoothing: antialiased;
-            vertical-align: baseline;
-            unicode-bidi: isolate;
+        }
+
+        @media (max-width: 768px) {
+            :root { --header-height: 100px; }
+            #header-logo { width: 160px; margin-left: 20px; margin-top: 20px; }
+            .nav-container { display: none; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Main Header Component (Locked 148px) -->
+    <!-- Main Header Component (Locked 125px -> 75px) -->
     <header id="main-header" class="header-top fixed top-0 left-0 w-full z-[1000]">
         <div class="header-inner-wrap">
             
             <!-- Branding -->
             <div class="flex-shrink-0">
                 <a href="https://werewolf3788.github.io/SKVentureSigns/">
-                    <img src="https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=1.0" alt="S&K Venture Signs" id="header-logo" />
+                    <img src="https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=1.9" alt="S&K Venture Signs" id="header-logo" />
                 </a>
             </div>
             
-            <!-- Precision Navigation (Responsive flex scaling for Ultra-Wide) -->
+            <!-- Precision Navigation -->
             <nav class="nav-container">
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="Locations.html" class="nav-link active">Locations</a>
@@ -265,8 +307,11 @@
                 <a href="Clients.html" class="nav-link">Clients</a>
                 <a href="Contact.html" class="nav-link">Contact</a>
                 
-                <!-- Header Phone (Maintains 26px gap from Contact) -->
-                <a href="tel:8449074450" class="header-phone">844-907-4450</a>
+                <!-- Precision Save-Contact Button -->
+                <button onclick="downloadSKContact()" class="header-phone-btn" title="Save S&K to Contacts">
+                    <i data-lucide="user-plus" class="w-5 h-5"></i>
+                    844-907-4450
+                </button>
             </nav>
         </div>
     </header>
@@ -279,21 +324,14 @@
     <!-- Global Footer (Locked 237px) -->
     <footer id="main-footer">
         <div class="footer-grid">
-            <!-- Call Section -->
             <div class="footer-col">
                 <p class="footer-label">Give Us a Call</p>
-                <div class="flex flex-col">
-                    <a href="tel:6187084450" class="footer-value">618-708-4450 or 844-907-4450</a>
-                </div>
+                <a href="tel:6187084450" class="footer-value">618-708-4450 or 844-907-4450</a>
             </div>
-
-            <!-- Email Section -->
             <div class="footer-col">
                 <p class="footer-label">Send Us an Email</p>
                 <a href="mailto:Scott.Robinson@skventuresigns.com" class="footer-value">Scott.Robinson@skventuresigns.com</a>
             </div>
-
-            <!-- Office Section -->
             <div class="footer-col">
                 <p class="footer-label">Visit Our Office</p>
                 <a href="https://www.google.com/maps/search/?api=1&query=607+W+Clark+Ave+Effingham+IL+62401" target="_blank" class="footer-value">
@@ -301,35 +339,47 @@
                 </a>
             </div>
         </div>
-
-        <!-- Copyright Bar (Locked Georgia Style with 89px margin) -->
-        <h5 class="copyright-bar">
-            © 2026 S&K Venture Signs
-        </h5>
+        <h5 class="copyright-bar">© 2026 S&K Venture Signs</h5>
     </footer>
 
     <script>
-        /**
-         * SECTION: ASSETS
-         */
-        const LOGO_BLACK = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-Black.png?v=1.0";
-        const LOGO_WHITE = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=1.0";
+        const LOGO_BLACK = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-Black.png?v=1.9";
+        const LOGO_WHITE = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=1.9";
 
         /**
-         * SECTION: INITIALIZATION
+         * SECTION: SAVE CONTACT (vCard) ENGINE
          */
+        function downloadSKContact() {
+            const vcard = "BEGIN:VCARD\n" +
+                        "VERSION:3.0\n" +
+                        "FN:Scott Robinson\n" +
+                        "ORG:S&K Venture Signs\n" +
+                        "TITLE:Digital Billboard Specialist\n" +
+                        "TEL;TYPE=WORK,VOICE:844-907-4450\n" +
+                        "TEL;TYPE=CELL,VOICE:618-708-4450\n" +
+                        "EMAIL;TYPE=PREF,INTERNET:Scott.Robinson@skventuresigns.com\n" +
+                        "ADR;TYPE=WORK:;;607 W Clark Ave;Effingham;IL;62401;USA\n" +
+                        "URL:https://skventuresigns.com/\n" +
+                        "END:VCARD";
+            
+            const blob = new Blob([vcard], { type: 'text/vcard' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'Scott_Robinson_SK_Venture.vcf');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         });
 
-        /**
-         * SECTION: SCROLL LOGIC
-         * Handles background swap while maintaining 148px height.
-         */
         window.addEventListener('scroll', () => {
             const header = document.getElementById('main-header');
             const logo = document.getElementById('header-logo');
-            
             if (window.scrollY > 40) { 
                 header.classList.add('header-scrolled');
                 header.classList.remove('header-top');
