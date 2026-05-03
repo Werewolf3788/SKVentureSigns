@@ -8,7 +8,7 @@
         STANDARDS: Responsive, No-Minify, G-Tag Integrated
         TECHNICAL: Locked Header (148px), Locked Footer (237px)
         ANALYTICS: Boss Analytics G-H6Q756MVE8
-        UPDATE: Precision Footer Spacing Sync; 24px Label Gap; 89px Copyright Gap; Georgia Copyright Typography
+        UPDATE: Ultra-Wide Optimization (2496px Sync); Responsive Desktop Scaling
     -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,9 +20,9 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-H6Q756MVE8', {
-        'page_type': 'global_framework_v5.4',
+        'page_type': 'global_framework_v5.6',
         'content_group': 'brand_assets',
-        'layout_version': '5.4'
+        'layout_version': '5.6'
       });
     </script>
 
@@ -47,11 +47,7 @@
             --header-height: 148px;
             --footer-height: 237px;
             --menu-gap: 26px; 
-            --logo-to-home-gap: 808px;
-            
-            /* New Spacing Standards (Ref: Image Measurements) */
-            --footer-label-gap: 24px;   /* Image dfa71a.png */
-            --copyright-top-gap: 89px; /* Image dfa6a0.png */
+            --ultra-wide-max: 2496px; /* Optimized for User Visual (Image df4fcf.png) */
         }
 
         /* Base Typography & Global Standards */
@@ -101,21 +97,22 @@
             transition: all 0.4s ease;
         }
 
-        /* Navigation Container with Precision Spacing */
+        /* Navigation Container with Precision Ultra-Wide Spacing */
         .header-inner-wrap {
             width: 100%;
-            max-width: 1920px;
+            /* max-width expanded to 2496px per user visual image df4fcf.png */
+            max-width: var(--ultra-wide-max); 
             margin: 0 auto;
             padding: 0 32px;
             display: flex;
             align-items: center;
+            justify-content: space-between; /* Elements move closer together on smaller desktop screens */
         }
 
         .nav-container {
             display: flex;
             align-items: center;
             gap: var(--menu-gap);
-            margin-left: var(--logo-to-home-gap);
         }
 
         .nav-link {
@@ -179,13 +176,14 @@
         }
 
         .footer-grid {
-            max-width: 1440px;
+            /* max-width synchronized to 2496px for consistent ultra-wide visual */
+            max-width: var(--ultra-wide-max); 
             margin: 0 auto;
             width: 100%;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, 1fr); 
             text-align: center;
-            gap: 0px; /* Use grid columns for equal distribution */
+            gap: 0px; 
         }
 
         /* Footer Label: Georgia Precision Style */
@@ -197,7 +195,7 @@
             font-weight: 500; 
             height: 24.5px; 
             line-height: 24.5px; 
-            margin: 0 0 var(--footer-label-gap) 0; /* Precise 24px Gap below label */
+            margin: 0 0 24px 0; /* Precision 24px Gap below label */
             padding: 0; 
             text-align: center; 
             -webkit-font-smoothing: antialiased; 
@@ -227,16 +225,16 @@
             color: var(--sk-gold); 
         }
 
-        /* Copyright Section: Precision Style Sync (Ref: image_dfa6a0.png & query) */
+        /* Copyright Section: Precision Style Sync (Image dfa6a0.png) */
         .copyright-bar {
             width: 100%;
             text-align: center;
-            margin-top: var(--copyright-top-gap); /* Precise 89px Gap from email */
+            margin-top: 89px; /* Precise 89px Gap from value row */
             display: block;
-            color: rgb(255, 255, 255); /* White as specified */
+            color: rgb(255, 255, 255); 
             font-family: Georgia, Georgia, "Times New Roman", serif;
             font-size: 18px; 
-            font-weight: 700; /* Bold */
+            font-weight: 700; 
             height: 35.2px; 
             line-height: 25.2px; 
             padding-bottom: 10px;
@@ -259,7 +257,7 @@
                 </a>
             </div>
             
-            <!-- Precision Navigation (808px Gap from Logo) -->
+            <!-- Precision Navigation (Responsive flex scaling for Ultra-Wide) -->
             <nav class="nav-container">
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="Locations.html" class="nav-link active">Locations</a>
@@ -267,7 +265,7 @@
                 <a href="Clients.html" class="nav-link">Clients</a>
                 <a href="Contact.html" class="nav-link">Contact</a>
                 
-                <!-- CTA Replacement Phone -->
+                <!-- Header Phone (Maintains 26px gap from Contact) -->
                 <a href="tel:8449074450" class="header-phone">844-907-4450</a>
             </nav>
         </div>
