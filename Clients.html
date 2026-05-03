@@ -9,7 +9,7 @@
         GOOGLE ANALYTICS (GA4) 
         Measurement ID: G-H6Q756MVE8
         Stream ID: 13238803097
-        Description: Tracks page views, section scrolls, and business card clicks.
+        Description: Tracks page views, section scrolls, and business partner clicks.
     -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-H6Q756MVE8"></script>
     <script>
@@ -22,9 +22,9 @@
 
     <!-- 
         EXTERNAL RESOURCES 
-        - Google Fonts: Loading 'Open Sans' for clean, modern readability.
+        Description: Loading 'Open Sans' for global readability and 'Abril Fatface' for styled headings.
     -->
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&family=Abril+Fatface&display=swap" rel="stylesheet">
     
     <style>
         /* ============================================================
@@ -42,7 +42,7 @@
 
         /* FIX FOR "WHITE BOUNCE" EFFECT
            Description: Matches the background to the header to prevent 
-           white space during upward scrolls.
+           white space during upward scrolls on mobile devices.
         */
         html {
             background-color: rgb(62, 1, 0); 
@@ -51,20 +51,29 @@
 
         /* KEVIN'S GLOBAL MOBILE SETTINGS & DESIGN TOKENS
            Description: Strict implementation of user-defined layout scales.
-           Maps to: Text elements, padding, and layout containers.
+           Dimensions: Sections = 50px, Rows = 30px
+           Typography: Body = 14px, Header = 30px
         */
         :root {
             --brand-maroon: rgb(62, 1, 0); 
             --brand-gold: #ffcc00; 
             --header-font: "Open Sans", Arial, sans-serif;
             
-            /* Kevin's Global Mobile Settings */
+            /* Global Mobile Standard Dimensions */
             --body-text-size: 14px; 
             --header-text-size: 30px; 
             --section-height: 50px;
             --row-height: 30px;
+
+            /* Footer Specific Typography Tokens */
+            --footer-label-font: Georgia, "Times New Roman", serif;
+            --footer-heading-font: "Abril Fatface", cursive;
         }
 
+        /* BODY STYLES
+           Maps to: <body>
+           Description: Sets the base font size to 14px per Global Standards.
+        */
         body {
             font-family: var(--header-font);
             font-size: var(--body-text-size);
@@ -79,7 +88,7 @@
         /* ============================================================
            SECTION: STICKY HEADER
            Maps to: <header id="main-header">
-           Description: Fixed bar containing logo and sandwich menu.
+           Description: Fixed bar containing logo and sandwich menu toggle.
            ============================================================ 
         */
         header {
@@ -114,6 +123,7 @@
 
         /* NAVIGATION BAR (Desktop)
            Maps to: <nav id="top-navigation">
+           Description: Inline list of navigation links hidden on mobile.
         */
         nav ul {
             display: flex;
@@ -137,7 +147,7 @@
 
         /* SANDWICH FEATURE (Hamburger Icon)
            Maps to: <div class="menu-toggle">
-           Description: Only visible on mobile/tablets.
+           Description: Mandatory mobile navigation feature.
         */
         .menu-toggle {
             display: none;
@@ -158,7 +168,7 @@
         /* ============================================================
            SECTION: CUSTOMERS GALLERY
            Maps to: <div class="customers-section">
-           Description: Main content area using --section-height for padding.
+           Description: Main content area adhering to 50px section height rule.
            ============================================================ 
         */
         .customers-section {
@@ -173,12 +183,20 @@
             min-height: 400px;
         }
 
+        /* ROW STYLING
+           Maps to: <div class="et_pb_row">
+           Description: Adheres to 30px row height rule for vertical spacing.
+        */
         .et_pb_row {
             max-width: 1080px;
             margin: 0 auto;
             padding: var(--row-height) 0;
         }
 
+        /* MODULE HEADINGS
+           Maps to: <h1 class="et_pb_module_heading">
+           Description: Strictly set to 30px Header Text size per Global Standards.
+        */
         .et_pb_module_heading {
             font-size: var(--header-text-size);
             font-weight: 700;
@@ -186,9 +204,18 @@
             color: #fff;
         }
 
+        /* BODY TEXT
+           Maps to: <div class="et_pb_text_inner">
+           Description: Strictly set to 14px Body Text size per Global Standards.
+        */
+        .et_pb_text_inner p {
+            font-size: var(--body-text-size);
+            margin-bottom: 20px;
+        }
+
         /* GALLERY GRID
            Maps to: <div id="customer-grid">
-           Description: Responsive 4-column desktop, 2-column tablet, 1-column mobile.
+           Description: Responsive grid for displaying business partner logos.
         */
         .gallery-grid {
             display: grid;
@@ -212,6 +239,11 @@
             animation: fadeIn 0.5s forwards;
         }
 
+        .gallery-item:hover {
+            transform: scale(1.05);
+            background: rgba(0,0,0,0.6);
+        }
+
         @keyframes fadeIn {
             to { opacity: 1; transform: translateY(0); }
         }
@@ -222,10 +254,20 @@
             margin-bottom: 10px;
         }
 
+        .gallery-item h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .loading-indicator {
+            padding: 40px;
+            font-style: italic;
+        }
+
         /* ============================================================
            SECTION: FOOTER
            Maps to: <footer id="section-footer">
-           Description: Uses --section-height and --row-height.
+           Description: Adheres to 50px section height and 30px row height standards.
            ============================================================ 
         */
         footer {
@@ -235,6 +277,10 @@
             text-align: center;
         }
 
+        /* FOOTER ROW
+           Maps to: <div class="footer-row-top">
+           Description: Container for contact columns.
+        */
         .footer-row-top {
             display: flex;
             flex-wrap: wrap;
@@ -245,9 +291,68 @@
             padding-bottom: var(--row-height);
         }
 
+        .footer-col {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        /* FOOTER LABELS
+           Maps to: <p class="footer-label">
+           Description: Georgia font, 14px size, centered white text.
+        */
+        .footer-label {
+            font-family: var(--footer-label-font);
+            font-size: 14px;
+            font-weight: 500;
+            color: #ffffff;
+            line-height: 24.5px;
+            text-align: center;
+            margin: 0;
+            display: block;
+        }
+
+        /* FOOTER INTERACTIVE HEADINGS
+           Maps to: <h5 class="footer-heading">
+           Description: Abril Fatface, 18px, containing mandatory interactive link protocols.
+        */
+        .footer-heading {
+            font-family: var(--footer-heading-font);
+            font-size: 18px;
+            font-weight: 500;
+            color: #ffffff;
+            line-height: 25.2px;
+            text-align: center;
+            padding-bottom: 10px;
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* FOOTER LINKS
+           Maps to: <a> tags within the footer headings.
+        */
+        .footer-heading a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-heading a:hover {
+            color: var(--brand-gold);
+        }
+
+        .footer-row-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: var(--row-height);
+        }
+
+        .copyright-heading {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
         /* ============================================================
-           RESPONSIVE MOBILE SETTINGS (Kevin's Specs)
-           Description: "Responsive, stacked, sandwich feature"
+           RESPONSIVE MOBILE SETTINGS (Sandwich Mode)
+           Description: Implements sandwich feature and stacked layout protocols.
            ============================================================ 
         */
         @media (max-width: 992px) {
@@ -255,10 +360,10 @@
             .logo-container img { max-width: 180px; }
             .customers-section { margin-top: 80px; }
 
-            /* Toggle "Sandwich" Menu visibility */
+            /* Toggle Sandwich Visibility */
             .menu-toggle { display: flex; }
 
-            /* Mobile Navigation Styling (Stacked) */
+            /* Mobile Stacked Navigation Side Panel */
             nav {
                 position: fixed;
                 top: 0;
@@ -284,18 +389,22 @@
 
             nav ul li a { font-size: 18px; }
 
-            /* Sandwich animation to X */
+            /* Sandwich animation to "X" state */
             .menu-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
             .menu-toggle.active span:nth-child(2) { opacity: 0; }
             .menu-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -7px); }
 
+            /* Grid Stacking for Tablets */
             .gallery-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
         @media (max-width: 480px) {
-            /* Full Stacked Layout */
+            /* Full Vertical Stacking for small mobile devices */
             .gallery-grid { grid-template-columns: 1fr; }
             .footer-col { min-width: 100%; margin-bottom: 20px; }
+            
+            /* Adjacency check for logo and sandwich */
+            .header-container { padding: 0 20px; }
         }
     </style>
 </head>
@@ -303,7 +412,7 @@
 
     <!-- 
         HEADER SECTION 
-        Description: Contains Logo and the Sandwich Feature (Menu Toggle).
+        Description: Sticky header containing the branding logo and the mandatory sandwich menu toggle for mobile.
     -->
     <header id="main-header">
         <div class="header-container">
@@ -313,14 +422,14 @@
                 </a>
             </div>
 
-            <!-- THE SANDWICH FEATURE (Visible on Mobile) -->
+            <!-- THE SANDWICH FEATURE (Collapses menu on mobile) -->
             <div class="menu-toggle" id="mobile-menu-btn">
                 <span></span>
                 <span></span>
                 <span></span>
             </div>
 
-            <!-- NAVIGATION (Desktop: Inline, Mobile: Stacked/Sandwich) -->
+            <!-- NAVIGATION (Desktop: Horizontal, Mobile: Stacked Panel) -->
             <nav id="top-navigation">
                 <ul>
                     <li><a href="https://werewolf3788.github.io/SKVentureSigns/">Home</a></li>
@@ -336,19 +445,22 @@
     <main id="home">
         <!-- 
             CUSTOMERS GALLERY SECTION 
-            Description: Uses Section Height (50px) and Header Text Size (30px).
+            Description: High-level section adhering to the 50px height padding standard.
         -->
         <div class="customers-section" id="section-customers">
+            <!-- Content Row with 30px padding -->
             <div class="et_pb_row">
+                <!-- Standard 30px Header Text -->
                 <h1 class="et_pb_module_heading">Our Customers</h1>
                 <div class="et_pb_text_inner">
-                    <p>We are very grateful to the Businesses who trust us with promoting their Business !!</p>
+                    <!-- Standard 14px Body Text -->
+                    <p>We are very grateful to the Businesses who trust us with promoting their Business!!</p>
                 </div>
 
+                <!-- DYNAMIC CLIENT INJECTION AREA -->
                 <div id="loading" class="loading-indicator">Loading business partners...</div>
-                
                 <div id="customer-grid" class="gallery-grid">
-                    <!-- Dynamic Items Injected Here -->
+                    <!-- Items loaded dynamically via fetchCustomers() -->
                 </div>
             </div>
         </div>
@@ -356,35 +468,52 @@
 
     <!-- 
         FOOTER SECTION 
-        Description: Stacked columns on mobile, aligned via Row Height (30px).
+        Description: Contact information footer utilizing mandatory link protocols (tel, mailto, Maps API).
     -->
     <footer id="section-footer">
+        <!-- Top Footer Row with 30px vertical padding -->
         <div class="footer-row-top">
+            <!-- COLUMN: CALL (Wrapped in tel: links for mobile dialer) -->
             <div class="footer-col">
-                <div class="footer-label">Give Us a Call</div>
-                <h5 class="footer-heading">618-708-4450 or 844-907-4450</h5>
+                <p class="footer-label">Give Us a Call</p>
+                <h5 class="footer-heading">
+                    <a href="tel:6187084450">618-708-4450</a> or <a href="tel:8449074450">844-907-4450</a>
+                </h5>
             </div>
+            <!-- COLUMN: EMAIL (Wrapped in mailto: links with pre-filled recipient) -->
             <div class="footer-col">
-                <div class="footer-label">Send Us an Email</div>
-                <h5 class="footer-heading">Scott.Robinson@skventuresigns.com</h5>
+                <p class="footer-label">Send Us an Email</p>
+                <h5 class="footer-heading">
+                    <a href="mailto:Scott.Robinson@skventuresigns.com">Scott.Robinson@skventuresigns.com</a>
+                </h5>
             </div>
+            <!-- COLUMN: ADDRESS (Using Google Maps Search API protocol) -->
             <div class="footer-col">
-                <div class="footer-label">Visit Our Office</div>
-                <h5 class="footer-heading">607 W Clark Ave Effingham, IL 62401</h5>
+                <p class="footer-label">Visit Our Office</p>
+                <h5 class="footer-heading">
+                    <a href="https://www.google.com/maps/search/?api=1&query=607+W+Clark+Ave+Effingham+IL+62401" target="_blank">
+                        607 W Clark Ave Effingham, IL 62401
+                    </a>
+                </h5>
             </div>
         </div>
         
+        <!-- Bottom Row for Copyright -->
         <div class="footer-row-bottom">
             <h5 class="copyright-heading">© 2026 S&K Venture Signs</h5>
         </div>
     </footer>
 
     <script>
+        /**
+         * DATA FEED CONFIGURATION
+         * Source: Public CSV from Google Sheets business registry.
+         */
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9aXB9z9jcsaA0U-LsuV4nIHwIIw2huGB8zaalh7It4GQP_DWFFdQ4Utaw_ajkdhx5ydn87BcfS82d/pub?output=csv';
 
         /**
-         * SANDWICH MENU LOGIC
-         * Description: Controls the opening/closing of the mobile navigation.
+         * SANDWICH MENU INTERACTION
+         * Description: Controls side navigation visibility and the animated toggle button.
          */
         const menuBtn = document.getElementById('mobile-menu-btn');
         const nav = document.getElementById('top-navigation');
@@ -394,7 +523,6 @@
             nav.classList.toggle('active');
         });
 
-        // Close menu when clicking a link
         document.querySelectorAll('nav a').forEach(link => {
             link.addEventListener('click', () => {
                 menuBtn.classList.remove('active');
@@ -403,7 +531,8 @@
         });
 
         /**
-         * Google Analytics: Track Section Views
+         * ANALYTICS: TRACK SECTION VISIBILITY
+         * Description: Uses IntersectionObserver to trigger GA4 events when users reach specific sections.
          */
         const trackSectionView = () => {
             const observer = new IntersectionObserver((entries) => {
@@ -421,8 +550,8 @@
         };
 
         /**
-         * DATA FETCHING (CSV)
-         * Description: Grabs business partners from Google Sheets and renders them.
+         * DYNAMIC DATA PIPELINE (CSV PARSING)
+         * Description: Fetches customer data from remote CSV and renders partner cards.
          */
         async function fetchCustomers() {
             const grid = document.getElementById('customer-grid');
@@ -430,9 +559,10 @@
 
             try {
                 const response = await fetch(CSV_URL);
-                if (!response.ok) throw new Error('Failed to fetch data');
+                if (!response.ok) throw new Error('Network failure during data fetch');
                 
                 const csvText = await response.text();
+                // Handle complex CSV data including commas inside quotes
                 const rows = csvText.split('\n').map(row => {
                     return row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
                 });
@@ -456,6 +586,7 @@
                     item.className = 'gallery-item';
                     item.style.animationDelay = `${index * 0.05}s`;
 
+                    // Interaction tracking for business partner clicks
                     item.addEventListener('click', function() {
                         gtag('event', 'select_content', {
                             'content_type': 'business_partner',
@@ -473,13 +604,14 @@
                 });
 
             } catch (error) {
-                console.error('Error:', error);
-                loading.innerText = 'Unable to load customer list.';
+                console.error('Data loading error:', error);
+                loading.innerText = 'Unable to load partner list. Please refresh.';
             }
         }
 
         /**
-         * Header Interaction
+         * STICKY HEADER SCROLL EFFECT
+         * Description: Visual transition (shrink and shadow) for the main header on scroll.
          */
         window.addEventListener('scroll', function() {
             const header = document.getElementById('main-header');
@@ -494,6 +626,7 @@
             }
         });
 
+        // Initialize Global Mobile standard behaviors on load
         window.onload = function() {
             fetchCustomers();
             trackSectionView();
