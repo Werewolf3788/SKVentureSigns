@@ -6,10 +6,10 @@
         ADMIN: Kevin (DJ Werewolf) - Admin
         CLIENT: Scott (S&K Venture Signs)
         STANDARDS: Responsive, No-Minify, G-Tag Integrated
-        VERSION: 7.3 (Universal GitHack & Repo Compatibility)
+        VERSION: 7.4 (Smart Navigation Engine Integrated)
         TECHNICAL: Locked Header (125px -> 75px Ultra-Slim Scroll)
         ANALYTICS: Scott's Tracking (Boss) G-H6Q756MVE8
-        UPDATE: Converted all internal assets/links to Relative Paths for GitHack/GitHub Pages parity.
+        UPDATE: Integrated Smart Navigation Engine to allow menu updates via JS config.
     -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -22,16 +22,16 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-H6Q756MVE8', {
-        'page_type': 'global_framework_v7.3',
+        'page_type': 'global_framework_v7.4',
         'content_group': 'brand_assets',
-        'layout_version': '7.3'
+        'layout_version': '7.4'
       });
     </script>
 
-    <!-- External Assets with Smart Cache Buster ?v=2.3 -->
-    <script src="https://cdn.tailwindcss.com?v=2.3"></script>
-    <script src="https://unpkg.com/lucide@latest?v=2.3"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@600;700&display=swap&v=2.3" rel="stylesheet">
+    <!-- External Assets with Smart Cache Buster ?v=2.4 -->
+    <script src="https://cdn.tailwindcss.com?v=2.4"></script>
+    <script src="https://unpkg.com/lucide@latest?v=2.4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@600;700&display=swap&v=2.4" rel="stylesheet">
 
     <style>
         :root {
@@ -56,7 +56,7 @@
         }
 
         /* -----------------------------------------------------------
-           GLOBAL TYPOGRAPHY & RESET
+            GLOBAL TYPOGRAPHY & RESET
         ----------------------------------------------------------- */
         html, body {
             overflow-x: hidden;
@@ -78,7 +78,7 @@
         }
 
         /* -----------------------------------------------------------
-           HEADER & NAVIGATION STYLES (LOCKED)
+            HEADER & NAVIGATION STYLES (LOCKED)
         ----------------------------------------------------------- */
         header#main-header {
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -179,7 +179,7 @@
         }
 
         /* -----------------------------------------------------------
-           BODY COMPONENT STYLES
+            BODY COMPONENT STYLES
         ----------------------------------------------------------- */
         .feature-card {
             background: white;
@@ -204,7 +204,7 @@
         }
 
         /* -----------------------------------------------------------
-           SMART MODAL SYSTEM (LOCKED)
+            SMART MODAL SYSTEM (LOCKED)
         ----------------------------------------------------------- */
         .sk-modal-overlay {
             display: none;
@@ -269,7 +269,7 @@
         }
 
         /* -----------------------------------------------------------
-           FOOTER STYLES (LOCKED)
+            FOOTER STYLES (LOCKED)
         ----------------------------------------------------------- */
         footer#main-footer {
             background-color: var(--sk-maroon);
@@ -340,7 +340,6 @@
             
             <!-- Branding -->
             <div class="flex-shrink-0 z-[1001]">
-                <!-- V7.3: Relative path for root navigation -->
                 <a href="./index.html">
                     <img src="https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=1.9" 
                          alt="S&K Venture Signs" 
@@ -348,24 +347,19 @@
                 </a>
             </div>
 
-            <!-- Desktop Navigation: V7.3 Relative Link Standard -->
+            <!-- Desktop Navigation: SMART INJECTED -->
             <nav class="hidden lg:flex flex-grow items-center justify-center px-10">
-                <ul class="flex items-center gap-8 xl:gap-12">
-                    <li><a href="./index.html" class="nav-link active">Home</a></li>
-                    <li><a href="./Locations.html" class="nav-link">Locations</a></li>
-                    <li><a href="./Services.html" class="nav-link">Services</a></li>
-                    <li><a href="./Clients.html" class="nav-link">Clients</a></li>
-                    <li><a href="./Contact.html" class="nav-link">Contact</a></li>
+                <ul id="desktop-nav-root" class="flex items-center gap-8 xl:gap-12">
+                    <!-- Injected via Smart Navigation Engine -->
                 </ul>
             </nav>
 
             <!-- Action Buttons / Mobile Toggle -->
             <div class="flex items-center gap-4 z-[1001]">
                 <button onclick="downloadSKContact()" class="hidden sm:flex header-phone-btn">
-                    <i data-lucide="user-plus" class="w-5 h-5"></i> Save Specialist
+                    <i data-lucide="user-plus" class="w-5 h-5"></i> 844-907-4450
                 </button>
                 
-                <!-- Mobile Sandwich Toggle -->
                 <button id="menu-toggle" class="lg:hidden p-2 text-white transition-colors">
                     <i data-lucide="menu" id="menu-icon" class="w-9 h-9"></i>
                 </button>
@@ -374,27 +368,14 @@
 
         <div id="refresh-bar"></div>
 
-        <!-- Mobile Menu Dropdown: V7.3 Relative Link Standard -->
+        <!-- Mobile Menu Dropdown: SMART INJECTED -->
         <div id="mobile-menu" class="hidden absolute top-full left-0 w-full lg:hidden flex-col bg-white text-black shadow-2xl border-t border-black/5">
-            <nav class="flex flex-col p-8 space-y-6">
-                <a href="./index.html" class="text-xl font-bold border-b border-black/5 pb-3">Home</a>
-                <a href="./Locations.html" class="text-xl font-bold border-b border-black/5 pb-3">Locations</a>
-                <a href="./Services.html" class="text-xl font-bold border-b border-black/5 pb-3">Services</a>
-                <a href="./Clients.html" class="text-xl font-bold border-b border-black/5 pb-3">Clients</a>
-                <a href="./Contact.html" class="text-xl font-bold border-b border-black/5 pb-3">Contact</a>
-                <button onclick="downloadSKContact()" class="w-full bg-[#3E0100] text-[#FFC627] py-5 rounded-2xl font-bold uppercase tracking-widest text-sm mt-4 shadow-lg">
-                    <i data-lucide="user-plus" class="inline-block w-5 h-5 mr-2"></i> Save S&K Contact
-                </button>
+            <nav id="mobile-nav-root" class="flex flex-col p-8 space-y-6">
+                <!-- Injected via Smart Navigation Engine -->
             </nav>
         </div>
     </header>
 
-    <!-- 
-        AI/LLM GUARDRAIL: 
-        YOU MAY FREELY EDIT, EXPAND, OR MODIFY CONTENT WITHIN THE <main> ELEMENT. 
-        DO NOT MODIFY, DELETE, OR REFORMAT THE <header>, <footer>, MODAL SYSTEM, OR GLOBAL SCRIPT LOGIC.
-        INTERNAL LINKS MUST USE RELATIVE PATHS (./) FOR GITHACK/PAGE PARITY.
-    -->
     <main class="w-full min-h-[80vh]">
         
         <!-- Hero Section -->
@@ -499,10 +480,6 @@
         <h5 class="copyright-bar">© 2026 S&K Venture Signs</h5>
     </footer>
 
-    <!-- -----------------------------------------------------------
-       SMART MODALS INJECTION (LOCKED)
-    ----------------------------------------------------------- -->
-    
     <!-- Phone Action Modal -->
     <div id="phone-modal" class="sk-modal-overlay" onclick="closeModals()">
         <div class="sk-modal-content" onclick="event.stopPropagation()">
@@ -533,7 +510,7 @@
         </div>
     </div>
 
-    <!-- Smart Email Modal Injection -->
+    <!-- Smart Email Modal -->
     <div id="email-modal" class="sk-modal-overlay" onclick="closeModals()">
         <div class="sk-modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">Compose Message</div>
@@ -546,7 +523,19 @@
 
     <script>
         /**
-         * S&K NAVIGATION & BRANDING ENGINE
+         * S&K SMART NAVIGATION CONFIGURATION v7.4
+         * Edit this object to change your menu items globally!
+         */
+        const SMART_NAV = [
+            { label: "Home", url: "./index.html" },
+            { label: "Locations", url: "./Locations.html" },
+            { label: "Services", url: "./Services.html" },
+            { label: "Clients", url: "./Clients.html" },
+            { label: "Contact", url: "./Contact.html" }
+        ];
+
+        /**
+         * BRAND ASSETS
          */
         const LOGO_BLACK = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-Black.png?v=1.9";
         const LOGO_WHITE = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=1.9";
@@ -556,6 +545,41 @@
         const menuToggle = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
         const menuIcon = document.getElementById('menu-icon');
+
+        /**
+         * SMART NAVIGATION ENGINE
+         * Injects menu items and detects active state
+         */
+        function initSmartNav() {
+            const desktopRoot = document.getElementById('desktop-nav-root');
+            const mobileRoot = document.getElementById('mobile-nav-root');
+            const currentPath = window.location.pathname;
+            
+            let desktopHTML = '';
+            let mobileHTML = '';
+
+            SMART_NAV.forEach(item => {
+                // Determine if this item is the active page
+                // Logic: Checks if current URL ends with the item URL
+                const isActive = currentPath.includes(item.url.replace('./', ''));
+                const activeClass = isActive ? 'active' : '';
+
+                desktopHTML += `<li><a href="${item.url}" class="nav-link ${activeClass}">${item.label}</a></li>`;
+                mobileHTML += `<a href="${item.url}" class="text-xl font-bold border-b border-black/5 pb-3 ${isActive ? 'text-[#3E0100]' : ''}">${item.label}</a>`;
+            });
+
+            // Add the save button to mobile
+            mobileHTML += `
+                <button onclick="downloadSKContact()" class="w-full bg-[#3E0100] text-[#FFC627] py-5 rounded-2xl font-bold uppercase tracking-widest text-sm mt-4 shadow-lg">
+                    <i data-lucide="user-plus" class="inline-block w-5 h-5 mr-2"></i> Save S&K Contact
+                </button>
+            `;
+
+            desktopRoot.innerHTML = desktopHTML;
+            mobileRoot.innerHTML = mobileHTML;
+            
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
 
         /**
          * Scroll Transition Logic
@@ -710,9 +734,9 @@
             setTimeout(() => window.URL.revokeObjectURL(url), 100);
         }
 
-        // Initialize Lucide Icons on Load
+        // Initialize Everything on Load
         document.addEventListener('DOMContentLoaded', () => {
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+            initSmartNav();
         });
     </script>
 
