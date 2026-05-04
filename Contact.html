@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,9 +8,9 @@
         STANDARDS: Responsive, No-Minify, G-Tag Integrated
         TECHNICAL: Locked Header (125px -> 75px Ultra-Slim Scroll), Locked Footer (237px)
         ANALYTICS: Boss Analytics G-H6Q756MVE8
-        UPDATE: V6.8 - Final Precision Spatial Sync; 254px Right Edge Offset Integrated
-        REFERENCE: image_d30d88.png (Right Offset: 254px) | image_d360da.png (Gap: 1046px)
-        SCALING: 2496x929 Viewport Reference Protocol
+        UPDATE: V7.8 - Spatial Precision Sync; Map Vertical Centering (Right Anchor); Fixed Pixel Unitization
+        REFERENCE: Left: 297px | Form: 306px | Gap: 1046px | Map: 604px | Right: 254px
+        INPUTS: 298x26px Fields | 306x188px Message | System Submit Style
     -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,56 +22,58 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-H6Q756MVE8', {
-        'page_type': 'contact_portal_v6.8',
+        'page_type': 'contact_portal_v7.8',
         'content_group': 'client_leads',
-        'layout_version': '6.8'
+        'layout_version': '7.8'
       });
     </script>
 
-    <!-- External Assets with Smart Cache Buster ?v=2.1 -->
-    <script src="https://cdn.tailwindcss.com?v=2.1"></script>
-    <script src="https://unpkg.com/lucide@latest?v=2.1"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@500;600;700&display=swap&v=2.1" rel="stylesheet">
+    <!-- External Assets with Smart Cache Buster ?v=3.1 -->
+    <script src="https://cdn.tailwindcss.com?v=3.1"></script>
+    <script src="https://unpkg.com/lucide@latest?v=3.1"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@500;600;700&display=swap&v=3.1" rel="stylesheet">
 
     <style>
         :root {
             /* Kevin's Admin Global Settings */
             --divi-header: 30px;
-            --divi-body: 14px;
+            --divi-body: 17px; 
             
             /* S&K Brand Palette */
             --sk-maroon: rgb(62, 1, 0);
             --sk-gold: #FFC627;
             --sk-nav-gold: rgb(218, 164, 33);
-            --sk-separator: #BBA28C;
+            --sk-separator: rgb(187, 162, 140); 
             
-            /* Precision Dimensions Locked */
+            /* Precision Dimensions Locked (Pixels) */
             --header-height: 125px;
             --header-scrolled-height: 75px; 
             --footer-height: 237px;
             --menu-gap: 26px; 
             --ultra-wide-max: 2496px;
 
-            /* Precision Logo Scaling (px / 24.96 vw | px / 9.29 vh) */
-            --logo-w-vw: 14.82vw; /* 370px */
-            --logo-h-vh: 11.52vh; /* 107px */
-            --logo-x-vw: 16.55vw; /* 413px from left */
-            --logo-y-vh: 1.72vh;  /* 16px from top */
+            /* Precision Logo */
+            --logo-width: 370px;
+            --logo-height: 107px;
+            --logo-margin-left: 413px;
+            --logo-margin-top: 16px;
 
-            /* Precision Layout Sync (px / 24.96 vw | px / 9.29 vh) */
-            --nav-right-vw: 17.55vw; 
-            --content-top-gap: 5.38vh; /* 50px gap */
-            --narrative-width-vw: 32.69vw; /* 816.047px */
-            --heading-width-vw: 11.86vw; /* 296px */
-            --heading-height-vh: 4.74vh; /* 44px */
+            /* Precision Nav Spacing */
+            --nav-margin-right: 438px; 
 
-            /* --- FINAL SPATIAL COORDINATES (MEASURED FROM IMAGES) --- */
-            --form-left-offset-vw: 11.90vw;   /* 297px from left edge (image_d367de.png) */
-            --form-width-vw: 12.26vw;         /* 306px card width (image_d367de.png) */
-            --element-gap-vw: 41.91vw;        /* 1046px center gap (image_d360da.png) */
-            --map-width-vw: 24.20vw;          /* 604px map width (image_d45c58.jpg) */
-            --map-right-offset-vw: 10.18vw;   /* 254px from right edge (image_d30d88.png) */
-            --map-height-vh: 48.44vh;         /* 450px map height */
+            /* --- FINAL FIXED SPATIAL COORDINATES (IMAGE MEASURED) --- */
+            --form-left-offset: 297px;    
+            --form-width: 306px;          
+            --element-gap: 1046px;        
+            --map-width: 604px;           
+            --map-right-offset: 254px;    
+            --map-height: 450px;
+
+            /* --- PRECISION INPUT BOX SIZES (IMAGE MEASURED) --- */
+            --field-box-width: 298px;     
+            --field-box-height: 26px;     
+            --msg-box-width: 306px;       
+            --msg-box-height: 188px;      
         }
 
         /* Base Typography & Global Standards */
@@ -84,6 +85,11 @@
             overflow-wrap: break-word;
             background-color: #000000;
             color: #FFFFFF;
+        }
+
+        h1, h2, h3 {
+            font-size: var(--divi-header);
+            line-height: 1.2;
         }
 
         /* --- SECTION: HEADER CONSTRUCTION (V6.5 Sync) --- */
@@ -111,10 +117,10 @@
         }
 
         #header-logo {
-            width: var(--logo-w-vw);
-            height: var(--logo-h-vh);
-            margin-left: var(--logo-x-vw);
-            margin-top: var(--logo-y-vh);
+            width: var(--logo-width);
+            height: var(--logo-height);
+            margin-left: var(--logo-margin-left);
+            margin-top: var(--logo-margin-top);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             object-fit: contain;
         }
@@ -136,12 +142,12 @@
             align-items: center;
             gap: var(--menu-gap);
             margin-left: auto; 
-            margin-right: var(--nav-right-vw); 
+            margin-right: var(--nav-margin-right); 
             padding-top: 35px; 
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .header-scrolled .nav-container { margin-right: calc(var(--nav-right-vw) + 40px); padding-top: 15px; }
+        .header-scrolled .nav-container { margin-right: calc(var(--nav-margin-right) + 40px); padding-top: 15px; }
 
         .nav-link {
             color: white;
@@ -187,7 +193,7 @@
 
         /* --- SECTION: GLOBAL CONTENT WRAPPER --- */
         main#global-contact-wrapper {
-            background-image: url('https://skventuresigns.com/wp-content/uploads/2024/12/skbackground.png?v=2.0');
+            background-image: url('https://skventuresigns.com/wp-content/uploads/2024/12/skbackground.png?v=3.1');
             background-size: cover;
             background-position: center top;
             background-repeat: no-repeat;
@@ -195,14 +201,14 @@
             min-height: calc(100vh - var(--header-height) - var(--footer-height));
             width: 100%;
             position: relative;
-            padding-top: var(--content-top-gap); 
+            padding-top: 50px; 
             padding-bottom: 80px;
             z-index: 1;
         }
 
-        /* --- SECTION: HERO HEADINGS (Precision Box image_d550bb.png) --- */
+        /* --- SECTION: HERO HEADINGS --- */
         .contact-hero {
-            padding: 4vh 0 6vh 0; 
+            padding: 40px 0 60px 0; 
             text-align: center;
             display: flex;
             justify-content: center;
@@ -212,11 +218,12 @@
             display: block;
             color: rgb(255, 255, 255);
             font-family: "Abril Fatface", display;
-            font-size: 2.40vw; 
+            font-size: 60px; 
             font-weight: 700;
-            width: var(--heading-width-vw); /* Precision 296px */
-            height: var(--heading-height-vh); /* Precision 44px */
-            line-height: var(--heading-height-vh);
+            width: auto; 
+            height: auto; 
+            white-space: nowrap; 
+            line-height: 1.1;
             text-align: center;
             text-shadow: 0 4px 15px rgba(0,0,0,0.8);
             margin: 0;
@@ -231,106 +238,71 @@
             padding: 0 32px;
             display: grid;
             grid-template-columns: 1fr 1fr; 
-            gap: 2vw;
+            gap: 60px;
             justify-items: center;
         }
 
         .narrative-column { display: flex; flex-direction: column; align-items: center; text-align: center; }
 
-        /* STRICT SOURCE CSS Sync */
         .scott-sub-heading {
             display: block;
             color: rgb(255, 255, 255);
             font-family: Georgia, Georgia, "Times New Roman", serif;
-            font-size: 26px; 
-            font-weight: 500;
-            height: 46.4062px;
-            line-height: 36.4px;
-            padding-bottom: 10px; 
-            width: var(--narrative-width-vw); /* Precision 816.047px */
-            max-width: 100%;
+            font-size: 30px; 
+            font-weight: 600;
+            height: auto;
+            line-height: 42px;
+            padding-bottom: 12px; 
+            width: 100%;
+            max-width: 816px; 
             text-align: center;
             margin: 0 auto;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* STRICT SOURCE CSS Sync */
         .scott-body-text {
             display: block;
             color: rgb(255, 255, 255);
             font-family: "Open Sans", Arial, sans-serif;
-            font-size: 14px; 
+            font-size: 17px; 
             font-weight: 500;
             height: auto;
-            line-height: 23.8px;
-            padding-bottom: 14px; 
-            width: var(--narrative-width-vw); /* Precision 816.047px */
-            max-width: 100%;
+            line-height: 28px;
+            padding-bottom: 18px; 
+            width: 100%;
+            max-width: 816px; 
             overflow-wrap: break-word;
             text-align: center;
             margin: 0 auto;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* --- SECTION: FORM & MAP GRID (Absolute Spatial Sync) --- */
+        /* --- SECTION: FORM & MAP GRID (V7.8 RE-ANCHORED SPATIAL SYNC) --- */
         .form-map-grid {
             width: 100%;
-            max-width: var(--ultra-wide-max);
-            margin: 8vh 0 0 0;
-            padding-left: var(--form-left-offset-vw);    /* Precision 297px offset */
-            padding-right: var(--map-right-offset-vw);   /* Precision 254px offset */
-            display: grid;
-            /* Locked column widths for Form (306px) and Map (604px) */
-            grid-template-columns: var(--form-width-vw) var(--map-width-vw); 
-            /* Resulting center gap: 1046px */
+            max-width: 2507px; /* Sum: 297 + 306 + 1046 + 604 + 254 */
+            margin: 80px auto 0 auto;
+            display: flex;
             justify-content: space-between; 
-            align-items: stretch; 
+            align-items: center; /* V7.8: Centering map vertically within the section height */
+            padding-left: var(--form-left-offset);
+            padding-right: var(--map-right-offset);
+            position: relative;
         }
 
-        .form-left-panel { background: transparent; padding: 0; border-left: none; width: 100%; }
+        .form-left-panel { 
+            background: transparent; 
+            padding: 0; 
+            border-left: none; 
+            width: var(--form-width); 
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; 
+        }
         
-        .field-label {
-            display: block;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 12px;
-            margin-bottom: 8px;
-            color: #FFFFFF; 
-            letter-spacing: 1px;
-            text-align: left;
-        }
-
-        .input-text {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            font-family: 'Poppins', sans-serif;
-            color: #333;
-            background-color: #FFFFFF; 
-            margin-bottom: 5px;
-        }
-
-        .btn-submit-contact {
-            background: var(--sk-maroon);
-            color: white;
-            padding: 18px 30px;
-            font-weight: 700;
-            text-transform: uppercase;
-            width: 100%;
-            margin-top: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            letter-spacing: 2px;
-        }
-
-        .btn-submit-contact:hover { background: var(--sk-nav-gold); transform: translateY(-2px); }
-
-        .formspree-note { font-size: 11px; color: rgba(255, 255, 255, 0.7); margin-top: 15px; font-style: italic; text-align: left; }
-
         .map-right-box {
-            width: 100%; 
-            height: var(--map-height-vh); /* Precision 450px */
+            width: var(--map-width); 
+            height: var(--map-height); 
             border: 5px solid white;
             box-shadow: 0 15px 50px rgba(0,0,0,0.6);
             overflow: hidden;
@@ -338,20 +310,110 @@
             background: #222;
         }
 
-        #form-status { display: none; margin-top: 15px; padding: 15px; text-align: center; font-weight: 700; border-radius: 4px; }
+        #contact-scott-form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
 
-        /* --- SECTION: FOOTER CONSTRUCTION (Locked 237px) --- */
+        .form-field-group { 
+            margin-bottom: 1.5rem; 
+            width: 100%; 
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .field-label {
+            display: block;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 14px; 
+            margin-bottom: 8px;
+            color: #FFFFFF; 
+            letter-spacing: 1.5px;
+            text-align: left;
+            width: 100%;
+        }
+
+        .input-text-single {
+            width: var(--field-box-width); 
+            height: var(--field-box-height); 
+            padding: 0 10px; 
+            border: 1px solid #ccc;
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+            background-color: #FFFFFF; 
+            margin-bottom: 5px;
+            font-size: 14px; 
+            text-align: left;
+            display: block;
+            line-height: var(--field-box-height);
+        }
+
+        .input-text-msg {
+            width: var(--msg-box-width); 
+            height: var(--msg-box-height); 
+            padding: 14px; 
+            border: 1px solid #ccc;
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+            background-color: #FFFFFF; 
+            margin-bottom: 5px;
+            font-size: 16px;
+            text-align: left;
+            display: block;
+            resize: none;
+        }
+
+        /* --- PRECISION SUBMIT BUTTON --- */
+        .btn-submit-contact {
+            appearance: none;
+            background-color: rgb(240, 240, 240);
+            border: 2px outset rgb(0, 0, 0);
+            box-sizing: border-box;
+            color: rgb(0, 0, 0);
+            cursor: default;
+            display: inline-block;
+            font-family: "Open Sans", Arial, sans-serif;
+            font-size: 13.3333px;
+            font-weight: 400;
+            height: 24px;
+            width: 60.1094px; 
+            line-height: normal;
+            margin: 25px 0 0 0;
+            padding: 1px 6px;
+            text-align: center;
+            text-wrap: nowrap;
+            -webkit-font-smoothing: antialiased;
+            transition: opacity 0.2s ease;
+        }
+
+        .btn-submit-contact:hover { opacity: 0.8; }
+
+        .formspree-note { 
+            font-size: 13px; 
+            color: rgba(255, 255, 255, 0.8); 
+            margin-top: 20px; 
+            font-style: italic; 
+            text-align: left; 
+            width: 100%;
+        }
+
+        #form-status { display: none; margin-top: 15px; padding: 15px; text-align: center; font-weight: 700; border-radius: 4px; width: 100%; max-width: 306px; }
+
+        /* --- SECTION: FOOTER CONSTRUCTION --- */
         footer#main-footer {
             background-color: var(--sk-maroon);
             color: white;
             height: var(--footer-height);
-            border-top: 5px solid var(--sk-gold);
+            border-top: 5px solid var(--sk-separator); 
             display: flex;
             flex-direction: column;
             justify-content: center;
             position: relative;
             padding: 0 20px;
-            z-index: 10;
         }
 
         .footer-grid {
@@ -362,32 +424,6 @@
             grid-template-columns: repeat(3, 1fr); 
             text-align: center;
         }
-
-        .footer-label {
-            display: block;
-            color: rgb(255, 255, 255); 
-            font-family: Georgia, serif;
-            font-size: 14px; 
-            font-weight: 500; 
-            height: 24.5px; 
-            line-height: 24.5px; 
-            margin: 0 0 24px 0; 
-            text-align: center; 
-        }
-
-        .footer-value {
-            display: block;
-            color: rgb(255, 255, 255); 
-            font-family: "Abril Fatface", serif; 
-            font-size: 18px; 
-            font-weight: 500; 
-            line-height: 25.2px; 
-            text-align: center;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .footer-value:hover { color: var(--sk-gold); }
 
         .copyright-bar {
             width: 100%;
@@ -402,42 +438,38 @@
         }
 
         @media (max-width: 1024px) {
+            .et_pb_module_heading_main { font-size: 40px; white-space: normal; }
             .narrative-container { grid-template-columns: 1fr; }
-            .form-map-grid { 
-                grid-template-columns: 1fr; 
-                padding-left: 5vw; 
-                padding-right: 5vw; 
-                width: auto;
-            }
+            .form-map-grid { flex-direction: column; align-items: center; padding: 20px; width: auto; max-width: 100%; }
+            .form-left-panel { margin-bottom: 40px; width: 100%; align-items: center; }
+            #contact-scott-form { align-items: center; }
+            .form-field-group { align-items: center; }
+            .field-label { text-align: center; }
+            .input-text-single, .input-text-msg { text-align: center; max-width: 100%; }
             .map-right-box { height: 400px; width: 100%; }
             .nav-container { display: none; }
             #header-logo { width: 160px; margin-left: 20px; margin-top: 20px; }
-            .scott-sub-heading, .scott-body-text { width: 95% !important; }
+            .scott-sub-heading { width: 95% !important; font-size: 24px; line-height: 32px; }
+            .scott-body-text { width: 95% !important; font-size: 16px; line-height: 24px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Main Header Component (Locked 125px -> 75px Scroll Sync) -->
+    <!-- Main Header Component -->
     <header id="main-header" class="header-top fixed top-0 left-0 w-full z-[1000]">
         <div class="header-inner-wrap">
-            
-            <!-- Branding -->
             <div class="flex-shrink-0">
                 <a href="index.html">
                     <img src="https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=1.9" alt="S&K Venture Signs" id="header-logo" />
                 </a>
             </div>
-            
-            <!-- Precision Navigation -->
             <nav class="nav-container">
                 <a href="index.html" class="nav-link">Home</a>
                 <a href="Locations.html" class="nav-link">Locations</a>
                 <a href="Services.html" class="nav-link">Services</a>
                 <a href="Clients.html" class="nav-link">Clients</a>
                 <a href="Contact.html" class="nav-link active">Contact</a>
-                
-                <!-- Precision Save-Contact Button -->
                 <button onclick="downloadSKContact()" class="header-phone-btn" title="Save S&K to Contacts">
                     <i data-lucide="user-plus" class="w-5 h-5"></i>
                     844-907-4450
@@ -448,14 +480,12 @@
 
     <main id="global-contact-wrapper" class="w-full">
         
-        <!-- Precision Hero Heading (296x44px per image_d550bb.png) -->
         <section class="contact-hero">
             <h1 class="et_pb_module_heading_main">Contact Us</h1>
         </section>
 
-        <!-- Precision Narrative Section (816.047px Typography Balanced) -->
+        <!-- Precision Narrative Section -->
         <section class="narrative-container">
-            <!-- LEFT: Welcome Message -->
             <div class="narrative-column">
                 <h2 class="scott-sub-heading">Welcome to S&amp;K Venture Signs</h2>
                 <div class="scott-body-text">
@@ -469,7 +499,6 @@
                 </div>
             </div>
 
-            <!-- RIGHT: Commitment Message -->
             <div class="narrative-column">
                 <h2 class="scott-sub-heading">My Commitment to Excellence !!</h2>
                 <div class="scott-body-text">
@@ -484,50 +513,46 @@
             </div>
         </section>
 
-        <!-- Lead Capture Section (Balanced Spatial Split: Offset 297px | Form 306px | Gap 1046px | Map 604px | End 254px) -->
+        <!-- Lead Capture Section (MAP VERTICALLY CENTERED ON RIGHT) -->
         <section class="form-map-grid">
             
-            <!-- LEFT: Lead Generation Form (Width: 306px) -->
+            <!-- LEFT: Lead Generation Form -->
             <div class="form-left-panel">
                 <form id="contact-scott-form" action="https://formspree.io/f/mqaeapql" method="POST">
                     <div class="form-field-group">
                         <label class="field-label">Your Name</label>
-                        <input type="text" name="client_name" class="input-text" required>
+                        <input type="text" name="client_name" class="input-text-single" required>
                     </div>
                     <div class="form-field-group">
                         <label class="field-label">Your Email</label>
-                        <input type="email" name="_replyto" class="input-text" required>
+                        <input type="email" name="_replyto" class="input-text-single" required>
                     </div>
                     <div class="form-field-group">
                         <label class="field-label">Phone Number</label>
-                        <input type="tel" name="phone" class="input-text" required>
+                        <input type="tel" name="phone" class="input-text-single" required>
                     </div>
                     
                     <div class="form-field-group">
                         <label class="field-label">How did you hear about us?</label>
-                        <input type="text" name="lead_source" class="input-text" placeholder="Enter source...">
+                        <input type="text" name="lead_source" class="input-text-single" placeholder="Enter source...">
                     </div>
 
                     <div class="form-field-group">
                         <label class="field-label">Subject</label>
-                        <input type="text" name="_subject" class="input-text">
+                        <input type="text" name="_subject" class="input-text-single">
                     </div>
                     <div class="form-field-group">
                         <label class="field-label">Your message (optional)</label>
-                        <textarea name="message" rows="6" class="input-text w-full"></textarea>
+                        <textarea name="message" class="input-text-msg"></textarea>
                     </div>
 
-                    <button type="submit" id="submit-btn" class="btn-submit-contact">Submit Inquiry</button>
-                    
+                    <input type="submit" id="submit-btn" class="btn-submit-contact" value="Submit">
                     <div id="form-status"></div>
-
-                    <p class="formspree-note">
-                        This form is protected by Formspree to ensure secure and reliable delivery of your inquiry.
-                    </p>
+                    <p class="formspree-note">This form is protected by Formspree to ensure secure and reliable delivery of your inquiry.</p>
                 </form>
             </div>
 
-            <!-- RIGHT: Interactive Satellite Map (Width: 604px, Height: 450px) -->
+            <!-- RIGHT Anchor: Interactive Satellite Map (Vertically Centered) -->
             <div class="map-right-box">
                 <iframe 
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3084.717180456184!2d-88.55246472343236!3d39.12431713333334!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x887396603a167095%3A0x6e9491a5477d9f78!2s607%20W%20Clark%20Ave%2C%20Effingham%2C%20IL%2062401!5e1!3m2!1sen!2sus!4v1711234567890!5m2!1sen!2sus" 
@@ -538,7 +563,7 @@
 
     </main>
 
-    <!-- Global Footer (Locked 237px) -->
+    <!-- Global Footer -->
     <footer id="main-footer">
         <div class="footer-grid">
             <div class="footer-col">
@@ -561,22 +586,8 @@
         const LOGO_BLACK = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-Black.png?v=1.9";
         const LOGO_WHITE = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=1.9";
 
-        /**
-         * SECTION: SAVE CONTACT (vCard) ENGINE
-         */
         function downloadSKContact() {
-            const vcard = "BEGIN:VCARD\n" +
-                        "VERSION:3.0\n" +
-                        "FN:Scott Robinson\n" +
-                        "ORG:S&K Venture Signs\n" +
-                        "TITLE:Digital Billboard Specialist\n" +
-                        "TEL;TYPE=WORK,VOICE:844-907-4450\n" +
-                        "TEL;TYPE=CELL,VOICE:618-708-4450\n" +
-                        "EMAIL;TYPE=PREF,INTERNET:Scott.Robinson@skventuresigns.com\n" +
-                        "ADR;TYPE=WORK:;;607 W Clark Ave;Effingham;IL;62401;USA\n" +
-                        "URL:https://skventuresigns.com/\n" +
-                        "END:VCARD";
-            
+            const vcard = "BEGIN:VCARD\nVERSION:3.0\nFN:Scott Robinson\nORG:S&K Venture Signs\nTITLE:Digital Billboard Specialist\nTEL;TYPE=WORK,VOICE:844-907-4450\nTEL;TYPE=CELL,VOICE:618-708-4450\nEMAIL;TYPE=PREF,INTERNET:Scott.Robinson@skventuresigns.com\nADR;TYPE=WORK:;;607 W Clark Ave;Effingham;IL;62401;USA\nURL:https://skventuresigns.com/\nEND:VCARD";
             const blob = new Blob([vcard], { type: 'text/vcard' });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -590,7 +601,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof lucide !== 'undefined') lucide.createIcons();
-
             const contactForm = document.getElementById('contact-scott-form');
             const status = document.getElementById('form-status');
             const btn = document.getElementById('submit-btn');
@@ -599,28 +609,22 @@
                 contactForm.addEventListener('submit', async function(ev) {
                     ev.preventDefault();
                     btn.disabled = true;
-                    btn.innerText = "SENDING TO SCOTT...";
-                    
+                    btn.value = "SENDING...";
                     const data = new FormData(ev.target);
                     try {
-                        const res = await fetch(ev.target.action, {
-                            method: 'POST', 
-                            body: data, 
-                            headers: { 'Accept': 'application/json' }
-                        });
+                        const res = await fetch(ev.target.action, { method: 'POST', body: data, headers: { 'Accept': 'application/json' } });
                         if (res.ok) {
                             status.innerText = "SENT SUCCESSFULLY! SCOTT WILL REACH OUT.";
                             status.style.display = "block";
                             status.style.background = "#28a745";
                             status.style.color = "white";
                             contactForm.reset();
-                            btn.innerText = "MESSAGE SENT";
+                            btn.value = "SUBMIT";
                         } else {
                             status.innerText = "ERROR. PLEASE CALL 844-907-4450.";
                             status.style.display = "block";
                             status.style.background = "#dc3545";
                             btn.disabled = false;
-                            btn.innerText = "RETRY SUBMIT";
                         }
                     } catch (e) {
                         status.style.display = "block";
