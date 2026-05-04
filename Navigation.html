@@ -6,10 +6,10 @@
         ADMIN: Kevin (DJ Werewolf) - Admin
         CLIENT: Scott (S&K Venture Signs)
         STANDARDS: Responsive, No-Minify, G-Tag Integrated
-        VERSION: 7.2 (Smart Email Interaction v1.0)
+        VERSION: 7.3 (Universal GitHack & Repo Compatibility)
         TECHNICAL: Locked Header (125px -> 75px Ultra-Slim Scroll)
         ANALYTICS: Scott's Tracking (Boss) G-H6Q756MVE8
-        UPDATE: Added Smart Email Action Modal with Copy-to-Clipboard & Webmail deep-links
+        UPDATE: Converted all internal assets/links to Relative Paths for GitHack/GitHub Pages parity.
     -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -22,16 +22,16 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-H6Q756MVE8', {
-        'page_type': 'global_framework_v7.2',
+        'page_type': 'global_framework_v7.3',
         'content_group': 'brand_assets',
-        'layout_version': '7.2'
+        'layout_version': '7.3'
       });
     </script>
 
-    <!-- External Assets with Smart Cache Buster ?v=2.2 -->
-    <script src="https://cdn.tailwindcss.com?v=2.2"></script>
-    <script src="https://unpkg.com/lucide@latest?v=2.2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@600;700&display=swap&v=2.2" rel="stylesheet">
+    <!-- External Assets with Smart Cache Buster ?v=2.3 -->
+    <script src="https://cdn.tailwindcss.com?v=2.3"></script>
+    <script src="https://unpkg.com/lucide@latest?v=2.3"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@600;700&display=swap&v=2.3" rel="stylesheet">
 
     <style>
         :root {
@@ -340,21 +340,22 @@
             
             <!-- Branding -->
             <div class="flex-shrink-0 z-[1001]">
-                <a href="https://werewolf3788.github.io/SKVentureSigns/">
+                <!-- V7.3: Relative path for root navigation -->
+                <a href="./index.html">
                     <img src="https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=1.9" 
                          alt="S&K Venture Signs" 
                          id="header-logo" />
                 </a>
             </div>
 
-            <!-- Desktop Navigation -->
+            <!-- Desktop Navigation: V7.3 Relative Link Standard -->
             <nav class="hidden lg:flex flex-grow items-center justify-center px-10">
                 <ul class="flex items-center gap-8 xl:gap-12">
-                    <li><a href="https://werewolf3788.github.io/SKVentureSigns/" class="nav-link">Home</a></li>
-                    <li><a href="https://werewolf3788.github.io/SKVentureSigns/Locations.html" class="nav-link">Locations</a></li>
-                    <li><a href="Services.html" class="nav-link">Services</a></li>
-                    <li><a href="Clients.html" class="nav-link">Clients</a></li>
-                    <li><a href="Contact.html" class="nav-link">Contact</a></li>
+                    <li><a href="./index.html" class="nav-link active">Home</a></li>
+                    <li><a href="./Locations.html" class="nav-link">Locations</a></li>
+                    <li><a href="./Services.html" class="nav-link">Services</a></li>
+                    <li><a href="./Clients.html" class="nav-link">Clients</a></li>
+                    <li><a href="./Contact.html" class="nav-link">Contact</a></li>
                 </ul>
             </nav>
 
@@ -373,13 +374,14 @@
 
         <div id="refresh-bar"></div>
 
+        <!-- Mobile Menu Dropdown: V7.3 Relative Link Standard -->
         <div id="mobile-menu" class="hidden absolute top-full left-0 w-full lg:hidden flex-col bg-white text-black shadow-2xl border-t border-black/5">
             <nav class="flex flex-col p-8 space-y-6">
-                <a href="https://werewolf3788.github.io/SKVentureSigns/" class="text-xl font-bold border-b border-black/5 pb-3">Home</a>
-                <a href="https://werewolf3788.github.io/SKVentureSigns/Locations.html" class="text-xl font-bold border-b border-black/5 pb-3">Locations</a>
-                <a href="Services.html" class="text-xl font-bold border-b border-black/5 pb-3">Services</a>
-                <a href="Clients.html" class="text-xl font-bold border-b border-black/5 pb-3">Clients</a>
-                <a href="Contact.html" class="text-xl font-bold border-b border-black/5 pb-3">Contact</a>
+                <a href="./index.html" class="text-xl font-bold border-b border-black/5 pb-3">Home</a>
+                <a href="./Locations.html" class="text-xl font-bold border-b border-black/5 pb-3">Locations</a>
+                <a href="./Services.html" class="text-xl font-bold border-b border-black/5 pb-3">Services</a>
+                <a href="./Clients.html" class="text-xl font-bold border-b border-black/5 pb-3">Clients</a>
+                <a href="./Contact.html" class="text-xl font-bold border-b border-black/5 pb-3">Contact</a>
                 <button onclick="downloadSKContact()" class="w-full bg-[#3E0100] text-[#FFC627] py-5 rounded-2xl font-bold uppercase tracking-widest text-sm mt-4 shadow-lg">
                     <i data-lucide="user-plus" class="inline-block w-5 h-5 mr-2"></i> Save S&K Contact
                 </button>
@@ -391,6 +393,7 @@
         AI/LLM GUARDRAIL: 
         YOU MAY FREELY EDIT, EXPAND, OR MODIFY CONTENT WITHIN THE <main> ELEMENT. 
         DO NOT MODIFY, DELETE, OR REFORMAT THE <header>, <footer>, MODAL SYSTEM, OR GLOBAL SCRIPT LOGIC.
+        INTERNAL LINKS MUST USE RELATIVE PATHS (./) FOR GITHACK/PAGE PARITY.
     -->
     <main class="w-full min-h-[80vh]">
         
@@ -464,7 +467,7 @@
                 <button onclick="downloadSKContact()" class="bg-[#3E0100] text-[#FFC627] px-10 py-5 rounded-2xl font-bold uppercase tracking-widest hover:scale-105 transition-transform shadow-xl">
                     Save Scott's Contact
                 </button>
-                <a href="Contact.html" class="text-[#3E0100] font-bold border-b-2 border-[#3E0100] pb-1 hover:text-gray-600 hover:border-gray-600 transition-colors">
+                <a href="./Locations.html" class="text-[#3E0100] font-bold border-b-2 border-[#3E0100] pb-1 hover:text-gray-600 hover:border-gray-600 transition-colors">
                     View Our Locations
                 </a>
             </div>
@@ -482,7 +485,6 @@
             </div>
             <div class="footer-col">
                 <p class="footer-label">Send Us an Email</p>
-                <!-- V7.2: Switched to Smart Action Modal -->
                 <span onclick="openEmailSmartActions('Scott.Robinson@skventuresigns.com')" class="footer-value">
                     Scott.Robinson@skventuresigns.com
                 </span>
@@ -531,7 +533,7 @@
         </div>
     </div>
 
-    <!-- V7.2: Smart Email Modal Injection -->
+    <!-- Smart Email Modal Injection -->
     <div id="email-modal" class="sk-modal-overlay" onclick="closeModals()">
         <div class="sk-modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">Compose Message</div>
@@ -619,7 +621,6 @@
             lucide.createIcons();
         }
 
-        // V7.2: Smart Email Logic
         function openEmailSmartActions(email) {
             const container = document.getElementById('email-options-container');
             
@@ -654,7 +655,6 @@
             document.getElementById('email-modal').style.display = 'none';
         }
 
-        // V7.2 Helper: Copy to Clipboard Logic
         function copyToClipboard(text) {
             const textArea = document.createElement("textarea");
             textArea.value = text;
@@ -662,7 +662,6 @@
             textArea.select();
             try {
                 document.execCommand('copy');
-                // Simple visual feedback: change the modal header briefly
                 const header = document.querySelector('#email-modal .modal-header');
                 const originalText = header.innerText;
                 header.innerText = "Email Copied!";
