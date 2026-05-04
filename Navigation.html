@@ -6,10 +6,10 @@
         ADMIN: Kevin (DJ Werewolf) - Admin
         CLIENT: Scott (S&K Venture Signs)
         STANDARDS: Responsive, No-Minify, G-Tag Integrated
-        VERSION: 7.1 (Precision Interaction Update)
+        VERSION: 7.2 (Smart Email Interaction v1.0)
         TECHNICAL: Locked Header (125px -> 75px Ultra-Slim Scroll)
         ANALYTICS: Scott's Tracking (Boss) G-H6Q756MVE8
-        UPDATE: Removed TextNow/SMS from Smart Phone Modal for cleaner UX
+        UPDATE: Added Smart Email Action Modal with Copy-to-Clipboard & Webmail deep-links
     -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -22,16 +22,16 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-H6Q756MVE8', {
-        'page_type': 'global_framework_v7.1',
+        'page_type': 'global_framework_v7.2',
         'content_group': 'brand_assets',
-        'layout_version': '7.1'
+        'layout_version': '7.2'
       });
     </script>
 
-    <!-- External Assets with Smart Cache Buster ?v=2.1 -->
-    <script src="https://cdn.tailwindcss.com?v=2.1"></script>
-    <script src="https://unpkg.com/lucide@latest?v=2.1"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@600;700&display=swap&v=2.1" rel="stylesheet">
+    <!-- External Assets with Smart Cache Buster ?v=2.2 -->
+    <script src="https://cdn.tailwindcss.com?v=2.2"></script>
+    <script src="https://unpkg.com/lucide@latest?v=2.2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@600;700&display=swap&v=2.2" rel="stylesheet">
 
     <style>
         :root {
@@ -251,6 +251,7 @@
             font-weight: 700;
             transition: all 0.2s ease;
             border: 2px solid transparent;
+            cursor: pointer;
         }
         .smart-option:hover {
             background: #f0f0f0;
@@ -359,7 +360,6 @@
 
             <!-- Action Buttons / Mobile Toggle -->
             <div class="flex items-center gap-4 z-[1001]">
-                <!-- V7.0 REVERT: Direct vCard Save for Main Specialist -->
                 <button onclick="downloadSKContact()" class="hidden sm:flex header-phone-btn">
                     <i data-lucide="user-plus" class="w-5 h-5"></i> Save Specialist
                 </button>
@@ -482,7 +482,10 @@
             </div>
             <div class="footer-col">
                 <p class="footer-label">Send Us an Email</p>
-                <a href="mailto:Scott.Robinson@skventuresigns.com" class="footer-value">Scott.Robinson@skventuresigns.com</a>
+                <!-- V7.2: Switched to Smart Action Modal -->
+                <span onclick="openEmailSmartActions('Scott.Robinson@skventuresigns.com')" class="footer-value">
+                    Scott.Robinson@skventuresigns.com
+                </span>
             </div>
             <div class="footer-col">
                 <p class="footer-label">Visit Our Office</p>
@@ -498,7 +501,7 @@
        SMART MODALS INJECTION (LOCKED)
     ----------------------------------------------------------- -->
     
-    <!-- Phone Action Modal (For Footer/Body Interactivity) -->
+    <!-- Phone Action Modal -->
     <div id="phone-modal" class="sk-modal-overlay" onclick="closeModals()">
         <div class="sk-modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">Contact Specialist</div>
@@ -523,6 +526,17 @@
                 <a href="https://waze.com/ul?ll=39.1211,-88.5444&navigate=yes" target="_blank" class="smart-option">
                     <i data-lucide="navigation-2"></i> Waze Navigation
                 </a>
+            </div>
+            <div class="btn-close-modal" onclick="closeModals()">Cancel</div>
+        </div>
+    </div>
+
+    <!-- V7.2: Smart Email Modal Injection -->
+    <div id="email-modal" class="sk-modal-overlay" onclick="closeModals()">
+        <div class="sk-modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">Compose Message</div>
+            <div class="modal-body" id="email-options-container">
+                <!-- Injected via JS -->
             </div>
             <div class="btn-close-modal" onclick="closeModals()">Cancel</div>
         </div>
@@ -576,7 +590,7 @@
         });
 
         /**
-         * Smart Action Handlers (V7.1: TextNow Removed)
+         * Smart Action Handlers
          */
         function openPhoneSmartActions(number) {
             const container = document.getElementById('phone-options-container');
@@ -605,6 +619,30 @@
             lucide.createIcons();
         }
 
+        // V7.2: Smart Email Logic
+        function openEmailSmartActions(email) {
+            const container = document.getElementById('email-options-container');
+            
+            let html = `
+                <a href="mailto:${email}" class="smart-option">
+                    <i data-lucide="mail"></i> Default Mail App
+                </a>
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${email}" target="_blank" class="smart-option">
+                    <i data-lucide="send"></i> Gmail (Web/App)
+                </a>
+                <a href="https://outlook.office.com/mail/deeplink/compose?to=${email}" target="_blank" class="smart-option">
+                    <i data-lucide="layout"></i> Outlook / Hotmail
+                </a>
+                <div onclick="copyToClipboard('${email}')" class="smart-option">
+                    <i data-lucide="copy"></i> Copy Email Address
+                </div>
+            `;
+
+            container.innerHTML = html;
+            document.getElementById('email-modal').style.display = 'flex';
+            lucide.createIcons();
+        }
+
         function openMapSmartActions() {
             document.getElementById('map-modal').style.display = 'flex';
             lucide.createIcons();
@@ -613,11 +651,35 @@
         function closeModals() {
             document.getElementById('phone-modal').style.display = 'none';
             document.getElementById('map-modal').style.display = 'none';
+            document.getElementById('email-modal').style.display = 'none';
+        }
+
+        // V7.2 Helper: Copy to Clipboard Logic
+        function copyToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                // Simple visual feedback: change the modal header briefly
+                const header = document.querySelector('#email-modal .modal-header');
+                const originalText = header.innerText;
+                header.innerText = "Email Copied!";
+                header.style.color = "#FFF";
+                setTimeout(() => {
+                    header.innerText = originalText;
+                    header.style.color = "var(--sk-gold)";
+                    closeModals();
+                }, 1500);
+            } catch (err) {
+                console.error('Copy failed', err);
+            }
+            document.body.removeChild(textArea);
         }
 
         /**
-         * S&K vCard Download Engine (Enhanced V7.0+)
-         * Optimized for iPhone (Apple Contacts) and Android (Google Contacts)
+         * S&K vCard Download Engine
          */
         function downloadSKContact() {
             const PHOTO_URL = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-Black.png";
