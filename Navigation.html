@@ -2,16 +2,18 @@
 <html lang="en">
 <head>
     <!-- 
-        PROJECT: S&K Venture Signs Global Header & Footer
-        ADMIN: Kevin (Werewolf3788)
+        PROJECT: S&K Venture Signs Global Framework
+        ADMIN: Kevin (DJ Werewolf) - Admin
         CLIENT: Scott (S&K Venture Signs)
         STANDARDS: Responsive, No-Minify, G-Tag Integrated
-        TECHNICAL: Locked Header (125px -> 75px Ultra-Slim Scroll), Locked Footer (237px)
+        VERSION: 6.7 (Navigation v1.1.2 Integrated)
+        TECHNICAL: Locked Header (125px -> 75px Ultra-Slim Scroll)
         ANALYTICS: Boss Analytics G-H6Q756MVE8
-        UPDATE: V6.5 - Synchronized Divider Bar / Height-Tracking Transition
+        UPDATE: Footer Divider Updated to rgb(187, 162, 140)
     -->
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>S&K Venture Signs | Digital Billboard Portal</title>
     
     <!-- Google Analytics: Scott's Tracking (Boss) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-H6Q756MVE8"></script>
@@ -20,9 +22,9 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-H6Q756MVE8', {
-        'page_type': 'global_framework_v6.5',
+        'page_type': 'global_framework_v6.7',
         'content_group': 'brand_assets',
-        'layout_version': '6.5'
+        'layout_version': '6.7'
       });
     </script>
 
@@ -36,193 +38,159 @@
             /* Kevin's Admin Global Settings */
             --divi-header: 30px;
             --divi-body: 14px;
+            --divi-section: 50px;
+            --divi-row: 30px;
             
             /* S&K Brand Palette */
             --sk-maroon: rgb(62, 1, 0);
             --sk-gold: #FFC627;
+            --sk-gold-alt: rgb(255, 192, 0);
             --sk-nav-gold: rgb(218, 164, 33);
-            --sk-separator: #BBA28C;
+            --sk-separator: rgb(187, 162, 140); /* Precision Color: rgb(187, 162, 140) */
             
             /* Precision Dimensions Locked */
             --header-height: 125px;
             --header-scrolled-height: 75px; 
             --footer-height: 237px;
-            --menu-gap: 26px; 
-            --ultra-wide-max: 2496px;
-
-            /* Precision Logo Scaling (px / 24.96 for vw | px / 9.29 for vh) */
-            --logo-w-vw: 14.82vw; /* 370px */
-            --logo-h-vh: 11.52vh; /* 107px */
-            --logo-x-vw: 16.55vw; /* 413px from left */
-            --logo-y-vh: 1.72vh;  /* 16px from top */
-
-            /* Precision Nav Spacing (438px gap from screen edge) */
-            --nav-right-vw: 17.55vw; 
+            --ultra-wide-max: 1800px;
         }
 
-        /* Base Typography & Global Standards */
-        body {
+        /* -----------------------------------------------------------
+           GLOBAL TYPOGRAPHY & RESET
+        ----------------------------------------------------------- */
+        html, body {
+            overflow-x: hidden;
             font-family: 'Poppins', sans-serif;
             font-size: var(--divi-body);
-            margin: 0;
-            padding-top: var(--header-height);
-            overflow-wrap: break-word;
             background-color: #fcfcfc;
             color: #333333;
+            -webkit-tap-highlight-color: transparent;
+            line-height: 1.6;
+            overflow-wrap: break-word;
+            margin: 0;
+            padding-top: var(--header-height);
         }
 
-        h1, h2, h3 {
-            font-size: var(--divi-header);
+        h1, h2, h3 { 
+            font-family: 'Abril Fatface', cursive; 
+            font-size: var(--divi-header); 
             line-height: 1.2;
         }
 
-        /* --- SECTION: HEADER CONSTRUCTION --- */
+        /* -----------------------------------------------------------
+           HEADER & NAVIGATION STYLES
+        ----------------------------------------------------------- */
         header#main-header {
-            /* V6.5: Explicit sync of border and height for 'Divider Bar' movement */
-            transition: 
-                background-color 0.4s ease, 
-                height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-                border-color 0.4s ease,
-                box-shadow 0.4s ease;
-            border-bottom: 4px solid var(--sk-separator);
-            height: var(--header-height) !important;
-            display: flex;
-            align-items: flex-start; 
-            overflow: visible; /* Ensures divider remains visually crisp */
-        }
-
-        /* Initial State (Maroon Theme) */
-        .header-top {
-            background-color: var(--sk-maroon);
-            color: #FFFFFF;
-        }
-
-        /* Scrolled State (White Theme + Ultra-Slim Height) */
-        .header-scrolled {
-            height: var(--header-scrolled-height) !important;
-            background-color: white;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            color: #000000;
-            /* Divider Bar is part of the header, so it moves up with the height change */
-            border-bottom: 4px solid var(--sk-separator);
-        }
-
-        /* Logo Branding */
-        #header-logo {
-            width: var(--logo-w-vw);
-            height: var(--logo-h-vh);
-            margin-left: var(--logo-x-vw);
-            margin-top: var(--logo-y-vh);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            object-fit: contain;
-        }
-
-        /* Scrolled Logo Adjustment */
-        .header-scrolled #header-logo {
-            transform: scale(0.8);
-            margin-top: 5px;
-        }
-
-        /* Navigation Container */
-        .header-inner-wrap {
-            width: 100%;
-            max-width: var(--ultra-wide-max); 
-            margin: 0; 
-            padding: 0; 
+            border-bottom: 4px solid var(--sk-separator);
+            height: var(--header-height);
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: flex-start; 
-        }
-
-        .nav-container {
-            display: flex;
-            align-items: center;
-            gap: var(--menu-gap);
-            margin-left: auto; 
-            margin-right: var(--nav-right-vw); 
-            padding-top: 35px; 
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* --- SECTION: SCROLL ANIMATION (Shift Left) --- */
-        .header-scrolled .nav-container {
-            margin-right: calc(var(--nav-right-vw) + 40px); 
-            padding-top: 15px; 
-        }
-
-        .nav-link {
-            color: white;
-            font-family: "Open Sans", sans-serif;
-            font-size: 18px;
-            font-weight: 700;
-            text-transform: uppercase;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            letter-spacing: 1px;
-            white-space: nowrap;
         }
         
-        .nav-link:hover, .nav-link.active {
-            color: var(--sk-gold);
+        .header-top { 
+            background-color: var(--sk-maroon); 
+            color: #FFFFFF; 
         }
 
-        .header-scrolled .nav-link {
-            color: #222222;
+        .header-scrolled { 
+            background-color: white; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            color: #000000; 
+            height: var(--header-scrolled-height) !important;
         }
 
-        .header-scrolled .nav-link.active {
-            color: var(--sk-maroon);
+        /* Logo Sizing & Responsive Scaling */
+        #header-logo {
+            display: block;
+            width: 320px;
+            height: auto;
+            aspect-ratio: 4163 / 1391;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            -webkit-font-smoothing: antialiased;
         }
+        .header-scrolled #header-logo { width: 190px; }
 
-        /* --- SECTION: SAVE-CONTACT BUTTON --- */
+        /* Desktop Navigation Links */
+        .nav-link {
+            align-items: center;
+            color: rgb(255, 255, 255);
+            cursor: pointer;
+            display: flex;
+            font-family: "Open Sans", Arial, sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 15px 0;
+            text-decoration: none;
+            transition: all 0.4s ease-in-out;
+            white-space: nowrap;
+        }
+        .nav-link:hover, .nav-link.active { color: var(--sk-gold); }
+        .header-scrolled .nav-link { color: #222222; }
+        .header-scrolled .nav-link.active { color: var(--sk-maroon); }
+
+        /* Contact Action Button */
         .header-phone-btn {
             background-color: var(--sk-gold);
             color: var(--sk-maroon) !important;
             font-family: "Open Sans", sans-serif;
-            font-size: 18px;
+            font-size: 14px;
             font-weight: 800;
-            text-decoration: none;
+            text-transform: uppercase;
             padding: 10px 24px;
             border-radius: 12px;
             box-shadow: 0 4px 0px rgb(180, 140, 30);
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            white-space: nowrap;
             display: inline-flex;
             align-items: center;
             gap: 10px;
             cursor: pointer;
             border: none;
-            outline: none;
-            position: relative;
-            top: 0;
         }
-
         .header-phone-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 7px 0px rgb(180, 140, 30);
             background-color: #ffd25a;
         }
-
-        .header-phone-btn:active {
-            top: 4px;
-            box-shadow: 0 0px 0px rgb(180, 140, 30);
-            background-color: var(--sk-nav-gold);
-        }
-
         .header-scrolled .header-phone-btn {
             background-color: var(--sk-maroon);
             color: var(--sk-gold) !important;
-            box-shadow: 0 4px 0px rgba(0,0,0,0.25);
-            padding: 6px 16px; 
-            font-size: 16px;
+            box-shadow: 0 4px 0px rgba(0,0,0,0.2);
+            padding: 8px 18px;
+            font-size: 12px;
         }
 
-        /* --- FOOTER CONSTRUCTION --- */
+        /* Mobile Menu Transitions */
+        #mobile-menu {
+            transition: all 0.3s ease-in-out;
+            background-color: white;
+            z-index: 999;
+        }
+
+        #refresh-bar {
+            position: absolute; bottom: 0; left: 0; height: 2px; width: 0;
+            background-color: var(--sk-gold); transition: width 0.3s ease; z-index: 1001;
+        }
+
+        @media (max-width: 1023px) {
+            :root { --header-height: 100px; }
+            #header-logo { width: 220px; }
+            .header-scrolled #header-logo { width: 170px; }
+            body { padding-top: 100px; }
+        }
+
+        /* -----------------------------------------------------------
+           FOOTER STYLES
+        ----------------------------------------------------------- */
         footer#main-footer {
             background-color: var(--sk-maroon);
             color: white;
             height: var(--footer-height);
-            border-top: 5px solid var(--sk-gold);
+            /* UPDATE V6.7: Divider color set to rgb(187, 162, 140) */
+            border-top: 5px solid var(--sk-separator);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -241,76 +209,95 @@
 
         .footer-label {
             display: block;
-            color: rgb(255, 255, 255); 
+            color: #FFFFFF; 
             font-family: Georgia, serif;
             font-size: 14px; 
             font-weight: 500; 
-            height: 24.5px; 
-            line-height: 24.5px; 
-            margin: 0 0 24px 0; 
-            text-align: center; 
+            margin-bottom: 15px; 
         }
 
         .footer-value {
             display: block;
-            color: rgb(255, 255, 255); 
+            color: #FFFFFF; 
             font-family: "Abril Fatface", serif; 
             font-size: 18px; 
-            font-weight: 500; 
-            line-height: 25.2px; 
-            text-align: center;
             text-decoration: none;
             transition: color 0.3s ease;
         }
-
-        .footer-value:hover {
-            color: var(--sk-gold); 
-        }
+        .footer-value:hover { color: var(--sk-gold); }
 
         .copyright-bar {
             width: 100%;
             text-align: center;
-            margin-top: 89px; 
-            display: block;
-            color: rgb(255, 255, 255); 
+            margin-top: 40px; 
             font-family: Georgia, serif;
-            font-size: 18px; 
+            font-size: 16px; 
             font-weight: 700; 
-            line-height: 25.2px; 
+            opacity: 0.8;
         }
 
         @media (max-width: 768px) {
-            :root { --header-height: 100px; }
-            #header-logo { width: 160px; margin-left: 20px; margin-top: 20px; }
-            .nav-container { display: none; }
+            footer#main-footer { height: auto; padding: 40px 20px; }
+            .footer-grid { grid-template-columns: 1fr; gap: 30px; }
+            .copyright-bar { margin-top: 30px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Main Header Component (Locked 125px -> 75px) -->
+    <!-- 
+        MAIN HEADER COMPONENT
+        Locked Transitions: 125px -> 75px
+    -->
     <header id="main-header" class="header-top fixed top-0 left-0 w-full z-[1000]">
-        <div class="header-inner-wrap">
+        <div class="w-full max-w-[1800px] mx-auto h-full flex items-center justify-between px-4 lg:px-10">
             
             <!-- Branding -->
-            <div class="flex-shrink-0">
+            <div class="flex-shrink-0 z-[1001]">
                 <a href="https://werewolf3788.github.io/SKVentureSigns/">
-                    <img src="https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=1.9" alt="S&K Venture Signs" id="header-logo" />
+                    <img src="https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=1.9" 
+                         alt="S&K Venture Signs" 
+                         id="header-logo" />
                 </a>
             </div>
-            
-            <!-- Precision Navigation -->
-            <nav class="nav-container">
-                <a href="index.html" class="nav-link">Home</a>
-                <a href="Locations.html" class="nav-link active">Locations</a>
-                <a href="Services.html" class="nav-link">Services</a>
-                <a href="Clients.html" class="nav-link">Clients</a>
-                <a href="Contact.html" class="nav-link">Contact</a>
+
+            <!-- Desktop Navigation -->
+            <nav class="hidden lg:flex flex-grow items-center justify-center px-10">
+                <ul class="flex items-center gap-8 xl:gap-12">
+                    <li><a href="https://werewolf3788.github.io/SKVentureSigns/" class="nav-link">Home</a></li>
+                    <li><a href="https://werewolf3788.github.io/SKVentureSigns/Locations.html" class="nav-link active">Locations</a></li>
+                    <li><a href="Services.html" class="nav-link">Services</a></li>
+                    <li><a href="Clients.html" class="nav-link">Clients</a></li>
+                    <li><a href="Contact.html" class="nav-link">Contact</a></li>
+                </ul>
+            </nav>
+
+            <!-- Action Buttons / Mobile Toggle -->
+            <div class="flex items-center gap-4 z-[1001]">
+                <button onclick="downloadSKContact()" class="hidden sm:flex header-phone-btn">
+                    <i data-lucide="user-plus" class="w-5 h-5"></i> 844-907-4450
+                </button>
                 
-                <!-- Precision Save-Contact Button -->
-                <button onclick="downloadSKContact()" class="header-phone-btn" title="Save S&K to Contacts">
-                    <i data-lucide="user-plus" class="w-5 h-5"></i>
-                    844-907-4450
+                <!-- Mobile Sandwich Toggle -->
+                <button id="menu-toggle" class="lg:hidden p-2 text-white transition-colors">
+                    <i data-lucide="menu" id="menu-icon" class="w-9 h-9"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress/Refresh Bar -->
+        <div id="refresh-bar"></div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden absolute top-full left-0 w-full lg:hidden flex-col bg-white text-black shadow-2xl border-t border-black/5">
+            <nav class="flex flex-col p-8 space-y-6">
+                <a href="https://werewolf3788.github.io/SKVentureSigns/" class="text-xl font-bold border-b border-black/5 pb-3">Home</a>
+                <a href="https://werewolf3788.github.io/SKVentureSigns/Locations.html" class="text-xl font-bold border-b border-black/5 pb-3 text-[#3E0100]">Locations</a>
+                <a href="Services.html" class="text-xl font-bold border-b border-black/5 pb-3">Services</a>
+                <a href="Clients.html" class="text-xl font-bold border-b border-black/5 pb-3">Clients</a>
+                <a href="Contact.html" class="text-xl font-bold border-b border-black/5 pb-3">Contact</a>
+                <button onclick="downloadSKContact()" class="w-full bg-[#3E0100] text-[#FFC627] py-5 rounded-2xl font-bold uppercase tracking-widest text-sm mt-4 shadow-lg">
+                    <i data-lucide="user-plus" class="inline-block w-5 h-5 mr-2"></i> Save S&K Contact
                 </button>
             </nav>
         </div>
@@ -318,7 +305,13 @@
 
     <!-- Main Content Area: Ready for Injection -->
     <main class="w-full min-h-[80vh]">
-        <!-- [ADD PAGE CONTENT HERE] -->
+        <section class="max-w-[1400px] mx-auto px-6 py-20 text-center">
+            <h2 class="text-4xl md:text-6xl mb-6">Innovative Digital Solutions</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">S&K Venture Signs delivers high-impact digital billboard advertising across Illinois. Scroll to see the header transition from Maroon to White.</p>
+        </section>
+        
+        <!-- Placeholder for scroll demonstration -->
+        <div class="h-[1000px]"></div>
     </main>
 
     <!-- Global Footer (Locked 237px) -->
@@ -326,7 +319,7 @@
         <div class="footer-grid">
             <div class="footer-col">
                 <p class="footer-label">Give Us a Call</p>
-                <a href="tel:6187084450" class="footer-value">618-708-4450 or 844-907-4450</a>
+                <a href="tel:8449074450" class="footer-value">844-907-4450</a>
             </div>
             <div class="footer-col">
                 <p class="footer-label">Send Us an Email</p>
@@ -335,7 +328,7 @@
             <div class="footer-col">
                 <p class="footer-label">Visit Our Office</p>
                 <a href="https://www.google.com/maps/search/?api=1&query=607+W+Clark+Ave+Effingham+IL+62401" target="_blank" class="footer-value">
-                    607 W Clark Ave  Effingham, IL  62401
+                    Effingham, IL 62401
                 </a>
             </div>
         </div>
@@ -343,11 +336,55 @@
     </footer>
 
     <script>
+        /**
+         * S&K NAVIGATION & BRANDING ENGINE
+         */
         const LOGO_BLACK = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-Black.png?v=1.9";
         const LOGO_WHITE = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=1.9";
+        
+        const header = document.getElementById('main-header');
+        const logo = document.getElementById('header-logo');
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
 
         /**
-         * SECTION: SAVE CONTACT (vCard) ENGINE
+         * Scroll Transition Logic
+         * Handles the transformation from Maroon (Hero) to White (Sticky)
+         */
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 40) { 
+                header.classList.replace('header-top', 'header-scrolled'); 
+                logo.src = LOGO_BLACK; 
+                menuIcon.classList.remove('text-white');
+                menuIcon.classList.add('text-black');
+            } else { 
+                header.classList.replace('header-scrolled', 'header-top'); 
+                logo.src = LOGO_WHITE; 
+                menuIcon.classList.remove('text-black');
+                menuIcon.classList.add('text-white');
+            }
+        });
+
+        /**
+         * Mobile Menu Toggle
+         */
+        menuToggle.addEventListener('click', () => {
+            const isHidden = mobileMenu.classList.contains('hidden');
+            if (isHidden) {
+                mobileMenu.classList.remove('hidden');
+                mobileMenu.classList.add('flex');
+                menuIcon.setAttribute('data-lucide', 'x');
+            } else {
+                mobileMenu.classList.add('hidden');
+                mobileMenu.classList.remove('flex');
+                menuIcon.setAttribute('data-lucide', 'menu');
+            }
+            lucide.createIcons();
+        });
+
+        /**
+         * S&K vCard Download Engine
          */
         function downloadSKContact() {
             const vcard = "BEGIN:VCARD\n" +
@@ -356,7 +393,6 @@
                         "ORG:S&K Venture Signs\n" +
                         "TITLE:Digital Billboard Specialist\n" +
                         "TEL;TYPE=WORK,VOICE:844-907-4450\n" +
-                        "TEL;TYPE=CELL,VOICE:618-708-4450\n" +
                         "EMAIL;TYPE=PREF,INTERNET:Scott.Robinson@skventuresigns.com\n" +
                         "ADR;TYPE=WORK:;;607 W Clark Ave;Effingham;IL;62401;USA\n" +
                         "URL:https://skventuresigns.com/\n" +
@@ -373,23 +409,11 @@
             window.URL.revokeObjectURL(url);
         }
 
+        // Initialize Lucide Icons on Load
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof lucide !== 'undefined') lucide.createIcons();
         });
-
-        window.addEventListener('scroll', () => {
-            const header = document.getElementById('main-header');
-            const logo = document.getElementById('header-logo');
-            if (window.scrollY > 40) { 
-                header.classList.add('header-scrolled');
-                header.classList.remove('header-top');
-                logo.src = LOGO_BLACK; 
-            } else { 
-                header.classList.add('header-top');
-                header.classList.remove('header-scrolled');
-                logo.src = LOGO_WHITE; 
-            }
-        });
     </script>
+
 </body>
 </html>
