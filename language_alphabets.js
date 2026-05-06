@@ -1,85 +1,6 @@
-Gemini
-Language and Text Styling Protocol
-Conversation with Gemini
-I want to added to gemini saved info that if I say the option to change the lanugage it' would do whatever it needs to make sure that we get the language that is needed for the user's choice, Also if there is No color option for the outline text don't make the words bold only hadd the outline if thre is color to it.
-
-I've noted these updates for your projects. The protocol now includes specific instructions for language handling and conditional text styling.
-
-Here is the updated logic to add to your records:
-
-Updated Master Dev Protocol Extension
-1. Language & Localization Protocol
-
-Dynamic Translation: Whenever a language change is requested, the system must implement the necessary logic (e.g., JSON-based i18n or API integration) to fully transition the UI and content to the user's selected language.
-
-2. Conditional Typography Logic
-
-Outline vs. Weight: If no color is selected for the text outline, the text must not default to bold.
-
-Color Dependency: An outline should only be rendered if a valid color value is present. If the outline is absent, the font weight remains at the default setting defined in the CSS.
-
-Implementation Logic (Technical Snippet)
-JavaScript
-/* Project: Kevin Frutiger (Werewolf3788) - Master Protocol Update
-   Timestamp: Wednesday, May 6, 2026 | 4:34 PM ET
-   Description: Logic for conditional outlines and language switching.
-*/
-
-// Language Handler Example
-const setLanguage = (langCode) => {
-    // Logic to fetch and apply language packs
-    console.log(`Switching interface to: ${langCode}`);
-};
-
-// UI Styling Logic: Outline vs Bold
-const applyTextStyle = (outlineColor) => {
-    const element = document.querySelector('.text-container');
-    if (outlineColor) {
-        element.style.webkitTextStroke = `1px ${outlineColor}`;
-    } else {
-        element.style.webkitTextStroke = "0px";
-        element.style.fontWeight = "normal"; // Ensure no fallback to bold
-    }
-};
-When building out the language options, do you prefer using a toggle menu for specific languages (like English/Spanish), or should the site attempt to auto-detect the user's browser language first?
-
-lets create a js or a json file that has all the letters of the alphabet for every language for when I request sites to have the option to change languages
-
-Your JavaScript file containing alphabets for major world languages is ready. This file incorporates your Dynamic Localization Protocol and the Conditional Typography Logic regarding text outlines and font weights.
-
-Multi-Language Alphabet Repository
-JS icon
- language_alphabets 
-JS
-Project Integration Details
-Alphabet Data: Includes character sets for English, Spanish (with Ñ), French (with accents), German (with umlauts/ß), Russian (Cyrillic), Greek, Arabic, Hindi (Devanagari), Japanese (Hiragana/Katakana), Korean (Hangul), and more.
-
-Outline Logic: The included applyLanguageProtocol function strictly follows your rule: if no outlineColor is provided, the -webkit-text-stroke is removed and the font-weight is explicitly set to normal to prevent any default bolding.
-
-Localization: The system is structured to allow full UI transitions based on the language code provided.
-
-Compatibility: The code is GitHack-ready, uses relative logic, and includes the KF Signature and NYT timestamp in the header metadata.
-
-Usage Example
-To use this in your projects (GitHub Pages, Firebase, etc.), include the script and call the protocol function:
-
-JavaScript
-// Example: Setting the site to Spanish with a Jet Orange outline
-applyLanguageProtocol('es', '#FF4500');
-
-// Example: Setting to English with NO outline (will ensure no bolding)
-applyLanguageProtocol('en', null);
-I have also ensured that the "redneck talk" protocol is respected by keeping all technical descriptions and project metadata in professional developer terminology.
-
-
-
-
-
-Gemini is AI and can make mistakes.
-
 /* * PROJECT: Universal Engine - Multi-Language Alphabet Repository
  * DEVELOPER: Kevin Frutiger (Werewolf3788 / DJ Werewolf)
- * TIMESTAMP: Wednesday, May 06, 2026 | 04:37 PM ET
+ * TIMESTAMP: Wednesday, May 6, 2026 | 04:39 PM ET
  * * WORKFLOW & INTEGRITY PROTOCOL:
  * - Compatible with GitHub Pages, Firebase, CodePen, StreamElements.
  * - GitHack Integration: Use relative paths for assets.
@@ -116,32 +37,76 @@ const LANGUAGE_ALPHABETS = {
 };
 
 /**
- * Utility Function: Apply Language Alphabet & Styling
- * @param {string} langCode - ISO 639-1 code
- * @param {string} outlineColor - Hex/Name for text outline
+ * Global State for Typography Preferences
+ * Saves to cookies for persistence across sessions.
+ */
+const updateTypographyPreferences = (outlineColor, fontFamily) => {
+    const expiry = new Date();
+    expiry.setFullYear(expiry.getFullYear() + 1); // 1 year persistence
+    
+    if (outlineColor) document.cookie = `ui_outline_color=${outlineColor}; expires=${expiry.toUTCString()}; path=/`;
+    if (fontFamily) document.cookie = `ui_font_family=${fontFamily}; expires=${expiry.toUTCString()}; path=/`;
+};
+
+/**
+ * Protocol Function: Apply Language Alphabet & Styling
+ * This handles the logic for outline-based font weight and language switching.
+ * * @param {string} langCode - ISO 639-1 code (e.g., 'en', 'es', 'ru')
+ * @param {string|null} outlineColor - Hex or CSS color string for text outline
  */
 function applyLanguageProtocol(langCode, outlineColor = null) {
     const alphabet = LANGUAGE_ALPHABETS[langCode] || LANGUAGE_ALPHABETS['en'];
-    console.log(`[Protocol] Language set to: ${langCode}`);
+    console.log(`[Master Protocol] Language initialized: ${langCode}`);
     
-    // Logic for Conditional Typography Outline
-    const elements = document.querySelectorAll('.dynamic-text');
-    elements.forEach(el => {
-        if (outlineColor) {
+    // Select all elements designated for dynamic protocol styling
+    const dynamicElements = document.querySelectorAll('.dynamic-text, .outlined-text, h1, h2, h3, p');
+    
+    dynamicElements.forEach(el => {
+        if (outlineColor && outlineColor !== 'transparent' && outlineColor !== '') {
+            // Apply high-contrast outline logic
             el.style.webkitTextStroke = `1px ${outlineColor}`;
             el.style.textStroke = `1px ${outlineColor}`;
+            // If color is present, font weight follows standard/bold as defined by specific UI settings
         } else {
+            // CONDITIONAL TYPOGRAPHY: No color = No outline and NO default bolding.
             el.style.webkitTextStroke = "0px";
             el.style.textStroke = "0px";
-            el.style.fontWeight = "normal"; // Prevent default bolding
+            el.style.fontWeight = "normal"; 
         }
     });
+
+    // Branding Watermark (KF Signature) Logic
+    const ensureBranding = () => {
+        if (!document.getElementById('kf-signature')) {
+            const footer = document.createElement('div');
+            footer.id = 'kf-signature';
+            footer.style.position = 'fixed';
+            footer.style.bottom = '10px';
+            footer.style.left = '10px';
+            footer.style.display = 'flex';
+            footer.style.alignItems = 'center';
+            footer.style.fontFamily = 'Arial, sans-serif';
+            footer.style.fontSize = '24px';
+            footer.style.fontWeight = 'bold';
+            footer.style.zIndex = '9999';
+            footer.innerHTML = `
+                <span style="color: #FF4500; transform: scaleX(-1); display: inline-block; z-index: 2;">K</span>
+                <span style="color: #000000; margin-left: -0.22em; z-index: 1;">F</span>
+            `;
+            document.body.appendChild(footer);
+        }
+    };
+    
+    ensureBranding();
 
     return alphabet;
 }
 
-if (typeof module !== 'undefined') {
-    module.exports = LANGUAGE_ALPHABETS;
+// Export for module-based environments (Firebase/Node)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { LANGUAGE_ALPHABETS, applyLanguageProtocol };
+} else {
+    // Global availability for GitHub Pages/CodePen
+    window.LANGUAGE_ALPHABETS = LANGUAGE_ALPHABETS;
+    window.applyLanguageProtocol = applyLanguageProtocol;
 }
-language_alphabets.js
-Displaying language_alphabets.js.
