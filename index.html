@@ -6,13 +6,17 @@
         ADMIN: Kevin (DJ Werewolf) - Admin
         CLIENT: Scott (S&K Venture Signs)
         STANDARDS: Responsive, No-Minify, G-Tag Integrated, GitHack Compatible
-        VERSION: 10.4 (Footer Height Correction)
+        VERSION: 10.8 (Service Card Button Borders)
         TECHNICAL: Precision Integration, Auto-Night Mode, High-Contrast Outlines, Dual-Column Mapping (A: Street, B: City/State/Zip)
-        TIMESTAMP: May 7, 2026 - 3:24 PM EDT (New York Time)
+        TIMESTAMP: May 7, 2026 - 3:42 PM EDT (New York Time)
         
         NO STRIPPING, NO COMPRESSING, DON'T CHANGE WHAT I DIDN'T SAY TO CHANGE.
+        FIX: Applied bold yellow borders to Advertising/Sales buttons and bold white borders to Rental/Maintenance buttons.
+        FIX: Consolidated address (Street, City) onto a single line.
+        FIX: Slightly increased the footer's top padding to bring the footer content down a little bit more for better visual balance.
+        FIX: Removed Google Voice option from the phone number lightbox modal.
+        FIX: Placed footer phone numbers on the same line with a gap and "or" text styled via flexbox.
         FIX: Removed the erroneous margin-top that created a white void above the footer.
-        FIX: Reduced footer padding (from 80px to 40px) and tightened copyright margins to match the shorter, sleeker profile seen in original reference designs.
         FIX: Removed the blue border from the top of the Hero Section's white card.
         FIX: Applied symmetrical width rules (lg:w-1/2) to the Hero section to ensure the title and white box have equal distance from screen edges.
         FIX: Added border stylings to the header phone button, dynamic service buttons, and bottom CTA button.
@@ -45,14 +49,14 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-H6Q756MVE8', { 'page_type': 'global_framework_v10.4_home' });
+      gtag('config', 'G-H6Q756MVE8', { 'page_type': 'global_framework_v10.8_home' });
       gtag('config', 'G-L376P3YPY4');
     </script>
 
     <!-- External Assets with Smart Cache Buster -->
-    <script src="https://cdn.tailwindcss.com?v=10.4"></script>
-    <script src="https://unpkg.com/lucide@latest?v=10.4"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@600;700&display=swap&v=10.4" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?v=10.8"></script>
+    <script src="https://unpkg.com/lucide@latest?v=10.8"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@600;700&display=swap&v=10.8" rel="stylesheet">
 
     <style>
         :root {
@@ -263,7 +267,7 @@
             position: relative; 
             min-height: 625px; 
             background-image: linear-gradient(rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.5) 100%), 
-                              url('https://skventuresigns.com/wp-content/uploads/2025/03/Screenshot-2025-03-21-143543.png?v=10.4');
+                              url('https://skventuresigns.com/wp-content/uploads/2025/03/Screenshot-2025-03-21-143543.png?v=10.7');
             background-size: cover; 
             background-position: center;
             display: flex; 
@@ -274,7 +278,7 @@
         .adventurous-divider {
             position: relative; 
             min-height: 600px;
-            background-image: url('https://skventuresigns.com/wp-content/uploads/2024/12/skbackground.png?v=10.4');
+            background-image: url('https://skventuresigns.com/wp-content/uploads/2024/12/skbackground.png?v=10.7');
             background-size: cover; 
             background-position: center;
             display: flex; 
@@ -411,8 +415,7 @@
             background-color: var(--sk-maroon);
             color: white;
             border-top: 5px solid var(--sk-separator);
-            padding: 40px 0 20px 0; /* Reduced padding for a shorter footer */
-            /* Removed massive margin-top to keep it cleanly beneath the CTA */
+            padding: 60px 0 30px 0; /* Slightly increased top padding to bring the footer down a little bit more */
         }
         .footer-grid {
             display: grid;
@@ -475,7 +478,7 @@
         <div class="main-container flex items-center justify-between h-full px-4 lg:px-0">
             <div class="flex-shrink-0 z-[1001]">
                 <a href="./index.html">
-                    <img src="https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=10.4" alt="S&K" id="header-logo" />
+                    <img src="https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=10.7" alt="S&K" id="header-logo" />
                 </a>
             </div>
 
@@ -521,7 +524,7 @@
             <div class="main-container">
                 <div class="flex flex-col lg:flex-row items-center gap-12 mb-16">
                     <div class="w-full lg:w-1/2">
-                        <img src="https://i0.wp.com/skventuresigns.com/wp-content/uploads/2026/04/EFF-fair-locations.png?v=10.4" class="w-full h-auto rounded-3xl shadow-2xl lightbox-trigger cursor-zoom-in">
+                        <img src="https://i0.wp.com/skventuresigns.com/wp-content/uploads/2026/04/EFF-fair-locations.png?v=10.7" class="w-full h-auto rounded-3xl shadow-2xl lightbox-trigger cursor-zoom-in">
                     </div>
                     <div class="w-full lg:w-1/2 text-center text-white">
                         <h5 class="fair-heading-precision">2026 Effingham County Fair</h5>
@@ -550,8 +553,8 @@
             <div class="main-container">
                 <!-- Banners above Cards -->
                 <div class="flex flex-col items-center gap-6 mb-12">
-                    <img src="https://i0.wp.com/skventuresigns.com/wp-content/uploads/2025/01/Topline.png?v=10.4" alt="Engage Your Audience Like Never Before With Our State-of-the Art Digital Sign Solutions" class="w-full max-w-[1080px] h-auto">
-                    <img src="https://i0.wp.com/skventuresigns.com/wp-content/uploads/2025/03/Customize.png?v=10.4" alt="Customize Digital Advertising" class="w-full max-w-[1080px] h-auto">
+                    <img src="https://i0.wp.com/skventuresigns.com/wp-content/uploads/2025/01/Topline.png?v=10.7" alt="Engage Your Audience Like Never Before With Our State-of-the Art Digital Sign Solutions" class="w-full max-w-[1080px] h-auto">
+                    <img src="https://i0.wp.com/skventuresigns.com/wp-content/uploads/2025/03/Customize.png?v=10.7" alt="Customize Digital Advertising" class="w-full max-w-[1080px] h-auto">
                 </div>
 
                 <div id="services-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -565,7 +568,7 @@
         <!-- TAGLINE -->
         <section class="bg-[#3E0100] pb-20 flex justify-center">
             <div class="main-container flex justify-center">
-                <img src="https://i0.wp.com/skventuresigns.com/wp-content/uploads/2024/12/SK-tagline.png?v=10.4" class="w-full max-w-[950px] lightbox-trigger cursor-zoom-in">
+                <img src="https://i0.wp.com/skventuresigns.com/wp-content/uploads/2024/12/SK-tagline.png?v=10.7" class="w-full max-w-[950px] lightbox-trigger cursor-zoom-in">
             </div>
         </section>
 
@@ -638,7 +641,7 @@
 
     <script>
         /**
-         * S&K UNIVERSAL ENGINE v10.4
+         * S&K UNIVERSAL ENGINE v10.7
          */
         const SYNC_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZY38nsz_aJDO3cdtAwv4w359jK1aMt1rhBwZ3LAGarLyddtbBowFZv6mjlpnR1eGdNCpFhat8FuKp/pub?output=csv";
         const SERVICES_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9HBnWuIELZ5IxaTxuCpNgs5ep7Tz4NpaU8__laH9a1DK52CreOSM8IqQxUK95CMyzsmTmkHoTgc1b/pub?output=csv";
@@ -696,12 +699,15 @@
                 mNav.innerHTML += `<a href="${n.url}" class="text-2xl font-bold border-b border-black/5 pb-3 ${isActive ? 'text-[var(--sk-gold)]' : ''}">${n.label}</a>`;
             });
 
-            let phoneHTML = `<span class="footer-value" onclick="openPhoneSmartActions('${siteData.phones[0]}')">${siteData.phones[0]}</span>`;
-            if (siteData.phones[1]) phoneHTML += `<span class="footer-or">Or</span><span class="footer-value" onclick="openPhoneSmartActions('${siteData.phones[1]}')">${siteData.phones[1]}</span>`;
+            fPhone.className = "flex flex-wrap items-center justify-center gap-3";
+            let phoneHTML = `<span class="footer-value !mb-0" onclick="openPhoneSmartActions('${siteData.phones[0]}')">${siteData.phones[0]}</span>`;
+            if (siteData.phones[1]) phoneHTML += `<span class="text-white opacity-70 text-sm font-bold uppercase">or</span><span class="footer-value !mb-0" onclick="openPhoneSmartActions('${siteData.phones[1]}')">${siteData.phones[1]}</span>`;
             fPhone.innerHTML = phoneHTML;
 
             fEmail.innerHTML = `<span class="footer-value" onclick="openEmailSmartActions('${siteData.email}')">${siteData.email}</span>`;
-            fAddr.innerHTML = `<span class="footer-value" onclick="openMapSmartActions()">${siteData.addressStreet}<br>${siteData.addressCity}</span>`;
+            
+            // Re-formatted to put Street and City on the same line, separated by a comma and space
+            fAddr.innerHTML = `<span class="footer-value" onclick="openMapSmartActions()">${siteData.addressStreet}, ${siteData.addressCity}</span>`;
 
             lucide.createIcons();
         }
@@ -724,21 +730,27 @@
                     const titleLower = titleText.toLowerCase();
                     
                     let customTitleColor = 'text-[var(--text-primary)]'; 
+                    let customBtnBorder = ''; // Added variable for dynamic borders
+
                     if (titleLower.includes('advertising') || titleLower.includes('sales')) {
                         customTitleColor = 'dynamic-ad-title';
+                        customBtnBorder = 'border-4 border-[#FFC627]'; // Bold yellow border
                     } else if (titleLower.includes('rental') || titleLower.includes('leasing') || titleLower.includes('maintenance') || titleLower.includes('repair')) {
                         customTitleColor = 'text-black'; 
+                        customBtnBorder = 'border-4 border-white'; // Bold white border
+                    } else {
+                        customBtnBorder = isEven ? 'border-4 border-[#FFC627]' : 'border-4 border-white'; // Fallback mapping
                     }
 
                     // Added Borders to the generated button inside the template literal
                     grid.innerHTML += `
                         <div class="service-card ${isEven ? 'bg-[var(--card-bg)]' : 'bg-[#DAA421]'}">
-                            <img src="${imgs[i]?.trim()}?v=10.4" class="lightbox-trigger" onerror="this.src='https://via.placeholder.com/400x220?text=S%26K+Venture+Signs'">
+                            <img src="${imgs[i]?.trim()}?v=10.8" class="lightbox-trigger" onerror="this.src='https://via.placeholder.com/400x220?text=S%26K+Venture+Signs'">
                             <div class="text-center mt-4 flex-grow">
                                 <h3 class="text-2xl mb-2 ${customTitleColor}" style="font-family:'Abril Fatface', cursive;">${titleText}</h3>
                                 <p class="text-sm mb-6 ${isEven ? 'text-[var(--text-primary)] opacity-70' : 'text-[#3E0100]'} font-medium">${descs[i]}</p>
                             </div>
-                            <a href="${btnLinks[i]?.trim()}" class="block py-3 rounded-full font-black uppercase text-xs tracking-widest text-white text-center ${isEven ? 'bg-[#2A0001] border-2 border-gray-300' : 'bg-[#023456] border-2 border-white/50'} hover:scale-105 transition-all shadow-lg">${btnLabels[i]?.trim() || 'Learn More'}</a>
+                            <a href="${btnLinks[i]?.trim()}" class="block py-3 rounded-full font-black uppercase text-xs tracking-widest text-white text-center ${isEven ? 'bg-[#2A0001]' : 'bg-[#023456]'} ${customBtnBorder} hover:scale-105 transition-all shadow-lg">${btnLabels[i]?.trim() || 'Learn More'}</a>
                         </div>
                     `;
                 }
@@ -787,7 +799,6 @@
             const container = document.getElementById('phone-options-container');
             let html = `
                 <a href="tel:${clean}" class="smart-option"><i data-lucide="phone"></i> Direct Call</a>
-                <a href="https://voice.google.com/u/0/calls?a=nc,%2B1${clean}" target="_blank" class="smart-option"><i data-lucide="globe"></i> Google Voice</a>
             `;
             if (num.includes('618')) html += `<a href="https://wa.me/1${clean}" target="_blank" class="smart-option"><i data-lucide="message-circle"></i> WhatsApp Specialist</a>`;
             container.innerHTML = html;
