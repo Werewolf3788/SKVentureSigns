@@ -2,9 +2,9 @@
 <!-- 
     PROJECT: S & K Ventures Billboard - Consolidated Divi Version
     ADMIN: Kevin (Werewolf3788)
-    VERSION: 4.7 (Lucida Bright Font Integration)
+    VERSION: 4.8 (Universal Scaling Engine - Container Queries)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: May 7, 2026 - 4:01 PM EDT (New York Time)
+    TIMESTAMP: May 7, 2026 - 4:03 PM EDT (New York Time)
     
     NO STRIPPING, NO COMPRESSING, DON'T CHANGE WHAT I DIDN'T SAY TO CHANGE.
 -->
@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 
 <!-- Framework Assets scoped for the Widget -->
-<script src="https://cdn.tailwindcss.com?v=4.4"></script>
+<script src="https://cdn.tailwindcss.com?v=4.8"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 
 <!-- Google Analytics: Boss Tracking + Watermark Tracking -->
@@ -23,7 +23,7 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', 'G-H6Q756MVE8', { 'page_type': 'billboard_widget_v4.7', 'layout_version': '4.7' });
+    gtag('config', 'G-H6Q756MVE8', { 'page_type': 'billboard_widget_v4.8', 'layout_version': '4.8' });
     gtag('config', 'G-L376P3NPY4');
 </script>
 
@@ -85,7 +85,17 @@
 </div>
 
 <style>
-    /* THEME VARIABLES */
+    /* PAGE RESET FOR UNIVERSAL EMBEDDING */
+    html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        background: #000;
+    }
+
+    /* THEME VARIABLES & CONTAINER QUERIES */
     #sk-billboard-root-container {
         --bb-bottom-bg: #3E0100; /* Scott's Maroon Color */
         --bb-text: #ffffff; /* Adjusted for contrast on maroon */
@@ -94,14 +104,21 @@
         
         all: initial !important;
         display: block !important;
-        width: 100vw !important;
-        height: 100vh !important;
+        /* Changed from 100vw/100vh to 100% for universal scaling */
+        width: 100% !important;
+        height: 100% !important;
+        position: absolute !important;
+        inset: 0 !important;
+        
+        /* Container Type allows font sizes to scale with the widget, not the physical monitor */
+        container-type: inline-size;
+        container-name: billboard;
+
         margin: 0 !important;
         padding: 0 !important;
         background: #000 !important;
         font-family: 'Arial Black', Gadget, sans-serif !important;
         box-sizing: border-box !important;
-        position: relative !important;
         overflow: hidden !important;
         z-index: 1 !important;
     }
@@ -114,7 +131,7 @@
 
     /* KF BRANDING WATERMARK */
     .kf-signature {
-        position: fixed !important;
+        position: absolute !important;
         bottom: 130px !important; 
         left: 30px !important;
         display: flex !important;
@@ -132,7 +149,7 @@
 
     /* GHOST BACK BUTTON */
     #ghost-back-btn {
-        position: fixed !important;
+        position: absolute !important;
         top: 30px !important;
         left: 30px !important;
         z-index: 2000 !important;
@@ -157,7 +174,7 @@
 
     /* FULL SCREEN BUTTON */
     #fullscreen-toggle-btn {
-        position: fixed !important;
+        position: absolute !important;
         top: 30px !important;
         right: 30px !important;
         z-index: 2000 !important;
@@ -183,7 +200,7 @@
 
     /* LANDSCAPE LOCK */
     #landscape-lock {
-        position: fixed !important;
+        position: absolute !important;
         inset: 0 !important;
         background: #3E0100 !important;
         z-index: 3000 !important;
@@ -203,22 +220,22 @@
     #sk-billboard-display {
         position: absolute !important;
         inset: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
+        width: 100% !important; /* Changed from 100vw */
+        height: 100% !important; /* Changed from 100vh */
         background: #000 !important;
         display: flex !important;
         flex-direction: column !important;
         overflow: hidden !important;
     }
 
-    /* AD VIEWPORT - V4.2/4.3/4.4/4.7: FLUSH ALIGNMENT ENGINE */
+    /* AD VIEWPORT - V4.8: UNIVERSAL ALIGNMENT ENGINE */
     #sk-ad-viewport {
         position: absolute !important;
-        top: 0 !important; /* FLUSH TO TOP OF SCREEN */
+        top: 0 !important;
         left: 0 !important;
         width: 100% !important;
-        /* CALCULATED TO REST PERFECTLY ON TOP OF THE FOOTER BAR */
-        height: calc(100vh - var(--bar-height)) !important;
+        /* CALCULATED TO REST PERFECTLY ON TOP OF THE FOOTER BAR BASED ON CONTAINER HEIGHT */
+        height: calc(100% - var(--bar-height)) !important; 
         z-index: 1 !important;
         background: #000 !important;
         overflow: hidden;
@@ -234,11 +251,9 @@
 
     .sk-ad-slide.active { display: flex !important; }
 
-    /* V4.2/4.3: FULL STRETCH ENGINE - MAPPED TO HARDWARE EDGES */
     .sk-ad-slide img {
         width: 100% !important;
         height: 100% !important;
-        /* Core Change: 'fill' ensures no empty space on top, bottom, or sides */
         object-fit: fill !important; 
         filter: saturate(1.1) contrast(1.05) brightness(0.95) !important;
         transition: filter 0.8s ease !important;
@@ -260,7 +275,6 @@
         justify-content: space-between !important;
         align-items: center !important;
         padding: 0 60px !important;
-        /* Removed yellow divider bar */
         z-index: 10 !important;
         transition: all 0.4s ease !important;
     }
@@ -270,7 +284,8 @@
     .sk-logo {
         color: #FAC429 !important;
         font-weight: 900 !important;
-        font-size: clamp(24px, 5vw, 55px) !important;
+        /* Changed vw to cqw to scale universally based on container size instead of monitor size */
+        font-size: clamp(24px, 5cqw, 55px) !important;
         letter-spacing: 5px !important;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
         white-space: nowrap !important;
@@ -281,9 +296,9 @@
     /* BILLBOARD SCRIPT FONT OVERRIDE */
     .sk-script {
         font-family: 'Lucida Bright', 'Lucinda Bright', Georgia, serif !important;
-        font-size: 1.2em !important; /* Adjusted slightly down because standard serifs are larger than cursive */
-        font-weight: 900 !important; /* Pushed to max weight */
-        -webkit-text-stroke: 1px #FAC429 !important; /* Slightly reduced stroke so serif details aren't lost */
+        font-size: 1.2em !important; 
+        font-weight: 900 !important; 
+        -webkit-text-stroke: 1px #FAC429 !important; 
         letter-spacing: 2px !important; 
         text-transform: none !important;
         margin-right: 15px !important;
@@ -297,7 +312,8 @@
         transform: translateX(-50%) !important;
         color: var(--bb-text) !important;
         font-weight: 900 !important;
-        font-size: clamp(24px, 5vw, 55px) !important; 
+        /* Changed vw to cqw */
+        font-size: clamp(24px, 5cqw, 55px) !important; 
         letter-spacing: 5px !important; 
         white-space: nowrap !important;
         z-index: 15 !important;
@@ -319,15 +335,17 @@
     }
 
     #sk-temp-val { 
-        font-size: clamp(40px, 7vw, 85px) !important; /* Made larger */
+        /* Changed vw to cqw */
+        font-size: clamp(40px, 7cqw, 85px) !important; 
         font-weight: 900 !important; 
         line-height: 1 !important;
     }
 
     #sk-time-val {
-        font-size: clamp(40px, 7vw, 85px) !important; /* Matched temperature size */
-        font-weight: 900 !important; /* Matched temperature weight */
-        line-height: 1 !important; /* Matched temperature line height */
+        /* Changed vw to cqw */
+        font-size: clamp(40px, 7cqw, 85px) !important; 
+        font-weight: 900 !important; 
+        line-height: 1 !important; 
         font-family: 'Courier New', monospace !important;
         border-left: 4px solid var(--bb-border) !important;
         padding-left: 40px !important;
@@ -359,8 +377,8 @@
         #sk-time-val { padding-left: 15px !important; }
         .kf-signature { bottom: 100px; font-size: 16px; left: 15px; }
         
-        /* Adjust absolute phone positioning slightly for narrow landscape views if necessary */
-        .sk-bottom-phone { font-size: clamp(18px, 4vw, 30px) !important; }
+        /* Changed vw to cqw */
+        .sk-bottom-phone { font-size: clamp(18px, 4cqw, 30px) !important; }
     }
 </style>
 
@@ -441,7 +459,7 @@
         if(lastWeatherData) updateWeatherUI(lastWeatherData);
     }
 
-    /* V4.2/4.3/4.4/4.7 SMART SYNC ENGINE with CACHE BUSTER */
+    /* V4.2/4.3/4.4/4.7/4.8 SMART SYNC ENGINE with CACHE BUSTER */
     async function fetchAdImages(isAutoSync = false) {
         try {
             const res = await fetch(`${CSV_URL}&t=${Date.now()}`);
