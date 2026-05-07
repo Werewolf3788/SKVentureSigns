@@ -2,7 +2,7 @@
 <!-- 
     PROJECT: S & K Ventures Billboard - Consolidated Divi Version
     ADMIN: Kevin (Werewolf3788)
-    VERSION: 3.0 (Hugging Hardware Engine - Frame Fits Image Width)
+    VERSION: 4.2 (True Full-Stretch Engine - Zero Gap Alignment)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
     TIMESTAMP: May 7, 2026 - 12:35 AM EDT (New York Time)
     
@@ -10,11 +10,28 @@
 -->
 
 <!-- Framework Assets scoped for the Widget -->
-<script src="https://cdn.tailwindcss.com?v=3.0"></script>
+<script src="https://cdn.tailwindcss.com?v=4.2"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
+
+<!-- Google Analytics: Boss Tracking + Watermark Tracking -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-H6Q756MVE8"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L376P3NPY4"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-H6Q756MVE8', { 'page_type': 'billboard_widget_v4.2', 'layout_version': '4.2' });
+    gtag('config', 'G-L376P3NPY4');
+</script>
 
 <div id="sk-billboard-root-container" class="light-mode" onmousemove="handleInteraction()" ontouchstart="handleInteraction()">
     
+    <!-- KF Signature Watermark (Master Dev Protocol) -->
+    <div class="kf-signature">
+        <span class="kf-k">K</span>
+        <span class="kf-f">F</span>
+    </div>
+
     <!-- Mobile Landscape Lock Overlay -->
     <div id="landscape-lock">
         <div class="lock-content">
@@ -23,7 +40,7 @@
         </div>
     </div>
 
-    <!-- Interactive Ghost Back Button -->
+    <!-- Interactive Ghost Back Button (Fades in on tap/move) -->
     <a href="./index.html" id="ghost-back-btn">
         <i data-lucide="arrow-left" class="w-5 h-5"></i>
         <span>Back to Site</span>
@@ -31,12 +48,12 @@
 
     <div id="sk-billboard-display">
         
-        <!-- Ad Stage: The Main Part -->
+        <!-- Ad Stage: The Main Part (Edge-to-Edge Mapping) -->
         <div id="sk-ad-viewport">
             <!-- Images injected via JavaScript & CSV -->
         </div>
 
-        <!-- Hugging Bottom Bar: Branding, Weather, & Time -->
+        <!-- Full-Width Bottom Bar: Branding, Weather, & Time -->
         <div id="sk-bottom-bar">
             <div class="sk-logo-group">
                 <div class="sk-logo">S & K VENTURES</div>
@@ -63,17 +80,15 @@
         --bb-bottom-bg: rgba(255, 255, 255, 1);
         --bb-text: #111111;
         --bb-border: rgba(0, 0, 0, 0.1);
-        --bar-height: 100px;
+        --bar-height: 110px;
         
         all: initial !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
+        display: block !important;
         width: 100vw !important;
         height: 100vh !important;
         margin: 0 !important;
         padding: 0 !important;
-        background: #111 !important; /* Dark environment background */
+        background: #000 !important;
         font-family: 'Arial Black', Gadget, sans-serif !important;
         box-sizing: border-box !important;
         position: relative !important;
@@ -82,10 +97,28 @@
     }
 
     #sk-billboard-root-container.dark-mode {
-        --bb-bottom-bg: rgba(20, 20, 20, 0.98);
+        --bb-bottom-bg: rgba(15, 15, 15, 0.98);
         --bb-text: #ffffff;
         --bb-border: rgba(255, 255, 255, 0.1);
     }
+
+    /* KF BRANDING WATERMARK */
+    .kf-signature {
+        position: fixed !important;
+        bottom: 130px !important; 
+        left: 30px !important;
+        display: flex !important;
+        align-items: center !important;
+        font-family: 'Poppins', sans-serif !important;
+        font-weight: 900 !important;
+        font-size: 24px !important;
+        z-index: 9999 !important;
+        pointer-events: none !important;
+        opacity: 0.35;
+    }
+    .kf-k { color: #FF4500 !important; transform: scaleX(-1) !important; z-index: 2 !important; }
+    .kf-f { color: #000000 !important; margin-left: -0.22em !important; z-index: 1 !important; }
+    .dark-mode .kf-f { color: #ffffff !important; }
 
     /* GHOST BACK BUTTON */
     #ghost-back-btn {
@@ -130,47 +163,47 @@
         #landscape-lock { display: flex !important; }
     }
 
-    /* MAIN DISPLAY BOX - Hugs the content width */
+    /* MAIN DISPLAY BOX */
     #sk-billboard-display {
-        position: relative !important;
-        width: fit-content !important; /* V3.0: Core Change - Sides come into edge */
-        max-width: 100vw !important;
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100vw !important;
         height: 100vh !important;
         background: #000 !important;
         display: flex !important;
         flex-direction: column !important;
         overflow: hidden !important;
-        border-left: 5px solid #1a1a1a !important;
-        border-right: 5px solid #1a1a1a !important;
-        box-shadow: 0 0 100px rgba(0,0,0,1) !important;
     }
 
-    /* AD VIEWPORT - THE MAIN PART */
+    /* AD VIEWPORT - V4.2: FLUSH ALIGNMENT ENGINE */
     #sk-ad-viewport {
-        flex: 1 !important;
-        width: auto !important;
+        position: absolute !important;
+        top: 0 !important; /* FLUSH TO TOP OF SCREEN */
+        left: 0 !important;
+        width: 100% !important;
+        /* CALCULATED TO REST PERFECTLY ON TOP OF THE FOOTER BAR */
         height: calc(100vh - var(--bar-height)) !important;
         z-index: 1 !important;
         background: #000 !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: flex-start !important;
+        overflow: hidden;
     }
 
     .sk-ad-slide {
         display: none !important;
+        width: 100% !important;
         height: 100% !important;
-        width: auto !important;
+        justify-content: center;
+        align-items: center;
     }
 
     .sk-ad-slide.active { display: flex !important; }
 
-    /* V3.0: HUG THE EDGES */
+    /* V4.2: FULL STRETCH ENGINE - MAPPED TO HARDWARE EDGES */
     .sk-ad-slide img {
+        width: 100% !important;
         height: 100% !important;
-        width: auto !important;
-        max-width: 100vw !important;
-        object-fit: contain !important; 
+        /* Core Change: 'fill' ensures no empty space on top, bottom, or sides */
+        object-fit: fill !important; 
         filter: saturate(1.1) contrast(1.05) brightness(0.95) !important;
         transition: filter 0.8s ease !important;
     }
@@ -179,72 +212,84 @@
         filter: saturate(1.1) contrast(1.05) brightness(0.75) !important;
     }
 
-    /* BAR AREA - Sized by parent width */
+    /* BOTTOM BAR - EDGE TO EDGE */
     #sk-bottom-bar {
+        position: absolute !important;
+        bottom: 0 !important;
+        left: 0 !important;
         width: 100% !important;
         height: var(--bar-height) !important;
         background: var(--bb-bottom-bg) !important;
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
-        padding: 0 40px !important;
-        border-top: 4px solid #FAC429 !important; /* Gold physical divider */
+        padding: 0 60px !important;
+        border-top: 5px solid #FAC429 !important; 
         z-index: 10 !important;
         transition: all 0.4s ease !important;
     }
 
-    .sk-logo-group { display: flex !important; align-items: baseline !important; gap: 20px !important; }
+    .sk-logo-group { display: flex !important; align-items: baseline !important; gap: 30px !important; }
 
     .sk-logo {
         color: #FAC429 !important;
         font-weight: 900 !important;
-        font-size: clamp(18px, 3.5vw, 40px) !important;
-        letter-spacing: 3px !important;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.8) !important;
+        font-size: clamp(24px, 5vw, 55px) !important;
+        letter-spacing: 5px !important;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
         white-space: nowrap !important;
     }
 
     .sk-bottom-phone {
         color: var(--bb-text) !important;
         font-weight: 900 !important;
-        font-size: clamp(18px, 3.5vw, 40px) !important; 
-        letter-spacing: 3px !important; 
+        font-size: clamp(24px, 5vw, 55px) !important; 
+        letter-spacing: 5px !important; 
         white-space: nowrap !important;
     }
 
     .sk-info-stack {
         display: flex !important;
         align-items: center !important;
-        gap: 30px !important;
+        gap: 40px !important;
         color: var(--bb-text) !important;
     }
 
-    #sk-temp-val { font-size: clamp(22px, 4vw, 44px) !important; font-weight: 900 !important; }
+    #sk-temp-val { font-size: clamp(30px, 6vw, 65px) !important; font-weight: 900 !important; }
 
     #sk-time-val {
-        font-size: clamp(18px, 3vw, 34px) !important;
+        font-size: clamp(24px, 4vw, 48px) !important;
         font-weight: 700 !important;
         font-family: 'Courier New', monospace !important;
-        border-left: 3px solid var(--bb-border) !important;
-        padding-left: 30px !important;
+        border-left: 4px solid var(--bb-border) !important;
+        padding-left: 40px !important;
     }
 
+    /* LED OVERLAY */
     .sk-led-overlay {
         position: absolute !important;
         inset: 0 !important;
         background-image: radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px) !important;
-        background-size: 3px 3px !important;
-        box-shadow: inset 0 0 40px rgba(0,0,0,0.5) !important;
+        background-size: 4px 4px !important;
+        box-shadow: inset 0 0 150px rgba(0,0,0,0.3) !important;
         pointer-events: none !important;
         z-index: 5 !important;
     }
 
+    @media (max-width: 1024px) {
+        #sk-billboard-root-container { --bar-height: 90px; }
+        #sk-bottom-bar { padding: 0 30px !important; }
+        .sk-logo-group { gap: 15px !important; }
+        .sk-info-stack { gap: 20px !important; }
+    }
+
     @media (max-width: 768px) {
         #sk-billboard-root-container { --bar-height: 80px; }
-        #sk-bottom-bar { padding: 0 20px !important; }
+        #sk-bottom-bar { padding: 0 15px !important; }
         .sk-logo-group { flex-direction: column !important; gap: 0 !important; }
-        .sk-info-stack { gap: 15px !important; }
+        .sk-info-stack { gap: 10px !important; }
         #sk-time-val { padding-left: 15px !important; }
+        .kf-signature { bottom: 100px; font-size: 16px; left: 15px; }
     }
 </style>
 
@@ -258,6 +303,9 @@
     let targetTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; 
     let isNightTimeSolar = null; 
     let interactionTimer;
+
+    // Persistent State for Auto-Sync
+    let currentImageUrls = [];
 
     window.handleInteraction = function() {
         const btn = document.getElementById('ghost-back-btn');
@@ -281,12 +329,14 @@
         if(lastWeatherData) updateWeatherUI(lastWeatherData);
     }
 
-    async function fetchAdImages() {
+    /* V4.2 SMART SYNC ENGINE with CACHE BUSTER */
+    async function fetchAdImages(isAutoSync = false) {
         try {
             const res = await fetch(`${CSV_URL}&t=${Date.now()}`);
             const text = await res.text();
             const lines = text.split(/\r?\n/);
             let loadedUrls = [];
+
             lines.forEach((line, idx) => {
                 if (idx === 0) return; 
                 const cellMatch = line.match(/(".*?"|[^,]+)/g);
@@ -295,8 +345,34 @@
                     if (url.startsWith('http')) loadedUrls.push(url);
                 }
             });
-            if (loadedUrls.length > 0) adImages = loadedUrls;
-        } catch (e) {}
+
+            if (loadedUrls.length > 0) {
+                if (JSON.stringify(loadedUrls) !== JSON.stringify(currentImageUrls)) {
+                    currentImageUrls = loadedUrls;
+                    renderSlides();
+                }
+            }
+        } catch (e) {
+            console.warn("Billboard Sync Engine: fetch failed. Retrying in 60s.");
+        }
+    }
+
+    function renderSlides() {
+        const viewport = document.getElementById('sk-ad-viewport');
+        if(!viewport) return;
+        viewport.innerHTML = '';
+        adSlideElements = [];
+        currentAdIndex = 0;
+
+        currentImageUrls.forEach((url, idx) => {
+            const slide = document.createElement('div');
+            slide.className = `sk-ad-slide ${idx === 0 ? 'active' : ''}`;
+            const image = document.createElement('img');
+            image.src = url;
+            slide.appendChild(image);
+            viewport.appendChild(slide);
+            adSlideElements.push(slide);
+        });
     }
 
     async function fetchWeather(lat, lon) {
@@ -352,18 +428,7 @@
         if (typeof lucide !== 'undefined') lucide.createIcons();
         syncTimeTheme();
         await fetchAdImages();
-        const viewport = document.getElementById('sk-ad-viewport');
-        if(!viewport) return;
-        adImages.forEach((url, idx) => {
-            const slide = document.createElement('div');
-            slide.className = `sk-ad-slide ${idx === 0 ? 'active' : ''}`;
-            const image = document.createElement('img');
-            image.src = url;
-            slide.appendChild(image);
-            viewport.appendChild(slide);
-            adSlideElements.push(slide);
-        });
-        
+
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
                 async (p) => { updateWeatherUI(await fetchWeather(p.coords.latitude, p.coords.longitude)); syncTimeTheme(); },
@@ -377,7 +442,9 @@
         setTimeout(() => { updateLocalTime(); setInterval(updateLocalTime, 1000); }, 500);
         setInterval(rotateAds, displayInterval);
         setInterval(syncTimeTheme, 300000); 
+        setInterval(() => fetchAdImages(true), 60000); // 60s Google Sheet Auto-Refresh
     }
+
     if (document.readyState === "complete" || document.readyState === "interactive") startBillboard();
     else document.addEventListener("DOMContentLoaded", startBillboard);
 })();
