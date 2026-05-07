@@ -2,9 +2,9 @@
 <!-- 
     PROJECT: S & K Ventures Billboard - Consolidated Divi Version
     ADMIN: Kevin (Werewolf3788)
-    VERSION: 4.8 (Universal Scaling Engine - Container Queries)
+    VERSION: 4.9 (Times New Roman Integration + Tri-State Theme Toggle)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: May 7, 2026 - 4:03 PM EDT (New York Time)
+    TIMESTAMP: May 7, 2026 - 4:10 PM EDT (New York Time)
     
     NO STRIPPING, NO COMPRESSING, DON'T CHANGE WHAT I DIDN'T SAY TO CHANGE.
 -->
@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 
 <!-- Framework Assets scoped for the Widget -->
-<script src="https://cdn.tailwindcss.com?v=4.8"></script>
+<script src="https://cdn.tailwindcss.com?v=4.9"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 
 <!-- Google Analytics: Boss Tracking + Watermark Tracking -->
@@ -23,7 +23,7 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', 'G-H6Q756MVE8', { 'page_type': 'billboard_widget_v4.8', 'layout_version': '4.8' });
+    gtag('config', 'G-H6Q756MVE8', { 'page_type': 'billboard_widget_v4.9', 'layout_version': '4.9' });
     gtag('config', 'G-L376P3NPY4');
 </script>
 
@@ -48,6 +48,12 @@
         <i data-lucide="arrow-left" class="w-5 h-5"></i>
         <span>Back to Site</span>
     </a>
+
+    <!-- Interactive Theme Toggle Button (Fades in on tap/move) -->
+    <button id="theme-toggle-btn" onclick="toggleTheme()">
+        <i data-lucide="sun-dim" class="w-5 h-5" id="theme-icon"></i>
+        <span>Auto Theme</span>
+    </button>
 
     <!-- Interactive Full Screen Button (Fades in on tap/move) -->
     <button id="fullscreen-toggle-btn" onclick="toggleFullScreen()">
@@ -172,6 +178,32 @@
     }
     #ghost-back-btn.active { opacity: 1; visibility: visible; }
 
+    /* THEME TOGGLE BUTTON */
+    #theme-toggle-btn {
+        position: absolute !important;
+        top: 30px !important;
+        right: 210px !important; /* Spaced left of the Full Screen Button */
+        z-index: 2000 !important;
+        background: rgba(0, 0, 0, 0.8) !important;
+        color: #FFC627 !important;
+        padding: 12px 24px !important;
+        border-radius: 50px !important;
+        border: 2px solid #FFC627 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        text-decoration: none !important;
+        font-family: 'Poppins', sans-serif !important;
+        font-weight: 800 !important;
+        font-size: 14px !important;
+        text-transform: uppercase !important;
+        cursor: pointer !important;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.5s ease, visibility 0.5s ease !important;
+    }
+    #theme-toggle-btn.active { opacity: 1; visibility: visible; }
+
     /* FULL SCREEN BUTTON */
     #fullscreen-toggle-btn {
         position: absolute !important;
@@ -283,6 +315,7 @@
 
     .sk-logo {
         color: #FAC429 !important;
+        font-family: 'Times New Roman', Times, serif !important; /* Update applied for Ventures text */
         font-weight: 900 !important;
         /* Changed vw to cqw to scale universally based on container size instead of monitor size */
         font-size: clamp(24px, 5cqw, 55px) !important;
@@ -367,6 +400,8 @@
         #sk-bottom-bar { padding: 0 30px !important; }
         .sk-logo-group { gap: 15px !important; }
         .sk-info-stack { gap: 20px !important; }
+        #theme-toggle-btn { right: 180px !important; padding: 10px 18px !important; font-size: 12px !important; }
+        #fullscreen-toggle-btn { right: 15px !important; padding: 10px 18px !important; font-size: 12px !important; }
     }
 
     @media (max-width: 768px) {
@@ -379,6 +414,11 @@
         
         /* Changed vw to cqw */
         .sk-bottom-phone { font-size: clamp(18px, 4cqw, 30px) !important; }
+
+        /* Collapse action buttons slightly for mobile */
+        #theme-toggle-btn { top: 15px !important; right: 160px !important; padding: 8px 16px !important; font-size: 11px !important; }
+        #fullscreen-toggle-btn { top: 15px !important; right: 15px !important; padding: 8px 16px !important; font-size: 11px !important; }
+        #ghost-back-btn { top: 15px !important; left: 15px !important; padding: 8px 16px !important; font-size: 11px !important; }
     }
 </style>
 
@@ -392,6 +432,9 @@
     let targetTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; 
     let isNightTimeSolar = null; 
     let interactionTimer;
+    
+    // Theme state (auto, dark, light) for Manual Override
+    let themeMode = 'auto';
 
     // Persistent State for Auto-Sync
     let currentImageUrls = [];
@@ -400,14 +443,46 @@
     window.handleInteraction = function() {
         const backBtn = document.getElementById('ghost-back-btn');
         const fsBtn = document.getElementById('fullscreen-toggle-btn');
+        const themeBtn = document.getElementById('theme-toggle-btn');
+        
         if(backBtn) backBtn.classList.add('active');
         if(fsBtn) fsBtn.classList.add('active');
+        if(themeBtn) themeBtn.classList.add('active');
         
         clearTimeout(interactionTimer);
         interactionTimer = setTimeout(() => { 
             if(backBtn) backBtn.classList.remove('active'); 
             if(fsBtn) fsBtn.classList.remove('active'); 
+            if(themeBtn) themeBtn.classList.remove('active');
         }, 3000);
+    }
+
+    // THEME TOGGLE CONTROLLER
+    window.toggleTheme = function() {
+        if (themeMode === 'auto') themeMode = 'dark';
+        else if (themeMode === 'dark') themeMode = 'light';
+        else themeMode = 'auto';
+        
+        updateThemeUI();
+        syncTimeTheme();
+    }
+
+    function updateThemeUI() {
+        const themeIcon = document.getElementById('theme-icon');
+        const themeText = document.querySelector('#theme-toggle-btn span');
+        if (!themeIcon || !themeText) return;
+        
+        if (themeMode === 'auto') {
+            themeIcon.setAttribute('data-lucide', 'sun-dim');
+            themeText.innerText = "Auto Theme";
+        } else if (themeMode === 'dark') {
+            themeIcon.setAttribute('data-lucide', 'moon');
+            themeText.innerText = "Dark Mode";
+        } else {
+            themeIcon.setAttribute('data-lucide', 'sun');
+            themeText.innerText = "Light Mode";
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     // FULL SCREEN API CONTROLLER
@@ -448,7 +523,18 @@
     function syncTimeTheme() {
         const root = document.getElementById('sk-billboard-root-container');
         if (!root) return;
-        let isNightTime = (isNightTimeSolar !== null) ? isNightTimeSolar : (new Date().getHours() < 6 || new Date().getHours() >= 19);
+        
+        let isNightTime = false;
+        
+        // Manual Override takes priority, otherwise fallback to Solar/Time logic
+        if (themeMode === 'dark') {
+            isNightTime = true;
+        } else if (themeMode === 'light') {
+            isNightTime = false;
+        } else {
+            isNightTime = (isNightTimeSolar !== null) ? isNightTimeSolar : (new Date().getHours() < 6 || new Date().getHours() >= 19);
+        }
+
         if (isNightTime) {
             root.classList.add('dark-mode');
             root.classList.remove('light-mode');
@@ -459,7 +545,7 @@
         if(lastWeatherData) updateWeatherUI(lastWeatherData);
     }
 
-    /* V4.2/4.3/4.4/4.7/4.8 SMART SYNC ENGINE with CACHE BUSTER */
+    /* V4.2/4.3/4.4/4.7/4.8/4.9 SMART SYNC ENGINE with CACHE BUSTER */
     async function fetchAdImages(isAutoSync = false) {
         try {
             const res = await fetch(`${CSV_URL}&t=${Date.now()}`);
