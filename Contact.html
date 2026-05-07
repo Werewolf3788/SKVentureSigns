@@ -2,70 +2,95 @@
 <html lang="en">
 <head>
     <!-- 
-        PROJECT: S&K Venture Signs Global Header & Footer - CONTACT TAB
+        PROJECT: S&K Venture Signs Global Framework - CONTACT TAB
         ADMIN: Kevin (Werewolf3788)
         CLIENT: Scott (S&K Venture Signs)
-        STANDARDS: Responsive, No-Minify, G-Tag Integrated
-        TECHNICAL: Locked Header (125px -> 75px Ultra-Slim Scroll), Locked Footer (237px)
-        ANALYTICS: Boss Analytics G-H6Q756MVE8
-        UPDATE: V7.8 - Spatial Precision Sync; Map Vertical Centering (Right Anchor); Fixed Pixel Unitization
-        REFERENCE: Left: 297px | Form: 306px | Gap: 1046px | Map: 604px | Right: 254px
-        INPUTS: 298x26px Fields | 306x188px Message | System Submit Style
+        STANDARDS: Responsive, No-Minify, G-Tag Integrated, GitHack Compatible
+        VERSION: 9.6.6 (Contact Tab Gap Removal Update)
+        TECHNICAL: Locked Header (125px -> 75px), Dynamic Modals, Auto-Night Mode, Precision Integration
+        TIMESTAMP: May 6, 2026 - 9:48 PM EDT (New York Time)
+        Nesting Code: Header/Footer Primary Wrapper Integrated
+        
+        NO STRIPPING, NO COMPRESSING, DON'T CHANGE WHAT I DIDN'T SAY TO CHANGE.
     -->
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>S&K Venture Signs | Contact Specialist</title>
     
-    <!-- Google Analytics: Scott's Tracking (Boss) -->
+    <!-- PWA Manifest & Service Worker -->
+    <link rel="manifest" href="./manifest.json">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed', err));
+            });
+        }
+    </script>
+
+    <!-- Google Analytics: Boss Tracking + Watermark Tracking -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-H6Q756MVE8"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L376P3NPY4"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
+
       gtag('config', 'G-H6Q756MVE8', {
-        'page_type': 'contact_portal_v7.8',
-        'content_group': 'client_leads',
-        'layout_version': '7.8'
+          'page_type': 'contact_portal_v9.6.6',
+          'content_group': 'client_leads',
+          'layout_version': '9.6.6'
       });
+      gtag('config', 'G-L376P3NPY4');
     </script>
 
-    <!-- External Assets with Smart Cache Buster ?v=3.1 -->
-    <script src="https://cdn.tailwindcss.com?v=3.1"></script>
-    <script src="https://unpkg.com/lucide@latest?v=3.1"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@500;600;700&display=swap&v=3.1" rel="stylesheet">
+    <!-- External Assets with Smart Cache Buster -->
+    <script src="https://cdn.tailwindcss.com?v=9.6.6"></script>
+    <script src="https://unpkg.com/lucide@latest?v=9.6.6"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@500;600;700&display=swap&v=9.6.6" rel="stylesheet">
 
     <style>
         :root {
             /* Kevin's Admin Global Settings */
-            --divi-header: 30px;
+            --divi-section: 50px;
+            --divi-row: 30px;
             --divi-body: 17px; 
+            --divi-header: 30px;
             
             /* S&K Brand Palette */
             --sk-maroon: rgb(62, 1, 0);
             --sk-gold: #FFC627;
+            --sk-gold-alt: rgb(255, 192, 0);
             --sk-nav-gold: rgb(218, 164, 33);
-            --sk-separator: rgb(187, 162, 140); 
-            
-            /* Precision Dimensions Locked (Pixels) */
+            --sk-btn-blue: rgb(2, 48, 71);
+            --sk-scott-blue: rgb(69, 123, 157);
+            --sk-separator: rgb(187, 162, 140);
+            --elevation-blue: #457B9D;
+            --sk-charcoal: rgb(17, 17, 17);
+            --sk-pricing-green: #2ecc71;
+
+            /* Theme & Logic Colors */
+            --bg-primary: #000000; /* Maintained for Contact aesthetic */
+            --text-primary: #FFFFFF; /* Maintained for Contact aesthetic */
+            --card-bg: #ffffff;
+
+            /* Global Brightness Variables (Nesting Sync) */
+            --header-bg-scrolled: white;
+            --nav-text-scrolled: #222222;
+            --mobile-menu-bg: white;
+            --mobile-menu-text: black;
+
+            /* Precision Dimensions Locked */
             --header-height: 125px;
             --header-scrolled-height: 75px; 
+            --container-width: 80%;
             --footer-height: 237px;
-            --menu-gap: 26px; 
             --ultra-wide-max: 2496px;
-
-            /* Precision Logo */
-            --logo-width: 370px;
-            --logo-height: 107px;
-            --logo-margin-left: 413px;
-            --logo-margin-top: 16px;
-
-            /* Precision Nav Spacing */
-            --nav-margin-right: 438px; 
 
             /* --- FINAL FIXED SPATIAL COORDINATES (IMAGE MEASURED) --- */
             --form-left-offset: 297px;    
             --form-width: 306px;          
             --element-gap: 1046px;        
-            --map-width: 604px;           
+            --map-width: 604px;            
             --map-right-offset: 254px;    
             --map-height: 450px;
 
@@ -76,122 +101,206 @@
             --msg-box-height: 188px;      
         }
 
-        /* Base Typography & Global Standards */
-        body {
+        /* -----------------------------------------------------------
+            GLOBAL TYPOGRAPHY & RESET
+        ----------------------------------------------------------- */
+        html, body {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            overflow-x: hidden;
             font-family: 'Poppins', sans-serif;
             font-size: var(--divi-body);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            -webkit-tap-highlight-color: transparent;
+            line-height: 1.6;
             margin: 0;
-            padding-top: var(--header-height);
+            /* Layout Adjustment: Removed body padding to allow Hero to touch header */
+            padding-top: 0;
+            transition: background-color 0.3s, color 0.3s;
             overflow-wrap: break-word;
-            background-color: #000000;
-            color: #FFFFFF;
         }
 
-        h1, h2, h3 {
-            font-size: var(--divi-header);
-            line-height: 1.2;
+        ::-webkit-scrollbar { display: none; }
+
+        h1, h2, h3, .font-display { 
+            font-family: 'Abril Fatface', cursive; 
         }
 
-        /* --- SECTION: HEADER CONSTRUCTION (V6.5 Sync) --- */
+        .main-container {
+            width: var(--container-width);
+            max-width: var(--ultra-wide-max);
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* -----------------------------------------------------------
+            HEADER & NAVIGATION (Nesting Logic)
+        ----------------------------------------------------------- */
         header#main-header {
-            transition: 
-                background-color 0.4s ease, 
-                height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-                border-color 0.4s ease,
-                box-shadow 0.4s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border-bottom: 4px solid var(--sk-separator);
-            height: var(--header-height) !important;
-            display: flex;
-            align-items: flex-start; 
-            overflow: visible;
-            z-index: 1000;
+            height: var(--header-height);
+            background-color: var(--sk-maroon);
         }
 
-        .header-top { background-color: var(--sk-maroon); color: #FFFFFF; }
-        .header-scrolled {
+        .header-scrolled { 
+            background-color: var(--header-bg-scrolled) !important; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
             height: var(--header-scrolled-height) !important;
-            background-color: white;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            color: #000000;
-            border-bottom: 4px solid var(--sk-separator);
         }
 
         #header-logo {
-            width: var(--logo-width);
-            height: var(--logo-height);
-            margin-left: var(--logo-margin-left);
-            margin-top: var(--logo-margin-top);
+            display: block;
+            width: 320px;
+            height: auto;
+            aspect-ratio: 4163 / 1391;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            object-fit: contain;
+            -webkit-font-smoothing: antialiased;
         }
-
-        .header-scrolled #header-logo { transform: scale(0.8); margin-top: 5px; }
-
-        .header-inner-wrap {
-            width: 100%;
-            max-width: var(--ultra-wide-max); 
-            margin: 0; 
-            padding: 0; 
-            display: flex;
-            align-items: center;
-            justify-content: flex-start; 
-        }
-
-        .nav-container {
-            display: flex;
-            align-items: center;
-            gap: var(--menu-gap);
-            margin-left: auto; 
-            margin-right: var(--nav-margin-right); 
-            padding-top: 35px; 
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .header-scrolled .nav-container { margin-right: calc(var(--nav-margin-right) + 40px); padding-top: 15px; }
+        .header-scrolled #header-logo { width: 190px; }
 
         .nav-link {
-            color: white;
-            font-family: "Open Sans", sans-serif;
-            font-size: 18px;
+            font-family: "Open Sans", Arial, sans-serif;
+            font-size: 16px; 
             font-weight: 700;
             text-transform: uppercase;
-            text-decoration: none;
-            transition: all 0.3s ease;
             letter-spacing: 1px;
-            white-space: nowrap;
-        }
-        
-        .nav-link:hover, .nav-link.active { color: var(--sk-gold); }
-        .header-scrolled .nav-link { color: #222222; }
-        .header-scrolled .nav-link.active { color: var(--sk-maroon); }
-
-        .header-phone-btn {
-            background-color: var(--sk-gold);
-            color: var(--sk-maroon) !important;
-            font-family: "Open Sans", sans-serif;
-            font-size: 18px;
-            font-weight: 800;
+            color: #FFFFFF;
+            transition: all 0.4s ease-in-out;
             text-decoration: none;
-            padding: 10px 24px;
-            border-radius: 12px;
-            box-shadow: 0 4px 0px rgb(180, 140, 30);
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             white-space: nowrap;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            border: none;
-            outline: none;
-            position: relative;
-            top: 0;
+            padding: 15px 0;
+        }
+        .nav-link:hover, .nav-link.active { color: var(--sk-gold) !important; }
+        .header-scrolled .nav-link { color: var(--nav-text-scrolled); }
+        .header-scrolled .nav-link.active { color: var(--sk-gold) !important; }
+        .header-scrolled #menu-toggle { color: var(--nav-text-scrolled); }
+
+        #mobile-menu {
+            background-color: var(--mobile-menu-bg);
+            color: var(--mobile-menu-text);
+            transition: background 0.3s, color 0.3s;
+            z-index: 999;
         }
 
-        .header-phone-btn:hover { transform: translateY(-3px); box-shadow: 0 7px 0px rgb(180, 140, 30); background-color: #ffd25a; }
-        .header-phone-btn:active { top: 4px; box-shadow: 0 0px 0px rgb(180, 140, 30); background-color: var(--sk-nav-gold); }
-        .header-scrolled .header-phone-btn { background-color: var(--sk-maroon); color: var(--sk-gold) !important; box-shadow: 0 4px 0px rgba(0,0,0,0.25); padding: 6px 16px; font-size: 16px; }
+        #refresh-bar { position: absolute; bottom: 0; left: 0; height: 2px; width: 0; background-color: var(--sk-gold); transition: width 0.3s ease; z-index: 1001; }
 
-        /* --- SECTION: GLOBAL CONTENT WRAPPER --- */
+        /* -----------------------------------------------------------
+            BRANDING (KF SIGNATURE WATERMARK)
+        ----------------------------------------------------------- */
+        .kf-signature {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            display: flex;
+            align-items: center;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 900;
+            font-size: 24px;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .kf-k { color: #FF4500; transform: scaleX(-1); z-index: 2; }
+        .kf-f { color: #000000; margin-left: -0.22em; z-index: 1; }
+        .dark-mode .kf-f { color: #ffffff; }
+
+        /* THEME SETTINGS UI (HIDABLE) */
+        .theme-toggle-wrapper {
+            position: fixed;
+            top: 140px;
+            right: 20px;
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+        .theme-toggle-panel {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border: 2px solid var(--sk-gold);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: right top;
+        }
+        .theme-toggle-panel.hidden-settings {
+            transform: scale(0) translateX(50px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .settings-toggle-btn {
+            background: var(--sk-maroon);
+            color: var(--sk-gold);
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        .settings-toggle-btn:hover { transform: rotate(45deg) scale(1.1); }
+
+        /* -----------------------------------------------------------
+            SMART MODAL SYSTEM
+        ----------------------------------------------------------- */
+        .sk-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .sk-modal-content {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 450px;
+            border-radius: 24px;
+            border: 4px solid var(--sk-separator);
+            overflow: hidden;
+            transition: background 0.3s;
+        }
+        .smart-option {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px 20px;
+            background: rgba(0,0,0,0.03);
+            border-radius: 16px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+        .smart-option:hover { 
+            background: var(--sk-gold); 
+            color: var(--sk-maroon) !important; 
+            transform: translateX(5px); 
+        }
+        .dark-mode .smart-option {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .modal-cancel-text {
+            color: var(--text-primary);
+            opacity: 0.5;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* -----------------------------------------------------------
+            SECTION: GLOBAL CONTACT WRAPPER & CONTENT
+        ----------------------------------------------------------- */
         main#global-contact-wrapper {
             background-image: url('https://skventuresigns.com/wp-content/uploads/2024/12/skbackground.png?v=3.1');
             background-size: cover;
@@ -201,12 +310,12 @@
             min-height: calc(100vh - var(--header-height) - var(--footer-height));
             width: 100%;
             position: relative;
-            padding-top: 50px; 
+            /* Layout Fix: Top padding must account for the 125px fixed header */
+            padding-top: calc(var(--header-height) + 50px); 
             padding-bottom: 80px;
             z-index: 1;
         }
 
-        /* --- SECTION: HERO HEADINGS --- */
         .contact-hero {
             padding: 40px 0 60px 0; 
             text-align: center;
@@ -231,7 +340,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* --- SECTION: NARRATIVE LAYOUT --- */
         .narrative-container {
             max-width: var(--ultra-wide-max);
             margin: 0 auto;
@@ -247,7 +355,7 @@
         .scott-sub-heading {
             display: block;
             color: rgb(255, 255, 255);
-            font-family: Georgia, Georgia, "Times New Roman", serif;
+            font-family: Georgia, "Times New Roman", serif;
             font-size: 30px; 
             font-weight: 600;
             height: auto;
@@ -277,14 +385,13 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* --- SECTION: FORM & MAP GRID (V7.8 RE-ANCHORED SPATIAL SYNC) --- */
         .form-map-grid {
             width: 100%;
             max-width: 2507px; /* Sum: 297 + 306 + 1046 + 604 + 254 */
             margin: 80px auto 0 auto;
             display: flex;
             justify-content: space-between; 
-            align-items: center; /* V7.8: Centering map vertically within the section height */
+            align-items: center;
             padding-left: var(--form-left-offset);
             padding-right: var(--map-right-offset);
             position: relative;
@@ -367,7 +474,6 @@
             resize: none;
         }
 
-        /* --- PRECISION SUBMIT BUTTON --- */
         .btn-submit-contact {
             appearance: none;
             background-color: rgb(240, 240, 240);
@@ -403,41 +509,72 @@
 
         #form-status { display: none; margin-top: 15px; padding: 15px; text-align: center; font-weight: 700; border-radius: 4px; width: 100%; max-width: 306px; }
 
-        /* --- SECTION: FOOTER CONSTRUCTION --- */
+        /* -----------------------------------------------------------
+            FOOTER (Nesting Logic)
+        ----------------------------------------------------------- */
         footer#main-footer {
             background-color: var(--sk-maroon);
             color: white;
-            height: var(--footer-height);
-            border-top: 5px solid var(--sk-separator); 
+            border-top: 5px solid var(--sk-separator);
+            padding: 80px 0;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            text-align: center;
+        }
+        .footer-col {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            position: relative;
-            padding: 0 20px;
+            align-items: center;
+            box-sizing: border-box;
         }
-
-        .footer-grid {
-            max-width: var(--ultra-wide-max); 
-            margin: 0 auto;
-            width: 100%;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr); 
-            text-align: center;
-        }
-
-        .copyright-bar {
-            width: 100%;
-            text-align: center;
-            margin-top: 89px; 
+        .footer-label { 
             display: block;
-            color: rgb(255, 255, 255); 
+            color: rgb(255, 255, 255);
             font-family: Georgia, serif;
-            font-size: 18px; 
-            font-weight: 700; 
-            line-height: 25.2px; 
+            font-size: 14px;
+            height: 24.5px;
+            line-height: 24.5px;
+            margin: 0px;
+            width: 100%;
+        }
+        .footer-value { 
+            display: block;
+            color: rgb(255, 255, 255);
+            font-family: "Abril Fatface", display;
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 25.2px;
+            margin: 0px;
+            padding: 0px 0px 10px 0px;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+        .footer-value:hover { color: var(--sk-gold); }
+        .footer-or { 
+            display: block; 
+            font-family: 'Poppins', sans-serif; 
+            font-size: 10px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            color: var(--sk-gold); 
+            opacity: 0.5; 
+            margin: 4px 0 10px 0; 
+            letter-spacing: 2px; 
         }
 
         @media (max-width: 1024px) {
+            :root { --header-height: 100px; --container-width: 90%; }
+            #header-logo { width: 220px; }
+            .header-scrolled #header-logo { width: 170px; }
+            .footer-grid { grid-template-columns: 1fr; gap: 60px; }
+            .theme-toggle-wrapper { top: auto; bottom: 80px; }
+            .nav-link { padding-top: 15px; padding-bottom: 15px; font-size: 15px; }
+
             .et_pb_module_heading_main { font-size: 40px; white-space: normal; }
             .narrative-container { grid-template-columns: 1fr; }
             .form-map-grid { flex-direction: column; align-items: center; padding: 20px; width: auto; max-width: 100%; }
@@ -447,37 +584,67 @@
             .field-label { text-align: center; }
             .input-text-single, .input-text-msg { text-align: center; max-width: 100%; }
             .map-right-box { height: 400px; width: 100%; }
-            .nav-container { display: none; }
-            #header-logo { width: 160px; margin-left: 20px; margin-top: 20px; }
             .scott-sub-heading { width: 95% !important; font-size: 24px; line-height: 32px; }
             .scott-body-text { width: 95% !important; font-size: 16px; line-height: 24px; }
         }
     </style>
 </head>
-<body>
+<body class="light-mode">
 
-    <!-- Main Header Component -->
-    <header id="main-header" class="header-top fixed top-0 left-0 w-full z-[1000]">
-        <div class="header-inner-wrap">
-            <div class="flex-shrink-0">
-                <a href="index.html">
-                    <img src="https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=1.9" alt="S&K Venture Signs" id="header-logo" />
+    <!-- KF Signature Watermark -->
+    <div class="kf-signature">
+        <span class="kf-k">K</span>
+        <span class="kf-f">F</span>
+    </div>
+
+    <!-- Theme & Persistence Panel -->
+    <div class="theme-toggle-wrapper">
+        <div class="settings-toggle-btn shadow-xl" onclick="toggleSettingsPanel()">
+            <i data-lucide="settings"></i>
+        </div>
+        <div class="theme-toggle-panel hidden-settings" id="settings-panel">
+            <p class="font-bold text-xs mb-2 uppercase text-gray-500">System Preferences</p>
+            <div class="flex flex-col gap-2">
+                <button onclick="setTheme('auto')" class="text-[10px] border p-2 rounded font-bold hover:bg-gray-50 dark:hover:bg-zinc-800">Match System</button>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="setTheme('light')" class="text-[10px] bg-gray-100 p-1 rounded">Bright</button>
+                    <button onclick="setTheme('dark')" class="text-[10px] bg-zinc-800 text-white p-1 rounded">Dark</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN HEADER (NESTED FRAMEWORK) -->
+    <header id="main-header" class="fixed top-0 left-0 w-full z-[1000] flex flex-col justify-center">
+        <div class="main-container flex items-center justify-between h-full px-4 lg:px-0">
+            <div class="flex-shrink-0 z-[1001]">
+                <a href="./index.html" target="_blank">
+                    <img src="https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=9.6.6" alt="S&K" id="header-logo" />
                 </a>
             </div>
-            <nav class="nav-container">
-                <a href="index.html" class="nav-link">Home</a>
-                <a href="Locations.html" class="nav-link">Locations</a>
-                <a href="Services.html" class="nav-link">Services</a>
-                <a href="Clients.html" class="nav-link">Clients</a>
-                <a href="Contact.html" class="nav-link active">Contact</a>
-                <button onclick="downloadSKContact()" class="header-phone-btn" title="Save S&K to Contacts">
-                    <i data-lucide="user-plus" class="w-5 h-5"></i>
-                    844-907-4450
-                </button>
+
+            <nav class="hidden lg:flex flex-grow items-center justify-center px-10">
+                <ul id="desktop-nav-root" class="flex items-center gap-8 xl:gap-12">
+                    <!-- Dynamic Navigation -->
+                </ul>
             </nav>
+
+            <div class="flex items-center gap-4 z-[1001]">
+                <button onclick="downloadSKContact()" class="hidden sm:flex bg-[#FFC627] text-[#3E0100] px-6 py-3 rounded-xl font-extrabold uppercase text-xs shadow-lg hover:scale-105 transition-all">
+                    <i data-lucide="user-plus" class="w-4 h-4 mr-2"></i> 844-907-4450
+                </button>
+                <button id="menu-toggle" class="lg:hidden text-white">
+                    <i data-lucide="menu" class="w-9 h-9"></i>
+                </button>
+            </div>
         </div>
+        <div id="refresh-bar"></div>
+        
+        <!-- Mobile Dropdown -->
+        <div id="mobile-menu" class="hidden absolute top-full left-0 w-full shadow-2xl flex-col p-8 gap-6 border-t border-black/5"></div>
     </header>
 
+    <!-- MAIN CONTACT CONTENT (PRESERVED) -->
     <main id="global-contact-wrapper" class="w-full">
         
         <section class="contact-hero">
@@ -563,44 +730,311 @@
 
     </main>
 
-    <!-- Global Footer -->
+    <!-- FOOTER (NESTED FRAMEWORK) -->
     <footer id="main-footer">
-        <div class="footer-grid">
+        <div class="main-container footer-grid">
             <div class="footer-col">
-                <p class="footer-label">Give Us a Call</p>
-                <a href="tel:6187084450" class="footer-value">618-708-4450 or 844-907-4450</a>
+                <p class="footer-label">Give us a call</p>
+                <div id="footer-phone-list"></div>
             </div>
             <div class="footer-col">
-                <p class="footer-label">Send Us an Email</p>
-                <a href="mailto:Scott.Robinson@skventuresigns.com" class="footer-value">Scott.Robinson@skventuresigns.com</a>
+                <p class="footer-label">Send us an Email</p>
+                <div id="footer-email-list"></div>
             </div>
             <div class="footer-col">
-                <p class="footer-label">Visit Our Office</p>
-                <a href="https://www.google.com/maps/search/?api=1&query=607+W+Clark+Ave+Effingham+IL+62401" target="_blank" class="footer-value">607 W Clark Ave Effingham, IL 62401</a>
+                <p class="footer-label">Visit our office</p>
+                <div id="footer-address-container"></div>
             </div>
         </div>
-        <h5 class="copyright-bar">© 2026 S&K Venture Signs</h5>
+        <div class="main-container mt-20 pt-10 border-t border-white/10 text-center">
+            <h5 class="font-bold opacity-50 text-sm tracking-widest uppercase">© 2026 S&K VENTURE SIGNS </h5>
+        </div>
     </footer>
 
+    <!-- MODALS -->
+    <div id="phone-modal" class="sk-modal-overlay" onclick="closeModals()">
+        <div class="sk-modal-content" onclick="event.stopPropagation()">
+            <div class="bg-[#3E0100] p-8 text-[#FFC627] text-center font-serif text-2xl">Contact Specialist</div>
+            <div class="p-8" id="phone-options-container"></div>
+            <div class="p-6 text-center text-sm font-bold modal-cancel-text" onclick="closeModals()">CANCEL</div>
+        </div>
+    </div>
+
+    <div id="email-modal" class="sk-modal-overlay" onclick="closeModals()">
+        <div class="sk-modal-content" onclick="event.stopPropagation()">
+            <div class="bg-[#3E0100] p-8 text-[#FFC627] text-center font-serif text-2xl">Send Message</div>
+            <div class="p-8" id="email-options-container"></div>
+            <div class="p-6 text-center text-sm font-bold modal-cancel-text" onclick="closeModals()">CANCEL</div>
+        </div>
+    </div>
+
+    <div id="map-modal" class="sk-modal-overlay" onclick="closeModals()">
+        <div class="sk-modal-content" onclick="event.stopPropagation()">
+            <div class="bg-[#3E0100] p-8 text-[#FFC627] text-center font-serif text-2xl">Start Navigation</div>
+            <div class="p-8">
+                <a id="link-gmaps" target="_blank" class="smart-option"><i data-lucide="map"></i> Google Maps</a>
+                <a id="link-amaps" target="_blank" class="smart-option"><i data-lucide="navigation"></i> Apple Maps</a>
+                <a id="link-waze" target="_blank" class="smart-option"><i data-lucide="navigation-2"></i> Waze Navigation</a>
+            </div>
+            <div class="p-6 text-center text-sm font-bold modal-cancel-text" onclick="closeModals()">CANCEL</div>
+        </div>
+    </div>
+
     <script>
-        const LOGO_BLACK = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-Black.png?v=1.9";
-        const LOGO_WHITE = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=1.9";
+        /**
+         * S&K SMART SYNC ENGINE v9.6.6
+         */
+        const SITE_DATA_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZY38nsz_aJDO3cdtAwv4w359jK1aMt1rhBwZ3LAGarLyddtbBowFZv6mjlpnR1eGdNCpFhat8FuKp/pub?output=csv";
+        
+        let siteData = { 
+            nav: [], 
+            phones: ["618-708-4450", "844-907-4450"], 
+            email: "Scott.Robinson@skventuresigns.com", 
+            addressStreet: "607 W Clark Ave", 
+            addressCity: "Effingham IL 62401" 
+        };
+
+        /* =========================================================
+           FRAMEWORK SYSTEM LOGIC
+        ========================================================= */
+        function parseCSVRow(text) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                if (char === '"') { inQuotes = !inQuotes; }
+                else if (char === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+                else { current += char; }
+            }
+            result.push(current.trim());
+            return result.map(v => v.replace(/^"|"$/g, ''));
+        }
+
+        async function loadSheetData() {
+            try {
+                const response = await fetch(SITE_DATA_CSV_URL);
+                const text = await response.text();
+                const lines = text.split(/\r?\n/);
+                
+                let tempNav = [];
+                let tempPhones = [];
+
+                lines.forEach((line, idx) => {
+                    if (!line.trim()) return; 
+                    const row = parseCSVRow(line);
+                    const rowNum = idx + 1;
+
+                    if (row[2]?.trim().toLowerCase() === 'header') {
+                        tempNav.push({ label: row[0], url: row[1] });
+                    }
+
+                    if (rowNum === 7) tempPhones[0] = row[0];
+                    if (rowNum === 8) tempPhones[1] = row[0];
+                    if (rowNum === 9) siteData.email = row[0];
+                    if (rowNum === 10) {
+                        siteData.addressStreet = row[0];
+                        siteData.addressCity = row[1];
+                    }
+                });
+
+                if (tempNav.length > 0) siteData.nav = tempNav;
+                if (tempPhones.length > 0) siteData.phones = tempPhones.filter(p => p);
+
+                renderDynamicContent();
+            } catch (err) {
+                renderDynamicContent();
+            }
+        }
+
+        function renderDynamicContent() {
+            const dNav = document.getElementById('desktop-nav-root');
+            const mNav = document.getElementById('mobile-menu');
+            const fPhone = document.getElementById('footer-phone-list');
+            const fEmail = document.getElementById('footer-email-list');
+            const fAddr = document.getElementById('footer-address-container');
+
+            dNav.innerHTML = ''; mNav.innerHTML = ''; fPhone.innerHTML = ''; fEmail.innerHTML = '';
+
+            siteData.nav.forEach(n => {
+                // Dynamically mark "Contact" as active for this page
+                const isActive = n.label.toLowerCase() === 'contact';
+                const desktopClass = isActive ? 'nav-link active' : 'nav-link';
+                const mobileClass = isActive 
+                    ? 'text-2xl font-bold border-b border-black/10 dark:border-white/10 pb-3 text-[#FFC627]'
+                    : 'text-2xl font-bold border-b border-black/10 dark:border-white/10 pb-3';
+
+                dNav.innerHTML += `<li><a href="${n.url}" target="_blank" class="${desktopClass}">${n.label}</a></li>`;
+                mNav.innerHTML += `<a href="${n.url}" target="_blank" class="${mobileClass}">${n.label}</a>`;
+            });
+
+            if (siteData.phones.length > 0) {
+                let phoneHTML = `<span class="footer-value" onclick="openPhoneSmartActions('${siteData.phones[0]}')">${siteData.phones[0]}</span>`;
+                if (siteData.phones[1]) {
+                    phoneHTML += `<span class="footer-or">Or</span>`;
+                    phoneHTML += `<span class="footer-value" onclick="openPhoneSmartActions('${siteData.phones[1]}')">${siteData.phones[1]}</span>`;
+                }
+                fPhone.innerHTML = phoneHTML;
+            }
+
+            fEmail.innerHTML = `<span class="footer-value" onclick="openEmailSmartActions('${siteData.email}')">${siteData.email}</span>`;
+
+            if (siteData.addressStreet) {
+                const fullDisplay = `${siteData.addressStreet}<br>${siteData.addressCity}`;
+                fAddr.innerHTML = `<span class="footer-value" onclick="openMapSmartActions()">${fullDisplay}</span>`;
+            }
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function toggleSettingsPanel() {
+            const panel = document.getElementById('settings-panel');
+            panel.classList.toggle('hidden-settings');
+        }
 
         function downloadSKContact() {
-            const vcard = "BEGIN:VCARD\nVERSION:3.0\nFN:Scott Robinson\nORG:S&K Venture Signs\nTITLE:Digital Billboard Specialist\nTEL;TYPE=WORK,VOICE:844-907-4450\nTEL;TYPE=CELL,VOICE:618-708-4450\nEMAIL;TYPE=PREF,INTERNET:Scott.Robinson@skventuresigns.com\nADR;TYPE=WORK:;;607 W Clark Ave;Effingham;IL;62401;USA\nURL:https://skventuresigns.com/\nEND:VCARD";
-            const blob = new Blob([vcard], { type: 'text/vcard' });
+            const PHOTO_URL = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-Black.png";
+            const vcard = "BEGIN:VCARD\n" +
+                        "VERSION:3.0\n" +
+                        "FN:Scott Robinson\n" +
+                        "ORG:S&K Venture Signs\n" +
+                        "TEL;TYPE=WORK,VOICE:" + (siteData.phones[1] || "844-907-4450") + "\n" +
+                        "TEL;TYPE=CELL,VOICE:" + (siteData.phones[0] || "618-708-4450") + "\n" +
+                        "EMAIL;TYPE=PREF,INTERNET:" + siteData.email + "\n" +
+                        "ADR;TYPE=WORK:;;" + siteData.addressStreet + ";" + siteData.addressCity.split(' ')[0] + ";IL;" + siteData.addressCity.split(' ').pop() + ";USA\n" +
+                        "URL:https://skventuresigns.com/\n" +
+                        "PHOTO;VALUE=URI:" + PHOTO_URL + "\n" +
+                        "END:VCARD";
+            
+            const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', 'Scott_Robinson_SK_Venture.vcf');
+            link.setAttribute('download', 'Scott_Robinson_SKVenture.vcf');
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+            setTimeout(() => window.URL.revokeObjectURL(url), 100);
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+        function setTheme(mode) {
+            const body = document.body;
+            const root = document.documentElement;
+            let targetMode = mode;
+
+            if (mode === 'auto') {
+                const hour = new Date().getHours();
+                const isNightTime = (hour < 6 || hour >= 19);
+                const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                targetMode = (isNightTime || isSystemDark) ? 'dark' : 'light';
+            }
+            
+            // Note: The contact portal's core wrapper uses a background image. 
+            // Theme variables are set so the header/footer and modals transition normally.
+            if (targetMode === 'dark') {
+                root.style.setProperty('--bg-primary', '#121212');
+                root.style.setProperty('--text-primary', '#e0e0e0');
+                root.style.setProperty('--card-bg', '#1e1e1e');
+                root.style.setProperty('--header-bg-scrolled', '#1e1e1e');
+                root.style.setProperty('--nav-text-scrolled', '#ffffff');
+                root.style.setProperty('--mobile-menu-bg', '#1e1e1e');
+                root.style.setProperty('--mobile-menu-text', '#ffffff');
+                body.classList.add('dark-mode');
+            } else {
+                root.style.setProperty('--bg-primary', '#000000');
+                root.style.setProperty('--text-primary', '#FFFFFF');
+                root.style.setProperty('--card-bg', '#ffffff');
+                root.style.setProperty('--header-bg-scrolled', 'white');
+                root.style.setProperty('--nav-text-scrolled', '#222222');
+                root.style.setProperty('--mobile-menu-bg', 'white');
+                root.style.setProperty('--mobile-menu-text', 'black');
+                body.classList.remove('dark-mode');
+            }
+            
+            const header = document.getElementById('main-header');
+            const logo = document.getElementById('header-logo');
+            if (header.classList.contains('header-scrolled')) {
+                logo.src = (targetMode === 'dark') ? "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png" : "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-Black.png";
+            }
+
+            document.cookie = `theme=${mode};max-age=31536000;path=/`;
+        }
+
+        function openPhoneSmartActions(num) {
+            const clean = num.replace(/\D/g, '');
+            const container = document.getElementById('phone-options-container');
+            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+            
+            let html = '';
+            
+            if (isMac) {
+                html += `<a href="tel:${clean}" target="_blank" class="smart-option"><i data-lucide="monitor"></i> FaceTime / iPhone</a>`;
+            } else {
+                html += `<a href="tel:${clean}" target="_blank" class="smart-option"><i data-lucide="phone"></i> Direct Call</a>`;
+            }
+
+            html += `<a href="https://voice.google.com/u/0/calls?a=nc,%2B1${clean}" target="_blank" class="smart-option"><i data-lucide="globe"></i> Google Voice</a>`;
+            
+            if (num.includes('618')) {
+                html += `<a href="https://wa.me/1${clean}" target="_blank" class="smart-option"><i data-lucide="message-circle"></i> WhatsApp Specialist</a>`;
+            }
+
+            container.innerHTML = html;
+            document.getElementById('phone-modal').style.display = 'flex';
+            lucide.createIcons();
+        }
+
+        function openEmailSmartActions(email) {
+            const container = document.getElementById('email-options-container');
+            container.innerHTML = `
+                <a href="mailto:${email}" target="_blank" class="smart-option"><i data-lucide="mail"></i> Default Client</a>
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${email}" target="_blank" class="smart-option"><i data-lucide="send"></i> Gmail Web</a>
+                <div onclick="navigator.clipboard.writeText('${email}');" class="smart-option"><i data-lucide="copy"></i> Copy Address</div>
+            `;
+            document.getElementById('email-modal').style.display = 'flex';
+            lucide.createIcons();
+        }
+
+        function openMapSmartActions() {
+            const addrStr = `${siteData.addressStreet} ${siteData.addressCity}`;
+            const addr = encodeURIComponent(addrStr);
+            document.getElementById('link-gmaps').href = `https://www.google.com/maps/dir/?api=1&destination=${addr}`;
+            document.getElementById('link-amaps').href = `http://maps.apple.com/?daddr=${addr}`;
+            document.getElementById('link-waze').href = `https://waze.com/ul?q=${addr}&navigate=yes`;
+            document.getElementById('map-modal').style.display = 'flex';
+            lucide.createIcons();
+        }
+
+        function closeModals() {
+            document.querySelectorAll('.sk-modal-overlay').forEach(m => m.style.display = 'none');
+        }
+
+        /* =========================================================
+           EVENT LISTENERS & INITIALIZATION
+        ========================================================= */
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('main-header');
+            const logo = document.getElementById('header-logo');
+            const isDark = document.body.classList.contains('dark-mode');
+
+            if (window.scrollY > 50) {
+                header.classList.add('header-scrolled');
+                logo.src = isDark ? "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png" : "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-Black.png";
+            } else {
+                header.classList.remove('header-scrolled');
+                logo.src = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png";
+            }
+        });
+
+        document.getElementById('menu-toggle').addEventListener('click', () => {
+            const m = document.getElementById('mobile-menu');
+            m.classList.toggle('hidden'); m.classList.toggle('flex');
+        });
+
+        window.onload = () => {
+            loadSheetData();
+            
+            // Initial Formspree Integration Logic
             const contactForm = document.getElementById('contact-scott-form');
             const status = document.getElementById('form-status');
             const btn = document.getElementById('submit-btn');
@@ -633,19 +1067,21 @@
                     }
                 });
             }
-        });
 
-        window.addEventListener('scroll', () => {
-            const header = document.getElementById('main-header');
-            const logo = document.getElementById('header-logo');
-            if (window.scrollY > 40) { 
-                header.classList.add('header-scrolled');
-                header.classList.remove('header-top');
-                logo.src = LOGO_BLACK; 
-            } else { 
-                header.classList.add('header-top');
-                header.classList.remove('header-scrolled');
-                logo.src = LOGO_WHITE; 
+            const cookies = document.cookie.split('; ').reduce((acc, curr) => {
+                const [k, v] = curr.split('='); acc[k] = v; return acc;
+            }, {});
+            
+            setTheme(cookies['theme'] || 'auto');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        };
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            const cookies = document.cookie.split('; ').reduce((acc, curr) => {
+                const [k, v] = curr.split('='); acc[k] = v; return acc;
+            }, {});
+            if (!cookies['theme'] || cookies['theme'] === 'auto') {
+                setTheme('auto');
             }
         });
     </script>
