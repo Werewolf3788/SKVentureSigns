@@ -2,9 +2,9 @@
 <!-- 
     PROJECT: S & K Ventures Billboard - Consolidated Divi Version
     ADMIN: Kevin (Werewolf3788)
-    VERSION: 4.11 (Theme Button Removed, Auto-Theme Restored)
+    VERSION: 4.12 (Venture Signs Script Font Integration)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: May 7, 2026 - 4:18 PM EDT (New York Time)
+    TIMESTAMP: May 7, 2026 - 4:16 PM EDT (New York Time)
     
     NO STRIPPING, NO COMPRESSING, DON'T CHANGE WHAT I DIDN'T SAY TO CHANGE.
 -->
@@ -65,7 +65,7 @@
         <!-- Full-Width Bottom Bar: Branding, Weather, & Time -->
         <div id="sk-bottom-bar">
             <div class="sk-logo-group">
-                <div class="sk-logo"><span class="sk-script">S&K</span> VENTURES</div>
+                <div class="sk-logo"><span class="sk-script">S&K</span> <span class="venture-signs">Venture Signs</span></div>
             </div>
             
             <!-- Phone Number Centered -->
@@ -303,6 +303,17 @@
         letter-spacing: 2px !important; 
         text-transform: none !important;
         margin-right: 15px !important;
+    }
+
+    /* VENTURE SIGNS CURSIVE FONT OVERRIDE */
+    .venture-signs {
+        font-family: 'Great Vibes', 'Brush Script MT', cursive !important;
+        font-size: 1.4em !important; /* Cursive fonts run small natively, scaled up to match S&K */
+        font-weight: 400 !important; 
+        letter-spacing: 0px !important; /* CRITICAL: Removed tracking so cursive letters connect perfectly */
+        text-transform: none !important;
+        -webkit-text-stroke: 0px !important; /* Reset stroke for a clean, elegant script look */
+        padding-bottom: 5px !important; /* Slight baseline adjustment for the sweeping loops */
     }
 
     /* Centered Phone Number */
