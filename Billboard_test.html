@@ -2,9 +2,9 @@
 <!-- 
     PROJECT: S & K Ventures Billboard - Consolidated Divi Version
     ADMIN: Kevin (Werewolf3788)
-    VERSION: 4.6 (Extra Bold Script Font Integration - Stroke Hack)
+    VERSION: 4.7 (Lucida Bright Font Integration)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: May 7, 2026 - 3:58 PM EDT (New York Time)
+    TIMESTAMP: May 7, 2026 - 4:01 PM EDT (New York Time)
     
     NO STRIPPING, NO COMPRESSING, DON'T CHANGE WHAT I DIDN'T SAY TO CHANGE.
 -->
@@ -23,7 +23,7 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', 'G-H6Q756MVE8', { 'page_type': 'billboard_widget_v4.4', 'layout_version': '4.4' });
+    gtag('config', 'G-H6Q756MVE8', { 'page_type': 'billboard_widget_v4.7', 'layout_version': '4.7' });
     gtag('config', 'G-L376P3NPY4');
 </script>
 
@@ -211,7 +211,7 @@
         overflow: hidden !important;
     }
 
-    /* AD VIEWPORT - V4.2/4.3/4.4: FLUSH ALIGNMENT ENGINE */
+    /* AD VIEWPORT - V4.2/4.3/4.4/4.7: FLUSH ALIGNMENT ENGINE */
     #sk-ad-viewport {
         position: absolute !important;
         top: 0 !important; /* FLUSH TO TOP OF SCREEN */
@@ -280,11 +280,11 @@
 
     /* BILLBOARD SCRIPT FONT OVERRIDE */
     .sk-script {
-        font-family: 'Great Vibes', 'Brush Script MT', 'Monotype Corsiva', cursive !important;
-        font-size: 1.4em !important; /* Scaled up to match the elegant swoop proportions */
+        font-family: 'Lucida Bright', 'Lucinda Bright', Georgia, serif !important;
+        font-size: 1.2em !important; /* Adjusted slightly down because standard serifs are larger than cursive */
         font-weight: 900 !important; /* Pushed to max weight */
-        -webkit-text-stroke: 1.5px #FAC429 !important; /* Forces the browser to artificially thicken the lettering */
-        letter-spacing: 2px !important; /* Script fonts need less tracking, adjusted for thickness */
+        -webkit-text-stroke: 1px #FAC429 !important; /* Slightly reduced stroke so serif details aren't lost */
+        letter-spacing: 2px !important; 
         text-transform: none !important;
         margin-right: 15px !important;
         padding-bottom: 5px !important;
@@ -441,7 +441,7 @@
         if(lastWeatherData) updateWeatherUI(lastWeatherData);
     }
 
-    /* V4.2/4.3/4.4 SMART SYNC ENGINE with CACHE BUSTER */
+    /* V4.2/4.3/4.4/4.7 SMART SYNC ENGINE with CACHE BUSTER */
     async function fetchAdImages(isAutoSync = false) {
         try {
             const res = await fetch(`${CSV_URL}&t=${Date.now()}`);
