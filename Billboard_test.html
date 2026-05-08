@@ -2,9 +2,9 @@
 <!-- 
     PROJECT: S & K Ventures Billboard - Consolidated Divi Version
     ADMIN: Kevin (Werewolf3788)
-    VERSION: 4.20 (Asset Integration - Lowered Brand Image + Hourly Swapping)
+    VERSION: 4.23 (Asset Integration - Universal Ratio Support & Fluid Height)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: May 7, 2026 - 8:13 PM EDT (New York Time)
+    TIMESTAMP: May 7, 2026 - 8:36 PM EDT (New York Time)
     
     NO STRIPPING, NO COMPRESSING, DON'T CHANGE WHAT I DIDN'T SAY TO CHANGE.
 -->
@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Satisfy&family=Pinyon+Script&family=Rouge+Script&family=Alex+Brush&display=swap" rel="stylesheet">
 
 <!-- Framework Assets scoped for the Widget -->
-<script src="https://cdn.tailwindcss.com?v=4.20"></script>
+<script src="https://cdn.tailwindcss.com?v=4.23"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 
 <!-- Google Analytics: Boss Tracking + Watermark Tracking -->
@@ -23,7 +23,7 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', 'G-H6Q756MVE8', { 'page_type': 'billboard_widget_v4.20', 'layout_version': '4.20' });
+    gtag('config', 'G-H6Q756MVE8', { 'page_type': 'billboard_widget_v4.23', 'layout_version': '4.23' });
     gtag('config', 'G-L376P3NPY4');
 </script>
 
@@ -64,10 +64,10 @@
 
         <!-- Full-Width Bottom Bar: Branding, Weather, & Time -->
         <div id="sk-bottom-bar">
-            <!-- Brand Logo Group (Dynamically positioned via JS) -->
-            <div class="sk-logo-group pos-left">
+            <!-- Brand Logo Group (Fluid Flex Item) -->
+            <div class="sk-logo-group">
                 <div class="sk-logo">
-                    <!-- Brand Image Integration v4.20 -->
+                    <!-- Brand Image Integration v4.23 -->
                     <img src="https://raw.githack.com/Werewolf3788/SKVentureSigns/main/images/S%26K%20Name.png" 
                          alt="S&K Venture Signs" 
                          class="sk-brand-img"
@@ -76,9 +76,10 @@
                 </div>
             </div>
             
-            <!-- Phone Number (Dynamically positioned via JS) -->
-            <div class="sk-bottom-phone pos-center">844-907-4450</div>
+            <!-- Phone Number (Fluid Flex Item) -->
+            <div class="sk-bottom-phone">844-907-4450</div>
             
+            <!-- Info Stack (Fluid Flex Item) -->
             <div class="sk-info-stack">
                 <div class="sk-weather">
                     <div id="sk-temp-val">--°</div>
@@ -108,7 +109,10 @@
         --bb-bottom-bg: #3E0100; /* Scott's Maroon Color */
         --bb-text: #ffffff; 
         --bb-border: rgba(255, 255, 255, 0.2);
-        --bar-height: 110px;
+        
+        /* V4.23 FLUID HEIGHT: Auto-scales based on the TV/Billboard Screen Height (vh) */
+        --bar-height: clamp(75px, 11vh, 140px);
+        
         --sk-yellow: #FAC429;
         
         all: initial !important;
@@ -139,7 +143,7 @@
     /* KF BRANDING WATERMARK */
     .kf-signature {
         position: absolute !important;
-        bottom: 130px !important; 
+        bottom: calc(var(--bar-height) + 20px) !important; 
         left: 30px !important;
         display: flex !important;
         align-items: center !important;
@@ -269,7 +273,9 @@
         filter: saturate(1.1) contrast(1.05) brightness(0.75) !important;
     }
 
-    /* BOTTOM BAR */
+    /* =========================================
+       UNIVERSAL FLUID FLEXBOX BOTTOM BAR (V4.23)
+       ========================================= */
     #sk-bottom-bar {
         position: absolute !important;
         bottom: 0 !important;
@@ -280,102 +286,90 @@
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
-        padding: 0 60px !important;
+        padding: 0 clamp(15px, 3vw, 60px) !important; /* Viewport based padding */
+        gap: clamp(10px, 2vw, 30px) !important; /* Dynamic gap prevents overlapping entirely */
         z-index: 10 !important;
-        transition: all 0.4s ease !important;
+        flex-wrap: nowrap !important; /* CRITICAL: Never drop to a new line */
+        white-space: nowrap !important;
     }
 
-    /* Base Setup for Swap Elements */
-    .sk-logo-group { 
-        display: flex !important; 
-        align-items: center !important; 
-        gap: 20px !important; 
-        height: 100% !important; 
-        z-index: 15 !important;
-        transition: all 0.8s ease-in-out !important; /* Smooth sliding transition */
+    /* FLUID SLOTS */
+    .sk-logo-group, .sk-bottom-phone, .sk-info-stack {
+        flex: 1 1 auto !important; /* Allow shrinking */
+        min-width: 0 !important; /* CRITICAL: Allows flex items to shrink below content size */
+        height: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        transition: opacity 0.5s ease-in-out !important; /* Smooth fade during swap */
+    }
+
+    .sk-logo-group {
+        order: 1; /* Default Left */
+        justify-content: flex-start; 
     }
 
     .sk-bottom-phone {
+        order: 2; /* Default Center */
+        justify-content: center; 
         color: var(--bb-text) !important;
         font-weight: 900 !important;
-        font-size: clamp(24px, 5cqw, 55px) !important; 
+        font-size: clamp(20px, 2.5vw, 55px) !important; /* Fluidly scales down on smaller screens */
         letter-spacing: 5px !important; 
-        white-space: nowrap !important;
-        z-index: 15 !important;
         -webkit-text-stroke: 1.5px black !important;
-        display: flex !important;
-        align-items: center !important;
-        transition: all 0.8s ease-in-out !important; /* Smooth sliding transition */
     }
 
-    /* Dynamic Position Classes injected via JS Hourly */
-    .pos-center {
-        position: absolute !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-    }
-
-    .pos-left {
-        position: relative !important;
-        left: 0 !important;
-        transform: none !important;
+    .sk-info-stack {
+        order: 3; /* Always Right */
+        justify-content: flex-end; 
+        gap: clamp(10px, 2vw, 40px) !important;
+        color: var(--bb-text) !important;
     }
 
     .sk-logo {
-        color: var(--sk-yellow) !important;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
-        white-space: nowrap !important;
+        height: 100% !important;
         display: flex !important;
         align-items: center !important;
-        height: 100% !important;
         justify-content: center !important;
+        color: var(--sk-yellow) !important;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
     }
 
-    /* BRAND IMAGE STYLING v4.20 - Lowered 4px via translateY */
+    /* BRAND IMAGE STYLING v4.23 - Fluid height mapping, prevents horizontal bleed */
     .sk-brand-img {
-        height: 100% !important;
-        max-height: 100% !important;
+        height: 160% !important; /* Visually stretches over the bounds to crop transparent padding */
+        max-height: none !important;
+        max-width: 100% !important; /* Prevents blowing out container on small screens */
         width: auto !important;
-        object-fit: contain !important;
+        object-fit: contain !important; /* Shrinks proportionally if container gets narrow */
         display: block !important;
         filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5)) !important;
         margin: 0 !important;
         padding: 0 !important;
-        transform: scale(1.8) translateY(4px) !important; /* Forces letters to edge, translateY shifts it down */
-        transform-origin: center center !important; 
     }
 
     /* Fallback Font Styling if image fails */
     #sk-fallback-text {
         font-family: 'Arial Black', Gadget, sans-serif !important;
         font-weight: 900 !important;
-        font-size: clamp(20px, 4cqw, 45px) !important;
-    }
-
-    .sk-info-stack {
-        display: flex !important;
-        align-items: center !important;
-        gap: 40px !important;
-        color: var(--bb-text) !important;
-        z-index: 15 !important;
+        font-size: clamp(16px, 2vw, 45px) !important;
     }
 
     .sk-weather { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; }
 
     #sk-temp-val { 
-        font-size: clamp(40px, 7cqw, 85px) !important; 
+        font-size: clamp(24px, 4vw, 85px) !important; 
         font-weight: 900 !important; 
         line-height: 1 !important;
         -webkit-text-stroke: 1.5px black !important;
     }
 
     #sk-time-val {
-        font-size: clamp(40px, 7cqw, 85px) !important; 
+        font-size: clamp(24px, 4vw, 85px) !important; 
         font-weight: 900 !important; 
         line-height: 1 !important; 
         font-family: 'Courier New', monospace !important;
         border-left: 4px solid var(--bb-border) !important;
-        padding-left: 40px !important;
+        padding-left: clamp(10px, 2vw, 40px) !important;
         -webkit-text-stroke: 1.5px black !important;
     }
 
@@ -390,22 +384,13 @@
     }
 
     @media (max-width: 1024px) {
-        #sk-billboard-root-container { --bar-height: 90px; }
-        #sk-bottom-bar { padding: 0 30px !important; }
-        .sk-logo-group { gap: 10px !important; }
         #fullscreen-toggle-btn { right: 15px !important; padding: 10px 18px !important; font-size: 12px !important; }
     }
 
     @media (max-width: 768px) {
-        #sk-billboard-root-container { --bar-height: 80px; }
-        #sk-bottom-bar { padding: 0 15px !important; }
-        .sk-info-stack { gap: 10px !important; }
-        #sk-time-val { padding-left: 15px !important; }
         .kf-signature { bottom: 100px; font-size: 16px; left: 15px; }
-        .sk-bottom-phone { font-size: clamp(18px, 4cqw, 30px) !important; }
         #fullscreen-toggle-btn { top: 15px !important; right: 15px !important; padding: 8px 16px !important; font-size: 11px !important; }
         #ghost-back-btn { top: 15px !important; left: 15px !important; padding: 8px 16px !important; font-size: 11px !important; }
-        .sk-brand-img { height: 100% !important; max-height: 100% !important; }
     }
 </style>
 
@@ -420,7 +405,7 @@
     let isNightTimeSolar = null; 
     let interactionTimer;
     let currentImageUrls = [];
-    let currentHourTracker = null; // Used to track when the hour changes
+    let currentQuarterTracker = null; // Used to track 15-min intervals
 
     window.handleInteraction = function() {
         const backBtn = document.getElementById('ghost-back-btn');
@@ -552,47 +537,82 @@
         adSlideElements[currentAdIndex].classList.add('active');
     }
 
-    function updateHourlySwap(hr) {
+    // V4.23: Elegant Fade-Out / Fade-In Swap Logic
+    function updateQuarterlySwap(quarter) {
         const logoGroup = document.querySelector('.sk-logo-group');
         const phoneDiv = document.querySelector('.sk-bottom-phone');
         if (!logoGroup || !phoneDiv) return;
 
-        if (hr % 2 === 0) {
-            // Even Hour (e.g. 2:00, 4:00) -> Image Center, Phone Left
-            logoGroup.classList.add('pos-center');
-            logoGroup.classList.remove('pos-left');
-            phoneDiv.classList.add('pos-left');
-            phoneDiv.classList.remove('pos-center');
-        } else {
-            // Odd Hour (e.g. 3:00, 5:00) -> Phone Center, Image Left
-            phoneDiv.classList.add('pos-center');
-            phoneDiv.classList.remove('pos-left');
-            logoGroup.classList.add('pos-left');
-            logoGroup.classList.remove('pos-center');
-        }
+        // 1. Fade Elements Out
+        logoGroup.style.opacity = '0';
+        phoneDiv.style.opacity = '0';
+        
+        // 2. Wait for fade, then physically swap DOM layout order
+        setTimeout(() => {
+            if (quarter % 2 === 0) {
+                // Even Quarter (0-14 mins, 30-44 mins) -> Image Left, Phone Center
+                logoGroup.style.order = '1';
+                logoGroup.style.justifyContent = 'flex-start'; // Align back to left edge
+                
+                phoneDiv.style.order = '2';
+                phoneDiv.style.justifyContent = 'center'; // Align to center
+            } else {
+                // Odd Quarter (15-29 mins, 45-59 mins) -> Phone Left, Image Center
+                phoneDiv.style.order = '1';
+                phoneDiv.style.justifyContent = 'flex-start'; // Align back to left edge
+                
+                logoGroup.style.order = '2';
+                logoGroup.style.justifyContent = 'center'; // Align to center
+            }
+            
+            // 3. Fade Elements Back In
+            logoGroup.style.opacity = '1';
+            phoneDiv.style.opacity = '1';
+        }, 500); // Matches the CSS transition duration
     }
 
     function updateLocalTime() {
         const timeEl = document.getElementById('sk-time-val');
         if(!timeEl) return;
         
-        let currentHr = new Date().getHours();
+        let currentMin = new Date().getMinutes();
 
         try {
             const timeString = new Date().toLocaleTimeString('en-US', { timeZone: targetTimeZone, hour: '2-digit', minute:'2-digit', hour12: true });
             timeEl.innerText = timeString;
             
-            // Derive accurately adjusted hour based on targetTimeZone
+            // Derive accurately adjusted minute based on targetTimeZone
             const tzDate = new Date(new Date().toLocaleString('en-US', { timeZone: targetTimeZone }));
-            currentHr = tzDate.getHours();
+            currentMin = tzDate.getMinutes();
         } catch (e) {
             timeEl.innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true});
         }
 
-        // Trigger hourly position swap
-        if (currentHourTracker !== currentHr) {
-            currentHourTracker = currentHr;
-            updateHourlySwap(currentHr);
+        // Calculate current 15-minute chunk (0, 1, 2, or 3)
+        let currentQuarter = Math.floor(currentMin / 15);
+
+        // Trigger 15-minute fade-swap
+        if (currentQuarterTracker !== currentQuarter) {
+            // Check if it's the very first load to avoid a random fade in on boot
+            const isInitialLoad = (currentQuarterTracker === null);
+            currentQuarterTracker = currentQuarter;
+            
+            if(isInitialLoad) {
+                // Instantly apply layout without animation delay on boot
+                const logoGroup = document.querySelector('.sk-logo-group');
+                const phoneDiv = document.querySelector('.sk-bottom-phone');
+                if (logoGroup && phoneDiv) {
+                    if (currentQuarter % 2 === 0) {
+                        logoGroup.style.order = '1'; logoGroup.style.justifyContent = 'flex-start';
+                        phoneDiv.style.order = '2'; phoneDiv.style.justifyContent = 'center';
+                    } else {
+                        phoneDiv.style.order = '1'; phoneDiv.style.justifyContent = 'flex-start';
+                        logoGroup.style.order = '2'; logoGroup.style.justifyContent = 'center';
+                    }
+                }
+            } else {
+                updateQuarterlySwap(currentQuarter);
+            }
         }
     }
 
