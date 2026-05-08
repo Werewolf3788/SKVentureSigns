@@ -6,11 +6,16 @@
         ADMIN: Kevin (DJ Werewolf) - Admin
         CLIENT: Scott (S&K Venture Signs)
         STANDARDS: Responsive, No-Minify, G-Tag Integrated, GitHack Compatible
-        VERSION: 10.8 (Service Card Button Borders)
+        VERSION: 10.9 (Smart Tab Management Integration)
         TECHNICAL: Precision Integration, Auto-Night Mode, High-Contrast Outlines, Dual-Column Mapping (A: Street, B: City/State/Zip)
-        TIMESTAMP: May 7, 2026 - 3:42 PM EDT (New York Time)
+        TIMESTAMP: May 7, 2026 - 9:07 PM EDT (New York Time)
         
         NO STRIPPING, NO COMPRESSING, DON'T CHANGE WHAT I DIDN'T SAY TO CHANGE.
+        FIX: Integrated Session-Aware Smart Tab Management to prevent duplicate browser tabs.
+        FIX: Added Jet Orange hover state and "SWITCH TO TAB" text swap for opened Service Card links.
+        FIX: Added Jet Orange hover state for opened Header Navigation links (text swap omitted on nav to preserve layout width).
+        FIX: Home tab actively highlighted dynamically for index.html.
+        FIX: Preserved the standard footer structure for deployment across all S&K sites.
         FIX: Applied bold yellow borders to Advertising/Sales buttons and bold white borders to Rental/Maintenance buttons.
         FIX: Consolidated address (Street, City) onto a single line.
         FIX: Slightly increased the footer's top padding to bring the footer content down a little bit more for better visual balance.
@@ -49,14 +54,14 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-H6Q756MVE8', { 'page_type': 'global_framework_v10.8_home' });
+      gtag('config', 'G-H6Q756MVE8', { 'page_type': 'global_framework_v10.9_home' });
       gtag('config', 'G-L376P3YPY4');
     </script>
 
     <!-- External Assets with Smart Cache Buster -->
-    <script src="https://cdn.tailwindcss.com?v=10.8"></script>
-    <script src="https://unpkg.com/lucide@latest?v=10.8"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@600;700&display=swap&v=10.8" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?v=10.9"></script>
+    <script src="https://unpkg.com/lucide@latest?v=10.9"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@600;700&display=swap&v=10.9" rel="stylesheet">
 
     <style>
         :root {
@@ -166,6 +171,11 @@
         .nav-link:hover, .nav-link.active { color: var(--sk-gold) !important; }
         .header-scrolled .nav-link { color: var(--text-primary); }
         .header-scrolled .nav-link.active { color: var(--sk-gold) !important; }
+
+        /* V10.9 Smart Tab Indicators for Nav Links */
+        .nav-link.already-open:hover { 
+            color: #FF4500 !important; /* Glows Jet Orange to indicate it will switch tabs */
+        }
 
         /* -----------------------------------------------------------
             PAGE CONTENT SPECIFIC (Typography Overrides)
@@ -306,6 +316,28 @@
         }
         .dark-mode .dynamic-ad-title { 
             color: #FFC627 !important; 
+        }
+
+        /* -----------------------------------------------------------
+            V10.9 SMART TAB STYLING FOR BUTTONS
+        ----------------------------------------------------------- */
+        .smart-tab-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .smart-tab-btn.already-open:hover {
+            background: linear-gradient(180deg, #FF6A33 0%, #FF4500 100%) !important;
+            color: #fff !important;
+            border-color: #FF4500 !important;
+            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4) !important;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3) !important;
+        }
+        .smart-tab-btn.already-open:hover .btn-text {
+            display: none;
+        }
+        .smart-tab-btn.already-open:hover::after {
+            content: "SWITCH TO TAB";
         }
 
         /* -----------------------------------------------------------
@@ -541,7 +573,10 @@
                             <p>Locations 2 & 3 - Inside the Fairgrounds above the Entrances to the Grandstands</p>
                             <p>Locations 4 & 5 - Inside the Fairgrounds in the infield on the track</p>
                         </div>
-                        <a href="https://skventuresigns.com/effinghamcountyfair/" class="get-started-btn shadow-xl">Get Started</a>
+                        <!-- Added Smart Tab Logic to Get Started Button -->
+                        <a href="https://skventuresigns.com/effinghamcountyfair/" target="tab_sk_fair" class="get-started-btn shadow-xl smart-tab-btn" onclick="markAsOpen(this, 'tab_sk_fair')">
+                            <span class="btn-text">Get Started</span>
+                        </a>
                     </div>
                 </div>
                 <h2 class="rental-heading-precision">Rental Opportunities still available !!</h2>
@@ -641,12 +676,20 @@
 
     <script>
         /**
-         * S&K UNIVERSAL ENGINE v10.7
+         * S&K UNIVERSAL ENGINE v10.9
          */
         const SYNC_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZY38nsz_aJDO3cdtAwv4w359jK1aMt1rhBwZ3LAGarLyddtbBowFZv6mjlpnR1eGdNCpFhat8FuKp/pub?output=csv";
         const SERVICES_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9HBnWuIELZ5IxaTxuCpNgs5ep7Tz4NpaU8__laH9a1DK52CreOSM8IqQxUK95CMyzsmTmkHoTgc1b/pub?output=csv";
 
         let siteData = { nav: [], phones: [], email: "", addressStreet: "", addressCity: "" };
+
+        /**
+         * V10.9: Registers that the link was opened in this browsing session.
+         */
+        window.markAsOpen = function(element, targetName) {
+            sessionStorage.setItem(targetName, 'true');
+            element.classList.add('already-open');
+        };
 
         function parseCSVRow(text) {
             const result = [];
@@ -695,8 +738,15 @@
             dNav.innerHTML = ''; mNav.innerHTML = '';
             siteData.nav.forEach(n => {
                 const isActive = n.label.toLowerCase() === 'home' ? 'active' : '';
-                dNav.innerHTML += `<li><a href="${n.url}" class="nav-link ${isActive}">${n.label}</a></li>`;
-                mNav.innerHTML += `<a href="${n.url}" class="text-2xl font-bold border-b border-black/5 pb-3 ${isActive ? 'text-[var(--sk-gold)]' : ''}">${n.label}</a>`;
+                
+                // V10.9: Generate a unique target name derived from the link's name to prevent duplicate tabs
+                const uniqueTarget = `tab_sk_${n.label.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                // Check if this link was already clicked in the current session
+                const isOpen = sessionStorage.getItem(uniqueTarget) === 'true';
+                const openClass = isOpen ? 'already-open' : '';
+
+                dNav.innerHTML += `<li><a href="${n.url}" target="${uniqueTarget}" class="nav-link ${isActive} ${openClass}" onclick="markAsOpen(this, '${uniqueTarget}')">${n.label}</a></li>`;
+                mNav.innerHTML += `<a href="${n.url}" target="${uniqueTarget}" class="text-2xl font-bold border-b border-black/5 pb-3 ${isActive ? 'text-[var(--sk-gold)]' : ''}" onclick="markAsOpen(this, '${uniqueTarget}')">${n.label}</a>`;
             });
 
             fPhone.className = "flex flex-wrap items-center justify-center gap-3";
@@ -742,15 +792,22 @@
                         customBtnBorder = isEven ? 'border-4 border-[#FFC627]' : 'border-4 border-white'; // Fallback mapping
                     }
 
-                    // Added Borders to the generated button inside the template literal
+                    // V10.9: Smart Tab Logic for Service Buttons
+                    const uniqueTarget = `tab_sk_svc_${titleText.replace(/[^a-zA-Z0-9]/g, '_')}`;
+                    const isOpen = sessionStorage.getItem(uniqueTarget) === 'true';
+                    const openClass = isOpen ? 'already-open' : '';
+
+                    // Added Borders and Smart Tab configuration to the generated button inside the template literal
                     grid.innerHTML += `
                         <div class="service-card ${isEven ? 'bg-[var(--card-bg)]' : 'bg-[#DAA421]'}">
-                            <img src="${imgs[i]?.trim()}?v=10.8" class="lightbox-trigger" onerror="this.src='https://via.placeholder.com/400x220?text=S%26K+Venture+Signs'">
+                            <img src="${imgs[i]?.trim()}?v=10.9" class="lightbox-trigger" onerror="this.src='https://via.placeholder.com/400x220?text=S%26K+Venture+Signs'">
                             <div class="text-center mt-4 flex-grow">
                                 <h3 class="text-2xl mb-2 ${customTitleColor}" style="font-family:'Abril Fatface', cursive;">${titleText}</h3>
                                 <p class="text-sm mb-6 ${isEven ? 'text-[var(--text-primary)] opacity-70' : 'text-[#3E0100]'} font-medium">${descs[i]}</p>
                             </div>
-                            <a href="${btnLinks[i]?.trim()}" class="block py-3 rounded-full font-black uppercase text-xs tracking-widest text-white text-center ${isEven ? 'bg-[#2A0001]' : 'bg-[#023456]'} ${customBtnBorder} hover:scale-105 transition-all shadow-lg">${btnLabels[i]?.trim() || 'Learn More'}</a>
+                            <a href="${btnLinks[i]?.trim()}" target="${uniqueTarget}" class="block py-3 rounded-full font-black uppercase text-xs tracking-widest text-white text-center ${isEven ? 'bg-[#2A0001]' : 'bg-[#023456]'} ${customBtnBorder} hover:scale-105 transition-all shadow-lg smart-tab-btn ${openClass}" onclick="markAsOpen(this, '${uniqueTarget}')">
+                                <span class="btn-text">${btnLabels[i]?.trim() || 'Learn More'}</span>
+                            </a>
                         </div>
                     `;
                 }
