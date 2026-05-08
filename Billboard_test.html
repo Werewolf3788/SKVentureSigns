@@ -2,9 +2,9 @@
 <!-- 
     PROJECT: S & K Ventures Billboard - Consolidated Divi Version
     ADMIN: Kevin (Werewolf3788)
-    VERSION: 4.16 (Asset Integration - Full-Height Brand Image)
+    VERSION: 4.18 (Asset Integration - Scaled Brand Image to Edge)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: May 7, 2026 - 4:36 PM EDT (New York Time)
+    TIMESTAMP: May 7, 2026 - 8:01 PM EDT (New York Time)
     
     NO STRIPPING, NO COMPRESSING, DON'T CHANGE WHAT I DIDN'T SAY TO CHANGE.
 -->
@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Satisfy&family=Pinyon+Script&family=Rouge+Script&family=Alex+Brush&display=swap" rel="stylesheet">
 
 <!-- Framework Assets scoped for the Widget -->
-<script src="https://cdn.tailwindcss.com?v=4.16"></script>
+<script src="https://cdn.tailwindcss.com?v=4.18"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 
 <!-- Google Analytics: Boss Tracking + Watermark Tracking -->
@@ -23,7 +23,7 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', 'G-H6Q756MVE8', { 'page_type': 'billboard_widget_v4.16', 'layout_version': '4.16' });
+    gtag('config', 'G-H6Q756MVE8', { 'page_type': 'billboard_widget_v4.18', 'layout_version': '4.18' });
     gtag('config', 'G-L376P3NPY4');
 </script>
 
@@ -66,7 +66,7 @@
         <div id="sk-bottom-bar">
             <div class="sk-logo-group">
                 <div class="sk-logo">
-                    <!-- Brand Image Integration v4.16 -->
+                    <!-- Brand Image Integration v4.18 -->
                     <img src="https://raw.githack.com/Werewolf3788/SKVentureSigns/main/images/S%26K%20Name.png" 
                          alt="S&K Venture Signs" 
                          class="sk-brand-img"
@@ -284,7 +284,12 @@
         transition: all 0.4s ease !important;
     }
 
-    .sk-logo-group { display: flex !important; align-items: center !important; gap: 20px !important; }
+    .sk-logo-group { 
+        display: flex !important; 
+        align-items: center !important; 
+        gap: 20px !important; 
+        height: 100% !important; /* Force to take full bar height */
+    }
 
     .sk-logo {
         color: var(--sk-yellow) !important;
@@ -292,15 +297,21 @@
         white-space: nowrap !important;
         display: flex !important;
         align-items: center !important;
+        height: 100% !important; /* Force to take full bar height */
     }
 
-    /* BRAND IMAGE STYLING v4.16 - Height fit to footer */
+    /* BRAND IMAGE STYLING v4.18 - Height fit to footer & scaled to bypass image padding */
     .sk-brand-img {
-        height: var(--bar-height) !important;
+        height: 100% !important; /* Stretch exactly to top and bottom bounds */
+        max-height: 100% !important;
         width: auto !important;
         object-fit: contain !important;
         display: block !important;
         filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5)) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        transform: scale(1.8) !important; /* Forces the internal letters to the edge by zooming in 180% */
+        transform-origin: left center !important; /* Anchors it cleanly to the left padding line */
     }
 
     /* Fallback Font Styling if image fails */
@@ -376,7 +387,7 @@
         .sk-bottom-phone { font-size: clamp(18px, 4cqw, 30px) !important; }
         #fullscreen-toggle-btn { top: 15px !important; right: 15px !important; padding: 8px 16px !important; font-size: 11px !important; }
         #ghost-back-btn { top: 15px !important; left: 15px !important; padding: 8px 16px !important; font-size: 11px !important; }
-        .sk-brand-img { height: var(--bar-height) !important; }
+        .sk-brand-img { height: 100% !important; max-height: 100% !important; }
     }
 </style>
 
