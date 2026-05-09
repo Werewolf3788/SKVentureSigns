@@ -6,12 +6,18 @@
         ADMIN: Kevin (Werewolf3788)
         CLIENT: Scott (S&K Venture Signs)
         STANDARDS: Responsive, No-Minify, G-Tag Integrated, GitHack Compatible
-        VERSION: 9.7.3 (Client Name Underline Logic)
+        VERSION: 10.15 (ITC Integrated & Global Layout Sync)
         TECHNICAL: Locked Header (125px -> 75px), Dynamic Modals, Auto-Night Mode, Precision Integration
-        TIMESTAMP: May 6, 2026 - 10:12 PM EDT (New York Time)
+        TIMESTAMP: May 9, 2026
         Nesting Code: Header/Footer Primary Wrapper Integrated
         
         NO STRIPPING, NO COMPRESSING, DON'T CHANGE WHAT I DIDN'T SAY TO CHANGE.
+        FIX: Ported Inter-Tab Communication (ITC) and Named Window Targeting from Services.
+        FIX: Highlighted "Clients" tab dynamically.
+        FIX: Ported footer CSS and layout (60px top padding, flexbox phone formatting, single-line address).
+        FIX: Integrated Global Outline Color System.
+        FIX: Removed KF Signature Watermark while preserving both G-Tags for tracking.
+        FIX: Removed Google Voice option from the phone modal logic.
     -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -35,18 +41,21 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
 
+      // V10.15: Advanced GA4 Intent Tracking Configuration
       gtag('config', 'G-H6Q756MVE8', {
-          'page_type': 'clients_portal_v9.7.2',
+          'page_title': 'S&K Venture Signs | Clients',
+          'page_path': '/clients',
+          'page_type': 'clients_portal_v10.15',
           'content_group': 'business_partners',
-          'layout_version': '9.7.2'
+          'layout_version': '10.15'
       });
       gtag('config', 'G-L376P3NPY4');
     </script>
 
     <!-- External Assets with Smart Cache Buster -->
-    <script src="https://cdn.tailwindcss.com?v=9.7.2"></script>
-    <script src="https://unpkg.com/lucide@latest?v=9.7.2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700;800&display=swap&v=9.7.2" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?v=10.15"></script>
+    <script src="https://unpkg.com/lucide@latest?v=10.15"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700;800&display=swap&v=10.15" rel="stylesheet">
 
     <style>
         :root {
@@ -72,6 +81,10 @@
             --bg-primary: #000000; 
             --text-primary: #FFFFFF; 
             --card-bg: #ffffff;
+            
+            /* Default Outline: Transparent (No color) */
+            --outline-color: transparent;
+            --outline-width: 1.5px;
 
             /* Global Brightness Variables (Nesting Sync) */
             --header-bg-scrolled: white;
@@ -101,7 +114,6 @@
             -webkit-tap-highlight-color: transparent;
             line-height: 1.6;
             margin: 0;
-            /* Layout Fix: Removed top padding to pull background under header */
             padding-top: 0;
             transition: background-color 0.3s, color 0.3s;
             overflow-wrap: break-word;
@@ -109,6 +121,15 @@
         }
 
         ::-webkit-scrollbar { display: none; }
+
+        /* GLOBAL PRECISION OUTLINE LOGIC */
+        * {
+            text-shadow: 
+                calc(var(--outline-width) * -1) calc(var(--outline-width) * -1) 0 var(--outline-color),
+                var(--outline-width) calc(var(--outline-width) * -1) 0 var(--outline-color),
+                calc(var(--outline-width) * -1) var(--outline-width) 0 var(--outline-color),
+                var(--outline-width) var(--outline-width) 0 var(--outline-color);
+        }
 
         h1, h2, h3, .font-display { 
             font-family: 'Abril Fatface', cursive; 
@@ -164,6 +185,11 @@
         .header-scrolled .nav-link.active { color: var(--sk-gold) !important; }
         .header-scrolled #menu-toggle { color: var(--nav-text-scrolled); }
 
+        /* V10.12/10.15 Smart Tab Indicators for Nav Links */
+        .nav-link.already-open:hover { 
+            color: #FF4500 !important; /* Glows Jet Orange to indicate it will switch tabs */
+        }
+
         #mobile-menu {
             background-color: var(--mobile-menu-bg);
             color: var(--mobile-menu-text);
@@ -172,26 +198,6 @@
         }
 
         #refresh-bar { position: absolute; bottom: 0; left: 0; height: 2px; width: 0; background-color: var(--sk-gold); transition: width 0.3s ease; z-index: 1001; }
-
-        /* -----------------------------------------------------------
-            BRANDING (KF SIGNATURE WATERMARK)
-        ----------------------------------------------------------- */
-        .kf-signature {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            display: flex;
-            align-items: center;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 900;
-            font-size: 24px;
-            z-index: 9999;
-            pointer-events: none;
-            opacity: 0.7;
-        }
-        .kf-k { color: #FF4500; transform: scaleX(-1); z-index: 2; }
-        .kf-f { color: #000000; margin-left: -0.22em; z-index: 1; }
-        .dark-mode .kf-f { color: #ffffff; }
 
         /* THEME SETTINGS UI (HIDABLE) */
         .theme-toggle-wrapper {
@@ -442,13 +448,13 @@
         }
 
         /* -----------------------------------------------------------
-            FOOTER (Nesting Logic)
+            FOOTER SYMMETRY (Exact 1:1 match with framework)
         ----------------------------------------------------------- */
         footer#main-footer {
             background-color: var(--sk-maroon);
             color: white;
             border-top: 5px solid var(--sk-separator);
-            padding: 80px 0;
+            padding: 60px 0 30px 0; 
         }
         .footer-grid {
             display: grid;
@@ -456,54 +462,22 @@
             gap: 40px;
             text-align: center;
         }
-        .footer-col {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-sizing: border-box;
-        }
+        .footer-col { display: flex; flex-direction: column; align-items: center; }
         .footer-label { 
-            display: block;
-            color: rgb(255, 255, 255);
-            font-family: Georgia, serif;
-            font-size: 14px;
-            height: 24.5px;
-            line-height: 24.5px;
-            margin: 0px;
-            width: 100%;
+            font-family: Georgia, serif; font-size: 14px; font-weight: 500; 
+            margin-bottom: 15px; color: white; opacity: 0.8;
         }
         .footer-value { 
-            display: block;
-            color: rgb(255, 255, 255);
-            font-family: "Abril Fatface", display;
-            font-size: 18px;
-            font-weight: 500;
-            line-height: 25.2px;
-            margin: 0px;
-            padding: 0px 0px 10px 0px;
-            width: 100%;
-            cursor: pointer;
-            transition: 0.3s;
-            text-decoration: none;
+            font-family: "Abril Fatface", display; font-size: 18px; 
+            cursor: pointer; transition: 0.3s; margin-bottom: 5px; color: #FFFFFF;
         }
         .footer-value:hover { color: var(--sk-gold); }
-        .footer-or { 
-            display: block; 
-            font-family: 'Poppins', sans-serif; 
-            font-size: 10px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            color: var(--sk-gold); 
-            opacity: 0.5; 
-            margin: 4px 0 10px 0; 
-            letter-spacing: 2px; 
-        }
 
         @media (max-width: 1024px) {
             :root { --header-height: 100px; --container-width: 90%; }
             #header-logo { width: 220px; }
             .header-scrolled #header-logo { width: 170px; }
-            .footer-grid { grid-template-columns: 1fr; gap: 60px; }
+            .footer-grid { grid-template-columns: 1fr; gap: 40px; }
             .theme-toggle-wrapper { top: auto; bottom: 80px; }
             .nav-link { padding-top: 15px; padding-bottom: 15px; font-size: 15px; }
 
@@ -541,13 +515,7 @@
         </button>
     </div>
 
-    <!-- KF Signature Watermark -->
-    <div class="kf-signature">
-        <span class="kf-k">K</span>
-        <span class="kf-f">F</span>
-    </div>
-
-    <!-- Theme & Persistence Panel -->
+    <!-- Theme Settings UI (Synchronized Outline Logic Included) -->
     <div class="theme-toggle-wrapper">
         <div class="settings-toggle-btn shadow-xl" onclick="toggleSettingsPanel()">
             <i data-lucide="settings"></i>
@@ -555,10 +523,14 @@
         <div class="theme-toggle-panel hidden-settings" id="settings-panel">
             <p class="font-bold text-xs mb-2 uppercase text-gray-500">System Preferences</p>
             <div class="flex flex-col gap-2">
-                <button onclick="setTheme('auto')" class="text-[10px] border p-2 rounded font-bold hover:bg-gray-50 dark:hover:bg-zinc-800">Match System</button>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="setTheme('light')" class="text-[10px] bg-gray-100 p-1 rounded">Bright</button>
-                    <button onclick="setTheme('dark')" class="text-[10px] bg-zinc-800 text-white p-1 rounded">Dark</button>
+                <button onclick="setTheme('light')" class="text-[10px] bg-gray-100 p-1 rounded">Bright</button>
+                <button onclick="setTheme('dark')" class="text-[10px] bg-gray-800 text-white p-1 rounded">Dark</button>
+                <button onclick="setTheme('auto')" class="text-[10px] border p-1 rounded">Match System</button>
+                <hr class="my-1">
+                <div class="flex flex-col gap-1">
+                    <input type="color" id="outline-color-picker" onchange="updateOutlineColor(this.value)" value="#000000" class="w-full h-6 rounded cursor-pointer">
+                    <button onclick="updateOutlineColor('transparent')" class="text-[8px] bg-red-100 text-red-800 rounded p-1 uppercase font-bold">No Outline</button>
+                    <label class="text-[9px]">Outline Color</label>
                 </div>
             </div>
         </div>
@@ -569,7 +541,7 @@
         <div class="main-container flex items-center justify-between h-full px-4 lg:px-0">
             <div class="flex-shrink-0 z-[1001]">
                 <a href="./index.html" target="_blank">
-                    <img src="https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=9.7.2" alt="S&K" id="header-logo" />
+                    <img src="https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=10.15" alt="S&K" id="header-logo" />
                 </a>
             </div>
 
@@ -616,7 +588,7 @@
         </div>
     </main>
 
-    <!-- FOOTER (NESTED FRAMEWORK) -->
+    <!-- FOOTER (V10.15 MATCHED) -->
     <footer id="main-footer">
         <div class="main-container footer-grid">
             <div class="footer-col">
@@ -632,8 +604,8 @@
                 <div id="footer-address-container"></div>
             </div>
         </div>
-        <div class="main-container mt-20 pt-10 border-t border-white/10 text-center">
-            <h5 class="font-bold opacity-50 text-sm tracking-widest uppercase">© 2026 S&K VENTURE SIGNS </h5>
+        <div class="main-container mt-10 pt-6 border-t border-white/10 text-center">
+            <h5 class="font-bold opacity-50 text-sm tracking-widest uppercase text-white">© 2026 S&K VENTURE SIGNS</h5>
         </div>
     </footer>
 
@@ -668,7 +640,7 @@
 
     <script>
         /**
-         * S&K SMART SYNC ENGINE v9.7.2
+         * S&K SMART SYNC ENGINE v10.15
          */
         const SITE_DATA_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZY38nsz_aJDO3cdtAwv4w359jK1aMt1rhBwZ3LAGarLyddtbBowFZv6mjlpnR1eGdNCpFhat8FuKp/pub?output=csv";
         
@@ -689,6 +661,26 @@
         // Global state for Lightbox Navigation Array
         let lightboxGallery = [];
         let currentLightboxIndex = 0;
+
+        /* =========================================================
+           V10.15 CROSS-TAB AWARENESS & AGGRESSIVE FOCUS
+        ========================================================= */
+        window.smartTabClick = function(event, element, targetName, url) {
+            event.preventDefault(); // Stop standard link behavior
+            
+            // Set global cross-tab memory so all pages know this is open
+            localStorage.setItem(targetName, 'true');
+            element.classList.add('already-open');
+            
+            // Explicitly force browser to select the existing named tab
+            let tabWindow = window.open(url, targetName);
+            if (tabWindow) {
+                tabWindow.focus();
+            } else {
+                // Failsafe in case aggressive popup blockers intercept the focus attempt
+                window.location.href = url;
+            }
+        };
 
         /* =========================================================
            FRAMEWORK SYSTEM LOGIC
@@ -750,32 +742,55 @@
             const fEmail = document.getElementById('footer-email-list');
             const fAddr = document.getElementById('footer-address-container');
 
-            dNav.innerHTML = ''; mNav.innerHTML = ''; fPhone.innerHTML = ''; fEmail.innerHTML = '';
+            dNav.innerHTML = ''; mNav.innerHTML = ''; fPhone.innerHTML = ''; fEmail.innerHTML = ''; fAddr.innerHTML = '';
 
             siteData.nav.forEach(n => {
                 const isActive = n.label.toLowerCase() === 'clients';
-                const desktopClass = isActive ? 'nav-link active' : 'nav-link';
-                const mobileClass = isActive 
-                    ? 'text-2xl font-bold border-b border-black/10 dark:border-white/10 pb-3 text-[#FFC627]'
-                    : 'text-2xl font-bold border-b border-black/10 dark:border-white/10 pb-3';
+                
+                // Generate unique target name derived from link name to prevent duplicate tabs
+                const uniqueTarget = `tab_sk_${n.label.replace(/[^a-zA-Z0-9]/g, '_')}`;
 
-                dNav.innerHTML += `<li><a href="${n.url}" target="_blank" class="${desktopClass}">${n.label}</a></li>`;
-                mNav.innerHTML += `<a href="${n.url}" target="_blank" class="${mobileClass}">${n.label}</a>`;
+                if (isActive) {
+                    // Self-Name the Window so other tabs can find it dynamically
+                    window.name = uniqueTarget;
+                    // Inform the browser's global memory that this page is alive
+                    localStorage.setItem(uniqueTarget, 'true');
+                    // Clean up the memory if the user explicitly closes the tab
+                    window.addEventListener('beforeunload', () => {
+                        localStorage.removeItem(uniqueTarget);
+                    });
+                }
+
+                // Check cross-tab global memory
+                const isOpen = localStorage.getItem(uniqueTarget) === 'true';
+                const openClass = isOpen && !isActive ? 'already-open' : '';
+                const desktopActive = isActive ? 'active' : '';
+
+                dNav.innerHTML += `<li><a href="${n.url}" target="${uniqueTarget}" class="nav-link ${desktopActive} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a></li>`;
+                
+                const mobileClass = isActive 
+                    ? `text-2xl font-bold border-b border-black/10 dark:border-white/10 pb-3 text-[var(--sk-gold)]`
+                    : `text-2xl font-bold border-b border-black/10 dark:border-white/10 pb-3`;
+
+                mNav.innerHTML += `<a href="${n.url}" target="${uniqueTarget}" class="${mobileClass} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a>`;
             });
 
+            // Footer Matching Logic
+            fPhone.className = "flex flex-wrap items-center justify-center gap-3";
+            let phoneHTML = '';
             if (siteData.phones.length > 0) {
-                let phoneHTML = `<span class="footer-value" onclick="openPhoneSmartActions('${siteData.phones[0]}')">${siteData.phones[0]}</span>`;
+                phoneHTML = `<span class="footer-value !mb-0" onclick="openPhoneSmartActions('${siteData.phones[0]}')">${siteData.phones[0]}</span>`;
                 if (siteData.phones[1]) {
-                    phoneHTML += `<span class="footer-or">Or</span>`;
-                    phoneHTML += `<span class="footer-value" onclick="openPhoneSmartActions('${siteData.phones[1]}')">${siteData.phones[1]}</span>`;
+                    phoneHTML += `<span class="text-white opacity-70 text-sm font-bold uppercase">or</span><span class="footer-value !mb-0" onclick="openPhoneSmartActions('${siteData.phones[1]}')">${siteData.phones[1]}</span>`;
                 }
-                fPhone.innerHTML = phoneHTML;
             }
+            fPhone.innerHTML = phoneHTML;
 
             fEmail.innerHTML = `<span class="footer-value" onclick="openEmailSmartActions('${siteData.email}')">${siteData.email}</span>`;
 
+            // Single line address format
             if (siteData.addressStreet) {
-                const fullDisplay = `${siteData.addressStreet}<br>${siteData.addressCity}`;
+                const fullDisplay = `${siteData.addressStreet}, ${siteData.addressCity}`;
                 fAddr.innerHTML = `<span class="footer-value" onclick="openMapSmartActions()">${fullDisplay}</span>`;
             }
 
@@ -853,6 +868,11 @@
             document.cookie = `theme=${mode};max-age=31536000;path=/`;
         }
 
+        function updateOutlineColor(color) {
+            document.documentElement.style.setProperty('--outline-color', color);
+            document.cookie = `outline-color=${color};max-age=31536000;path=/`;
+        }
+
         function openPhoneSmartActions(num) {
             const clean = num.replace(/\D/g, '');
             const container = document.getElementById('phone-options-container');
@@ -865,8 +885,6 @@
             } else {
                 html += `<a href="tel:${clean}" target="_blank" class="smart-option"><i data-lucide="phone"></i> Direct Call</a>`;
             }
-
-            html += `<a href="https://voice.google.com/u/0/calls?a=nc,%2B1${clean}" target="_blank" class="smart-option"><i data-lucide="globe"></i> Google Voice</a>`;
             
             if (num.includes('618')) {
                 html += `<a href="https://wa.me/1${clean}" target="_blank" class="smart-option"><i data-lucide="message-circle"></i> WhatsApp Specialist</a>`;
@@ -1193,6 +1211,12 @@
                 const [k, v] = curr.split('='); acc[k] = v; return acc;
             }, {});
             
+            if (cookies['outline-color']) {
+                updateOutlineColor(cookies['outline-color']);
+            } else {
+                updateOutlineColor('transparent');
+            }
+
             setTheme(cookies['theme'] || 'auto');
             if (typeof lucide !== 'undefined') lucide.createIcons();
         };
