@@ -854,8 +854,8 @@
             dNav.innerHTML = ''; mNav.innerHTML = ''; fPhone.innerHTML = ''; fEmail.innerHTML = ''; fAddr.innerHTML = '';
 
             siteData.nav.forEach(n => {
-                // Dynamically mark "Contact" as active for this page
-                const isActive = n.label.toLowerCase() === 'contact';
+                // Dynamically mark "Contact" or "Contact Us" as active for this page
+                const isActive = n.label.toLowerCase().includes('contact');
                 
                 // V10.19: Generate a unique target name derived from the link's name to prevent duplicate tabs
                 const uniqueTarget = `tab_sk_${n.label.replace(/[^a-zA-Z0-9]/g, '_')}`;
