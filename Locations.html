@@ -485,7 +485,7 @@
             <button onclick="closeAllModals()" class="mt-10 w-full bg-white/10 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-white/20 text-white">Close Descriptions</button>
         </div>
 
-        <button class="absolute top-8 right-8 text-white hover:text-[#FFC627]">
+        <button class="absolute top-8 right-8 text-white hover:text-[#FFC627]" onclick="closeAllModals()">
             <i data-lucide="x" class="w-10 h-10"></i>
         </button>
     </div>
@@ -966,6 +966,11 @@
 
         function closeModals() {
             document.querySelectorAll('.sk-modal-overlay').forEach(m => m.style.display = 'none');
+        }
+
+        function closeAllModals() {
+            document.getElementById('lightbox-overlay').style.display = 'none';
+            document.body.style.overflow = '';
         }
 
         /* =========================================================
