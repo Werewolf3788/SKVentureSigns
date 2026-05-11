@@ -6,13 +6,14 @@
         ADMIN: Kevin (Werewolf3788)
         CLIENT: Scott (S&K Venture Signs)
         STANDARDS: Responsive, No-Minify, G-Tag Integrated, GitHack Compatible
-        VERSION: 10.18 (Map Position Adjustment)
+        VERSION: 10.19 (Unified Column Centering Update)
         TECHNICAL: Locked Header (125px -> 75px), Dynamic Modals, Auto-Night Mode, Precision Integration
-        TIMESTAMP: May 7, 2026 - 9:53 PM EDT (New York Time)
+        TIMESTAMP: May 11, 2026 - 12:14 PM EDT (New York Time)
         Nesting Code: Header/Footer Primary Wrapper Integrated
         
         NO STRIPPING, NO COMPRESSING, DON'T CHANGE WHAT I DIDN'T SAY TO CHANGE.
-        FIX: Shifted the map slightly up and to the left on desktop using CSS transform.
+        FIX: Integrated Form and Map directly into the narrative columns to center them beneath their respective informational text.
+        FIX: Shifted the map slightly up and to the left on desktop using CSS transform. (Reset to perfectly center under text).
         FIX: Applied Inter-Tab Communication (ITC) with Cross-Tab State Sync to ALL links utilizing Named Window Targeting.
         FIX: Ported footer CSS and layout exactly from standard (60px top padding, flexbox phone formatting, single-line address).
         FIX: Updated navigation logic to actively highlight the "Contact" tab.
@@ -42,17 +43,17 @@
       gtag('js', new Date());
 
       gtag('config', 'G-H6Q756MVE8', {
-          'page_type': 'contact_portal_v10.18',
+          'page_type': 'contact_portal_v10.19',
           'content_group': 'client_leads',
-          'layout_version': '10.18'
+          'layout_version': '10.19'
       });
       gtag('config', 'G-L376P3NPY4');
     </script>
 
     <!-- External Assets with Smart Cache Buster -->
-    <script src="https://cdn.tailwindcss.com?v=10.17"></script>
-    <script src="https://unpkg.com/lucide@latest?v=10.17"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@500;600;700&display=swap&v=10.17" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?v=10.19"></script>
+    <script src="https://unpkg.com/lucide@latest?v=10.19"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@500;600;700&display=swap&v=10.19" rel="stylesheet">
 
     <style>
         :root {
@@ -183,7 +184,7 @@
         .header-scrolled .nav-link.active { color: var(--sk-gold) !important; }
         .header-scrolled #menu-toggle { color: var(--nav-text-scrolled); }
 
-        /* V10.17 Smart Tab Indicators for Nav Links */
+        /* V10.19 Smart Tab Indicators for Nav Links */
         .nav-link.already-open:hover { 
             color: #FF4500 !important; /* Glows Jet Orange to indicate it will switch tabs */
         }
@@ -238,7 +239,7 @@
         .settings-toggle-btn:hover { transform: rotate(45deg) scale(1.1); }
 
         /* -----------------------------------------------------------
-            V10.17 SMART TAB STYLING FOR BUTTONS & LINKS
+             V10.19 SMART TAB STYLING FOR BUTTONS & LINKS
         ----------------------------------------------------------- */
         .smart-tab-btn {
             transition: all 0.3s ease;
@@ -364,9 +365,10 @@
             grid-template-columns: 1fr 1fr; 
             gap: 60px;
             justify-items: center;
+            align-items: start;
         }
 
-        .narrative-column { display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .narrative-column { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; }
 
         .scott-sub-heading {
             display: block;
@@ -401,18 +403,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        .form-map-grid {
-            width: 100%;
-            max-width: 2507px; /* Sum: 297 + 306 + 1046 + 604 + 254 */
-            margin: 80px auto 0 auto;
-            display: flex;
-            justify-content: space-between; 
-            align-items: center;
-            padding-left: var(--form-left-offset);
-            padding-right: var(--map-right-offset);
-            position: relative;
-        }
-
+        /* Update 10.19: Panels integrated directly inside Narrative Column for true centering */
         .form-left-panel { 
             background: transparent; 
             padding: 0; 
@@ -421,6 +412,7 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start; 
+            margin: 40px auto 0 auto; /* Added to perfectly center it under the narrative */
         }
         
         .map-right-box {
@@ -431,7 +423,9 @@
             overflow: hidden;
             display: flex;
             background: #222;
-            transform: translate(-20px, -20px); /* Shifts the map slightly up and to the left */
+            margin: 40px auto 0 auto; /* Added to perfectly center it under the narrative */
+            transform: none; /* Resetting the old -20px transform to allow true centering beneath text */
+            max-width: 100%;
         }
 
         #contact-scott-form {
@@ -562,7 +556,6 @@
 
             .et_pb_module_heading_main { font-size: 40px; white-space: normal; }
             .narrative-container { grid-template-columns: 1fr; }
-            .form-map-grid { flex-direction: column; align-items: center; padding: 20px; width: auto; max-width: 100%; }
             .form-left-panel { margin-bottom: 40px; width: 100%; align-items: center; }
             #contact-scott-form { align-items: center; }
             .form-field-group { align-items: center; }
@@ -604,7 +597,7 @@
         <div class="main-container flex items-center justify-between h-full px-4 lg:px-0">
             <div class="flex-shrink-0 z-[1001]">
                 <a href="./index.html" target="tab_sk_Home" class="smart-tab-btn" onclick="smartTabClick(event, this, 'tab_sk_Home', this.href)">
-                    <img src="https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=10.17" alt="S&K" id="header-logo" />
+                    <img src="https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=10.19" alt="S&K" id="header-logo" />
                 </a>
             </div>
 
@@ -636,8 +629,9 @@
             <h1 class="et_pb_module_heading_main">Contact Us</h1>
         </section>
 
-        <!-- Precision Narrative Section -->
+        <!-- Precision Narrative Section (Now includes Form and Map for centering) -->
         <section class="narrative-container">
+            <!-- LEFT COLUMN -->
             <div class="narrative-column">
                 <h2 class="scott-sub-heading">Welcome to S&amp;K Venture Signs</h2>
                 <div class="scott-body-text">
@@ -649,8 +643,45 @@
                 <div class="scott-body-text">
                     I understand the power of effective advertising and its impact on businesses of all sizes. Whether you’re a large corporation or a budding startup, I am here to help you achieve your advertising goals. Please ask about the advertising packages I offer that cater to a wide range of budgets to ensure every business, no matter how big or small, can benefit from my services.
                 </div>
+
+                <!-- LEFT: Lead Generation Form -->
+                <div class="form-left-panel">
+                    <form id="contact-scott-form" action="https://formspree.io/f/mqaeapql" method="POST">
+                        <div class="form-field-group">
+                            <label class="field-label">Your Name</label>
+                            <input type="text" name="client_name" class="input-text-single" required>
+                        </div>
+                        <div class="form-field-group">
+                            <label class="field-label">Your Email</label>
+                            <input type="email" name="_replyto" class="input-text-single" required>
+                        </div>
+                        <div class="form-field-group">
+                            <label class="field-label">Phone Number</label>
+                            <input type="tel" name="phone" class="input-text-single" required>
+                        </div>
+                        
+                        <div class="form-field-group">
+                            <label class="field-label">How did you hear about us?</label>
+                            <input type="text" name="lead_source" class="input-text-single" placeholder="Enter source...">
+                        </div>
+
+                        <div class="form-field-group">
+                            <label class="field-label">Subject</label>
+                            <input type="text" name="_subject" class="input-text-single">
+                        </div>
+                        <div class="form-field-group">
+                            <label class="field-label">Your message (optional)</label>
+                            <textarea name="message" class="input-text-msg"></textarea>
+                        </div>
+
+                        <input type="submit" id="submit-btn" class="btn-submit-contact" value="Submit">
+                        <div id="form-status"></div>
+                        <p class="formspree-note">This form is protected by Formspree to ensure secure and reliable delivery of your inquiry.</p>
+                    </form>
+                </div>
             </div>
 
+            <!-- RIGHT COLUMN -->
             <div class="narrative-column">
                 <h2 class="scott-sub-heading">My Commitment to Excellence !!</h2>
                 <div class="scott-body-text">
@@ -662,60 +693,20 @@
                 <div class="scott-body-text">
                     Let me show you how my approach can help your business thrive – reach out to learn more. I am committed to serving you and your business in the best way possible. If you have any questions or would like to explore how I can help boost your brand’s visibility, feel free to reach out directly at 618-708-4450 / 844-907-4450 or email me at Scott.Robinson@skventuresigns.com
                 </div>
-            </div>
-        </section>
 
-        <!-- Lead Capture Section (MAP VERTICALLY CENTERED ON RIGHT) -->
-        <section class="form-map-grid">
-            
-            <!-- LEFT: Lead Generation Form -->
-            <div class="form-left-panel">
-                <form id="contact-scott-form" action="https://formspree.io/f/mqaeapql" method="POST">
-                    <div class="form-field-group">
-                        <label class="field-label">Your Name</label>
-                        <input type="text" name="client_name" class="input-text-single" required>
-                    </div>
-                    <div class="form-field-group">
-                        <label class="field-label">Your Email</label>
-                        <input type="email" name="_replyto" class="input-text-single" required>
-                    </div>
-                    <div class="form-field-group">
-                        <label class="field-label">Phone Number</label>
-                        <input type="tel" name="phone" class="input-text-single" required>
-                    </div>
-                    
-                    <div class="form-field-group">
-                        <label class="field-label">How did you hear about us?</label>
-                        <input type="text" name="lead_source" class="input-text-single" placeholder="Enter source...">
-                    </div>
-
-                    <div class="form-field-group">
-                        <label class="field-label">Subject</label>
-                        <input type="text" name="_subject" class="input-text-single">
-                    </div>
-                    <div class="form-field-group">
-                        <label class="field-label">Your message (optional)</label>
-                        <textarea name="message" class="input-text-msg"></textarea>
-                    </div>
-
-                    <input type="submit" id="submit-btn" class="btn-submit-contact" value="Submit">
-                    <div id="form-status"></div>
-                    <p class="formspree-note">This form is protected by Formspree to ensure secure and reliable delivery of your inquiry.</p>
-                </form>
-            </div>
-
-            <!-- RIGHT Anchor: Interactive Satellite Map (Vertically Centered) -->
-            <div class="map-right-box">
-                <iframe 
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3084.717180456184!2d-88.55246472343236!3d39.12431713333334!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x887396603a167095%3A0x6e9491a5477d9f78!2s607%20W%20Clark%20Ave%2C%20Effingham%2C%20IL%2062401!5e1!3m2!1sen!2sus!4v1711234567890!5m2!1sen!2sus" 
-                    width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy">
-                </iframe>
+                <!-- RIGHT Anchor: Interactive Satellite Map -->
+                <div class="map-right-box">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3084.717180456184!2d-88.55246472343236!3d39.12431713333334!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x887396603a167095%3A0x6e9491a5477d9f78!2s607%20W%20Clark%20Ave%2C%20Effingham%2C%20IL%2062401!5e1!3m2!1sen!2sus!4v1711234567890!5m2!1sen!2sus" 
+                        width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy">
+                    </iframe>
+                </div>
             </div>
         </section>
 
     </main>
 
-    <!-- FOOTER (V10.17 MATCHED) -->
+    <!-- FOOTER (V10.19 MATCHED) -->
     <footer id="main-footer">
         <div class="main-container footer-grid">
             <div class="footer-col">
@@ -767,7 +758,7 @@
 
     <script>
         /**
-         * S&K SMART SYNC ENGINE v10.17
+         * S&K SMART SYNC ENGINE v10.19
          * Update: Global Inter-Tab Communication (ITC) & Footer Parity.
          */
         const SITE_DATA_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZY38nsz_aJDO3cdtAwv4w359jK1aMt1rhBwZ3LAGarLyddtbBowFZv6mjlpnR1eGdNCpFhat8FuKp/pub?output=csv";
@@ -781,7 +772,7 @@
         };
 
         /* =========================================================
-           V10.17 CROSS-TAB AWARENESS & AGGRESSIVE FOCUS
+           V10.19 CROSS-TAB AWARENESS & AGGRESSIVE FOCUS
         ========================================================= */
         window.smartTabClick = function(event, element, targetName, url) {
             if(event) event.preventDefault(); // Stop standard link behavior
@@ -866,7 +857,7 @@
                 // Dynamically mark "Contact" as active for this page
                 const isActive = n.label.toLowerCase() === 'contact';
                 
-                // V10.17: Generate a unique target name derived from the link's name to prevent duplicate tabs
+                // V10.19: Generate a unique target name derived from the link's name to prevent duplicate tabs
                 const uniqueTarget = `tab_sk_${n.label.replace(/[^a-zA-Z0-9]/g, '_')}`;
 
                 if (isActive) {
@@ -895,7 +886,7 @@
                 mNav.innerHTML += `<a href="${n.url}" target="${uniqueTarget}" class="${mobileClass} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a>`;
             });
 
-            // V10.17 Footer Matching Logic
+            // V10.19 Footer Matching Logic
             fPhone.className = "flex flex-wrap items-center justify-center gap-3";
             let phoneHTML = '';
             if (siteData.phones.length > 0) {
@@ -1002,7 +993,7 @@
             
             let html = '';
             
-            // V10.17: Smart Tab applied to modal options
+            // V10.19: Smart Tab applied to modal options
             if (isMac) {
                 html += `<a href="tel:${clean}" target="tab_sk_tel" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_tel', this.href)"><i data-lucide="monitor"></i> FaceTime / iPhone</a>`;
             } else {
@@ -1024,7 +1015,7 @@
             const defUrl = `mailto:${email}`;
             const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${email}`;
             
-            // V10.17: Smart Tab applied to modal options
+            // V10.19: Smart Tab applied to modal options
             container.innerHTML = `
                 <a href="${defUrl}" target="tab_sk_mail_def" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_mail_def', this.href)"><i data-lucide="mail"></i> Default Client</a>
                 <a href="${gmailUrl}" target="tab_sk_mail_gmail" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_mail_gmail', this.href)"><i data-lucide="send"></i> Gmail Web</a>
@@ -1042,7 +1033,7 @@
             const amapsUrl = `http://maps.apple.com/?daddr=${addr}`;
             const wazeUrl = `https://waze.com/ul?q=${addr}&navigate=yes`;
             
-            // V10.17: Smart Tab applied to modal options
+            // V10.19: Smart Tab applied to modal options
             document.getElementById('link-gmaps').href = gmapsUrl;
             document.getElementById('link-gmaps').setAttribute('onclick', `smartTabClick(event, this, 'tab_sk_gmaps', '${gmapsUrl}')`);
             
