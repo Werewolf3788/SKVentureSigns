@@ -18,6 +18,7 @@
         FIX: Configured the White background infield track section to turn dark gray in dark mode.
         FIX: Safely wrapped ITC (localStorage) to prevent iframe crash.
         FIX: Moved the image to the left side in the "Works Package" (Section 3) to align with all other sections.
+        FIX: Updated ITC Logic - Links will now open in the SAME tab unless already open elsewhere.
     -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -274,7 +275,8 @@
     <header id="main-header" class="fixed top-0 left-0 w-full z-[1000] flex flex-col justify-center">
         <div class="main-container flex items-center justify-between h-full px-4 lg:px-0">
             <div class="flex-shrink-0 z-[1001]">
-                <a href="./index.html" target="_blank">
+                <!-- FIX: Target removed, using smartTabClick -->
+                <a href="./index.html" class="smart-tab-btn" onclick="smartTabClick(event, this, 'tab_sk_Home', this.href)">
                     <img src="https://raw.githubusercontent.com/Werewolf3788/SKVentureSigns/a19e4b81ccba61d2b1359a357e91972d6a3d33e8/images/S%26K%20Sign%20White.png" alt="S&K" id="header-logo" />
                 </a>
             </div>
@@ -457,9 +459,10 @@
         <div class="sk-modal-content" onclick="event.stopPropagation()">
             <div class="bg-[#3E0100] p-8 text-[#FFC627] text-center font-serif text-2xl">Start Navigation</div>
             <div class="p-8">
-                <a id="link-gmaps" target="_blank" class="smart-option"><i data-lucide="map"></i> Google Maps</a>
-                <a id="link-amaps" target="_blank" class="smart-option"><i data-lucide="navigation"></i> Apple Maps</a>
-                <a id="link-waze" target="_blank" class="smart-option"><i data-lucide="navigation-2"></i> Waze Navigation</a>
+                <!-- FIX: Targets removed, using smartTabClick -->
+                <a id="link-gmaps" class="smart-option"><i data-lucide="map"></i> Google Maps</a>
+                <a id="link-amaps" class="smart-option"><i data-lucide="navigation"></i> Apple Maps</a>
+                <a id="link-waze" class="smart-option"><i data-lucide="navigation-2"></i> Waze Navigation</a>
             </div>
             <div class="p-6 text-center text-sm font-bold modal-cancel-text" onclick="closeModals()">CANCEL</div>
         </div>
@@ -483,18 +486,36 @@
         let currentLightboxIndex = 0;
 
         /* =========================================================
-           V10.15 CROSS-TAB AWARENESS (Safe Wrapper)
+           V10.17 CROSS-TAB AWARENESS (Smart Navigation Update)
         ========================================================= */
         function safeSetStorage(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
         function safeGetStorage(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
         function safeRemoveStorage(key) { try { localStorage.removeItem(key); } catch (e) {} }
 
         window.smartTabClick = function(event, element, targetName, url) {
-            event.preventDefault(); 
-            safeSetStorage(targetName, 'true');
-            element.classList.add('already-open');
-            let tabWindow = window.open(url, targetName);
-            if (tabWindow) { tabWindow.focus(); } else { window.location.href = url; }
+            if(event) event.preventDefault(); 
+            
+            // If we are clicking a link to the tab we are CURRENTLY on, just navigate normally
+            if (window.name === targetName) {
+                window.location.href = url;
+                return;
+            }
+
+            // Check if the tab is already open somewhere else
+            const isTabAlreadyOpen = safeGetStorage(targetName) === 'true';
+
+            if (isTabAlreadyOpen) {
+                if(element && element.classList) element.classList.add('already-open');
+                let tabWindow = window.open(url, targetName);
+                if (tabWindow) { 
+                    tabWindow.focus(); 
+                } else { 
+                    window.location.href = url; 
+                }
+            } else {
+                // Not open anywhere else? Navigate smoothly in the CURRENT tab.
+                window.location.href = url;
+            }
         };
 
         /* =========================================================
@@ -561,19 +582,21 @@
 
             siteData.nav.forEach(n => {
                 const uniqueTarget = `tab_sk_${n.label.replace(/[^a-zA-Z0-9]/g, '_')}`;
-                const isActive = false; // Add manual active flag if this becomes part of main nav in future
+                const isActive = false; 
                 
                 const isOpen = safeGetStorage(uniqueTarget) === 'true';
                 const openClass = isOpen && !isActive ? 'already-open' : '';
                 const desktopActive = isActive ? 'active' : '';
 
-                dNav.innerHTML += `<li><a href="${n.url}" target="${uniqueTarget}" class="nav-link ${desktopActive} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a></li>`;
+                // FIX: Removed target attribute from string
+                dNav.innerHTML += `<li><a href="${n.url}" class="nav-link ${desktopActive} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a></li>`;
                 
                 const mobileClass = isActive 
                     ? `text-2xl font-bold border-b border-black/10 dark:border-white/10 pb-3 text-[var(--sk-gold)]`
                     : `text-2xl font-bold border-b border-black/10 dark:border-white/10 pb-3`;
 
-                mNav.innerHTML += `<a href="${n.url}" target="${uniqueTarget}" class="${mobileClass} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a>`;
+                // FIX: Removed target attribute from string
+                mNav.innerHTML += `<a href="${n.url}" class="${mobileClass} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a>`;
             });
 
             // Footer Matching Logic
@@ -666,11 +689,12 @@
             const container = document.getElementById('phone-options-container');
             const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
             
+            // FIX: Removed target="_blank" and added smartTabClick
             let html = isMac 
-                ? `<a href="tel:${clean}" target="_blank" class="smart-option"><i data-lucide="monitor"></i> FaceTime / iPhone</a>`
-                : `<a href="tel:${clean}" target="_blank" class="smart-option"><i data-lucide="phone"></i> Direct Call</a>`;
+                ? `<a href="tel:${clean}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_tel', this.href)"><i data-lucide="monitor"></i> FaceTime / iPhone</a>`
+                : `<a href="tel:${clean}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_tel', this.href)"><i data-lucide="phone"></i> Direct Call</a>`;
             
-            if (num.includes('618')) html += `<a href="https://wa.me/1${clean}" target="_blank" class="smart-option"><i data-lucide="message-circle"></i> WhatsApp Specialist</a>`;
+            if (num.includes('618')) html += `<a href="https://wa.me/1${clean}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_wa', this.href)"><i data-lucide="message-circle"></i> WhatsApp Specialist</a>`;
 
             container.innerHTML = html;
             document.getElementById('phone-modal').style.display = 'flex';
@@ -679,9 +703,11 @@
 
         function openEmailSmartActions(email) {
             const container = document.getElementById('email-options-container');
+            
+            // FIX: Removed target="_blank" and added smartTabClick
             container.innerHTML = `
-                <a href="mailto:${email}" target="_blank" class="smart-option"><i data-lucide="mail"></i> Default Client</a>
-                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${email}" target="_blank" class="smart-option"><i data-lucide="send"></i> Gmail Web</a>
+                <a href="mailto:${email}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_mail_def', this.href)"><i data-lucide="mail"></i> Default Client</a>
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${email}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_mail_gmail', this.href)"><i data-lucide="send"></i> Gmail Web</a>
                 <div onclick="navigator.clipboard.writeText('${email}'); closeModals();" class="smart-option"><i data-lucide="copy"></i> Copy Address</div>
             `;
             document.getElementById('email-modal').style.display = 'flex';
@@ -691,9 +717,20 @@
         function openMapSmartActions() {
             const addrStr = `${siteData.addressStreet} ${siteData.addressCity}`;
             const addr = encodeURIComponent(addrStr);
-            document.getElementById('link-gmaps').href = `https://www.google.com/maps/dir/?api=1&destination=${addr}`;
-            document.getElementById('link-amaps').href = `http://maps.apple.com/?daddr=${addr}`;
-            document.getElementById('link-waze').href = `https://waze.com/ul?q=${addr}&navigate=yes`;
+            
+            // FIX: Used element IDs to set attributes to route via smartTabClick instead of forcing new tabs natively
+            const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${addr}`;
+            document.getElementById('link-gmaps').href = gmapsUrl;
+            document.getElementById('link-gmaps').setAttribute('onclick', `smartTabClick(event, this, 'tab_sk_gmaps', '${gmapsUrl}')`);
+            
+            const amapsUrl = `http://maps.apple.com/?daddr=${addr}`;
+            document.getElementById('link-amaps').href = amapsUrl;
+            document.getElementById('link-amaps').setAttribute('onclick', `smartTabClick(event, this, 'tab_sk_amaps', '${amapsUrl}')`);
+            
+            const wazeUrl = `https://waze.com/ul?q=${addr}&navigate=yes`;
+            document.getElementById('link-waze').href = wazeUrl;
+            document.getElementById('link-waze').setAttribute('onclick', `smartTabClick(event, this, 'tab_sk_waze', '${wazeUrl}')`);
+            
             document.getElementById('map-modal').style.display = 'flex';
             lucide.createIcons();
         }
