@@ -538,7 +538,7 @@
                             <p>Locations 4 & 5 - Inside the Fairgrounds in the infield on the track</p>
                         </div>
                         <!-- V10.14: Aggressive Tab Focus applied here (URL Updated) -->
-                        <a href="https://werewolf3788.github.io/SKVentureSigns/Effingham.html" target="tab_sk_efair" class="get-started-btn shadow-xl smart-tab-btn" onclick="smartTabClick(event, this, 'tab_sk_efair', this.href)">
+                        <a href="https://werewolf3788.github.io/SKVentureSigns/Effingham.html" class="get-started-btn shadow-xl smart-tab-btn" onclick="smartTabClick(event, this, 'tab_sk_efair', this.href)">
                             <span class="btn-text">Get Started</span>
                         </a>
                     </div>
@@ -579,7 +579,9 @@
                     Ready to elevate your brand’s visibility? Reach out to S&K Venture Signs today for tailored digital solutions that meet your unique needs.
                 </p>
                 <!-- Bold Border added to CTA -->
-                <a href="mailto:Scott.Robinson@skventuresigns.com" class="bg-white text-blue-900 px-16 py-5 rounded-full font-black uppercase tracking-widest shadow-2xl inline-block hover:scale-105 transition-all border-4 border-blue-900">Request A Quote</a>
+                <a href="mailto:Scott.Robinson@skventuresigns.com" class="bg-white text-blue-900 px-16 py-5 rounded-full font-black uppercase tracking-widest shadow-2xl inline-block hover:scale-105 transition-all border-4 border-blue-900 smart-tab-btn" onclick="smartTabClick(event, this, 'tab_sk_mailto_quote', this.href)">
+                    <span class="btn-text">Request A Quote</span>
+                </a>
             </div>
         </section>
     </main>
@@ -630,9 +632,9 @@
         <div class="sk-modal-content" onclick="event.stopPropagation()">
             <div class="bg-[#3E0100] p-8 text-[#FFC627] text-center font-serif text-2xl">Start Navigation</div>
             <div class="p-8">
-                <a id="link-gmaps" target="_blank" class="smart-option"><i data-lucide="map"></i> Google Maps</a>
-                <a id="link-amaps" target="_blank" class="smart-option"><i data-lucide="navigation"></i> Apple Maps</a>
-                <a id="link-waze" target="_blank" class="smart-option"><i data-lucide="navigation-2"></i> Waze Navigation</a>
+                <a id="link-gmaps" class="smart-option"><i data-lucide="map"></i> Google Maps</a>
+                <a id="link-amaps" class="smart-option"><i data-lucide="navigation"></i> Apple Maps</a>
+                <a id="link-waze" class="smart-option"><i data-lucide="navigation-2"></i> Waze Navigation</a>
             </div>
             <div class="p-6 text-center text-sm font-bold modal-cancel-text" onclick="closeModals()">CANCEL</div>
         </div>
@@ -668,7 +670,7 @@
         window.smartTabClick = function(event, element, targetName, url) {
             event.preventDefault(); // Stop standard link behavior
             safeSetStorage(targetName, 'true'); // Announce to global memory
-            element.classList.add('already-open');
+            if(element && element.classList) element.classList.add('already-open');
             
             // Explicitly force browser to select the existing named tab
             let tabWindow = window.open(url, targetName);
@@ -748,13 +750,13 @@
                 const openClass = isOpen && !isActive ? 'already-open' : '';
                 const desktopActive = isActive ? 'active' : '';
 
-                dNav.innerHTML += `<li><a href="${n.url}" target="${uniqueTarget}" class="nav-link ${desktopActive} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a></li>`;
+                dNav.innerHTML += `<li><a href="${n.url}" class="nav-link ${desktopActive} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a></li>`;
                 
                 const mobileClass = isActive
                     ? `text-2xl font-bold border-b border-black/5 pb-3 text-[var(--sk-gold)]`
                     : `text-2xl font-bold border-b border-black/5 pb-3`;
 
-                mNav.innerHTML += `<a href="${n.url}" target="${uniqueTarget}" class="${mobileClass} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a>`;
+                mNav.innerHTML += `<a href="${n.url}" class="${mobileClass} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a>`;
             });
 
             fPhone.className = "flex flex-wrap items-center justify-center gap-3";
@@ -812,7 +814,7 @@
                                 <h3 class="text-2xl mb-2 ${customTitleColor}" style="font-family:'Abril Fatface', cursive;">${titleText}</h3>
                                 <p class="text-sm mb-6 ${isEven ? 'text-[var(--text-primary)] opacity-70' : 'text-[#3E0100]'} font-medium">${descs[i]}</p>
                             </div>
-                            <a href="${btnLinks[i]?.trim()}" target="${uniqueTarget}" class="block py-3 rounded-full font-black uppercase text-xs tracking-widest text-white text-center ${isEven ? 'bg-[#2A0001]' : 'bg-[#023456]'} ${customBtnBorder} hover:scale-105 transition-all shadow-lg smart-tab-btn ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${btnLinks[i]?.trim()}')">
+                            <a href="${btnLinks[i]?.trim()}" class="block py-3 rounded-full font-black uppercase text-xs tracking-widest text-white text-center ${isEven ? 'bg-[#2A0001]' : 'bg-[#023456]'} ${customBtnBorder} hover:scale-105 transition-all shadow-lg smart-tab-btn ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${btnLinks[i]?.trim()}')">
                                 <span class="btn-text">${btnLabels[i]?.trim() || 'Learn More'}</span>
                             </a>
                         </div>
@@ -862,9 +864,9 @@
             const clean = num.replace(/\D/g, '');
             const container = document.getElementById('phone-options-container');
             let html = `
-                <a href="tel:${clean}" class="smart-option"><i data-lucide="phone"></i> Direct Call</a>
+                <a href="tel:${clean}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_tel', this.href)"><i data-lucide="phone"></i> Direct Call</a>
             `;
-            if (num.includes('618')) html += `<a href="https://wa.me/1${clean}" target="_blank" class="smart-option"><i data-lucide="message-circle"></i> WhatsApp Specialist</a>`;
+            if (num.includes('618')) html += `<a href="https://wa.me/1${clean}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_wa', this.href)"><i data-lucide="message-circle"></i> WhatsApp Specialist</a>`;
             container.innerHTML = html;
             document.getElementById('phone-modal').style.display = 'flex';
             lucide.createIcons();
@@ -873,8 +875,8 @@
         function openEmailSmartActions(email) {
             const container = document.getElementById('email-options-container');
             container.innerHTML = `
-                <a href="mailto:${email}" class="smart-option"><i data-lucide="mail"></i> Default Client</a>
-                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${email}" target="_blank" class="smart-option"><i data-lucide="send"></i> Gmail Web</a>
+                <a href="mailto:${email}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_mail_def', this.href)"><i data-lucide="mail"></i> Default Client</a>
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${email}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_mail_gmail', this.href)"><i data-lucide="send"></i> Gmail Web</a>
                 <div onclick="navigator.clipboard.writeText('${email}'); closeModals();" class="smart-option"><i data-lucide="copy"></i> Copy Address</div>
             `;
             document.getElementById('email-modal').style.display = 'flex';
@@ -885,8 +887,14 @@
             const addrStr = `${siteData.addressStreet} ${siteData.addressCity}`;
             const addr = encodeURIComponent(addrStr);
             document.getElementById('link-gmaps').href = `https://www.google.com/maps/dir/?api=1&destination=${addr}`;
+            document.getElementById('link-gmaps').setAttribute('onclick', `smartTabClick(event, this, 'tab_sk_gmaps', '${document.getElementById('link-gmaps').href}')`);
+
             document.getElementById('link-amaps').href = `http://maps.apple.com/?daddr=${addr}&dirflg=d`;
+            document.getElementById('link-amaps').setAttribute('onclick', `smartTabClick(event, this, 'tab_sk_amaps', '${document.getElementById('link-amaps').href}')`);
+
             document.getElementById('link-waze').href = `https://waze.com/ul?q=${addr}&navigate=yes`;
+            document.getElementById('link-waze').setAttribute('onclick', `smartTabClick(event, this, 'tab_sk_waze', '${document.getElementById('link-waze').href}')`);
+            
             document.getElementById('map-modal').style.display = 'flex';
             lucide.createIcons();
         }
