@@ -517,7 +517,7 @@
     <header id="main-header" class="fixed top-0 left-0 w-full z-[1000] flex flex-col justify-center">
         <div class="main-container flex items-center justify-between h-full px-4 lg:px-0">
             <div class="flex-shrink-0 z-[1001]">
-                <a href="./index.html" target="tab_sk_Home" class="smart-tab-btn" onclick="smartTabClick(event, this, 'tab_sk_Home', this.href)">
+                <a href="./index.html" class="smart-tab-btn" onclick="smartTabClick(event, this, 'tab_sk_Home', this.href)">
                     <img src="https://raw.githubusercontent.com/Werewolf3788/SKVentureSigns/a19e4b81ccba61d2b1359a357e91972d6a3d33e8/images/S%26K%20Sign%20White.png" alt="S&K" id="header-logo" />
                 </a>
             </div>
@@ -551,7 +551,7 @@
             <p class="banner-p">Ready to elevate your brand’s presence? Contact S&K Venture Signs today for a personalized consultation.</p>
             <div class="pt-6">
                 <!-- V10.15 Smart Tab Click Logic on CTA -->
-                <a href="mailto:Scott.Robinson@skventuresigns.com?subject=Request%20a%20Quote" target="tab_sk_mailto_quote" class="bg-[#FFC627] text-[#3E0100] font-bold uppercase text-sm py-3 px-8 rounded-full inline-flex items-center shadow-lg transition-transform hover:-translate-y-1 smart-tab-btn" onclick="smartTabClick(event, this, 'tab_sk_mailto_quote', this.href)">
+                <a href="mailto:Scott.Robinson@skventuresigns.com?subject=Request%20a%20Quote" class="bg-[#FFC627] text-[#3E0100] font-bold uppercase text-sm py-3 px-8 rounded-full inline-flex items-center shadow-lg transition-transform hover:-translate-y-1 smart-tab-btn" onclick="smartTabClick(event, this, 'tab_sk_mailto_quote', this.href)">
                     <span class="btn-text flex items-center">Request a Quote <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i></span>
                 </a>
             </div>
@@ -576,7 +576,7 @@
                         <h2 class="text-[var(--text-primary)] font-bold italic uppercase text-2xl md:text-3xl mb-4 transition-colors">Seeking new locations</h2>
                         <div class="flex justify-center">
                             <!-- V10.15 Smart Tab Click Logic on CTA -->
-                            <a href="mailto:Scott.Robinson@skventuresigns.com?subject=Property%20Inquiry" target="tab_sk_mailto_prop" class="bg-[#3E0100] text-[#FFC627] px-10 py-5 rounded-2xl font-bold uppercase text-xs tracking-widest shadow-xl inline-flex justify-center items-center smart-tab-btn" onclick="smartTabClick(event, this, 'tab_sk_mailto_prop', this.href)">
+                            <a href="mailto:Scott.Robinson@skventuresigns.com?subject=Property%20Inquiry" class="bg-[#3E0100] text-[#FFC627] px-10 py-5 rounded-2xl font-bold uppercase text-xs tracking-widest shadow-xl inline-flex justify-center items-center smart-tab-btn" onclick="smartTabClick(event, this, 'tab_sk_mailto_prop', this.href)">
                                 <span class="btn-text">Message Scott Robinson</span>
                             </a>
                         </div>
@@ -615,7 +615,7 @@
             <p class="elevation-p text-white">Discover how S&K Venture Signs can transform your advertising strategy. Contact us now to secure your spot and start reaching your target audience effectively.</p>
             <div class="pt-8 flex justify-center">
                 <!-- V10.15 Smart Tab Click Logic on CTA -->
-               <a href="mailto:Scott.Robinson@skventuresigns.com?subject=Request%20a%20Quote" target="tab_sk_mailto_contact" class="elevation-btn smart-tab-btn" onclick="smartTabClick(event, this, 'tab_sk_mailto_contact', this.href)">
+               <a href="mailto:Scott.Robinson@skventuresigns.com?subject=Request%20a%20Quote" class="elevation-btn smart-tab-btn" onclick="smartTabClick(event, this, 'tab_sk_mailto_contact', this.href)">
                    <span class="btn-text flex items-center">Contact Us Today <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i></span>
                </a>
             </div>
@@ -664,9 +664,9 @@
         <div class="sk-modal-content" onclick="event.stopPropagation()">
             <div class="bg-[#3E0100] p-8 text-[#FFC627] text-center font-serif text-2xl">Start Navigation</div>
             <div class="p-8">
-                <a id="link-gmaps" target="_blank" class="smart-option"><i data-lucide="map"></i> Google Maps</a>
-                <a id="link-amaps" target="_blank" class="smart-option"><i data-lucide="navigation"></i> Apple Maps</a>
-                <a id="link-waze" target="_blank" class="smart-option"><i data-lucide="navigation-2"></i> Waze Navigation</a>
+                <a id="link-gmaps" class="smart-option"><i data-lucide="map"></i> Google Maps</a>
+                <a id="link-amaps" class="smart-option"><i data-lucide="navigation"></i> Apple Maps</a>
+                <a id="link-waze" class="smart-option"><i data-lucide="navigation-2"></i> Waze Navigation</a>
             </div>
             <div class="p-6 text-center text-sm font-bold modal-cancel-text" onclick="closeModals()">CANCEL</div>
         </div>
@@ -696,16 +696,19 @@
         window.smartTabClick = function(event, element, targetName, url) {
             if(event) event.preventDefault(); // Stop standard link behavior
             
-            // Set global cross-tab memory so all pages know this is open
-            localStorage.setItem(targetName, 'true');
-            if(element && element.classList) element.classList.add('already-open');
-            
-            // Explicitly force browser to select the existing named tab
-            let tabWindow = window.open(url, targetName);
-            if (tabWindow) {
-                tabWindow.focus();
+            // Check cross-tab global memory to see if this specific link is open somewhere
+            const isOpen = localStorage.getItem(targetName) === 'true';
+
+            if (isOpen) {
+                if(element && element.classList) element.classList.add('already-open');
+                let tabWindow = window.open(url, targetName);
+                if (tabWindow) {
+                    tabWindow.focus();
+                } else {
+                    window.location.href = url;
+                }
             } else {
-                // Failsafe in case aggressive popup blockers intercept the focus attempt
+                // If it is NOT open anywhere else, load safely in the current tab
                 window.location.href = url;
             }
         };
@@ -795,13 +798,13 @@
                 const openClass = isOpen && !isActive ? 'already-open' : '';
                 const desktopActive = isActive ? 'active' : '';
 
-                dNav.innerHTML += `<li><a href="${n.url}" target="${uniqueTarget}" class="nav-link ${desktopActive} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a></li>`;
+                dNav.innerHTML += `<li><a href="${n.url}" class="nav-link ${desktopActive} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a></li>`;
                 
                 const mobileClass = isActive 
                     ? `text-2xl font-bold border-b border-black/10 dark:border-white/10 pb-3 text-[var(--sk-gold)]`
                     : `text-2xl font-bold border-b border-black/10 dark:border-white/10 pb-3`;
 
-                mNav.innerHTML += `<a href="${n.url}" target="${uniqueTarget}" class="${mobileClass} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a>`;
+                mNav.innerHTML += `<a href="${n.url}" class="${mobileClass} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a>`;
             });
 
             // V10.15 Footer Matching Logic
@@ -911,13 +914,13 @@
             
             // V10.15: Smart Tab applied to modal options
             if (isMac) {
-                html += `<a href="tel:${clean}" target="tab_sk_tel" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_tel', this.href)"><i data-lucide="monitor"></i> FaceTime / iPhone</a>`;
+                html += `<a href="tel:${clean}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_tel', this.href)"><i data-lucide="monitor"></i> FaceTime / iPhone</a>`;
             } else {
-                html += `<a href="tel:${clean}" target="tab_sk_tel" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_tel', this.href)"><i data-lucide="phone"></i> Direct Call</a>`;
+                html += `<a href="tel:${clean}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_tel', this.href)"><i data-lucide="phone"></i> Direct Call</a>`;
             }
 
             if (num.includes('618')) {
-                html += `<a href="https://wa.me/1${clean}" target="tab_sk_wa" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_wa', this.href)"><i data-lucide="message-circle"></i> WhatsApp Specialist</a>`;
+                html += `<a href="https://wa.me/1${clean}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_wa', this.href)"><i data-lucide="message-circle"></i> WhatsApp Specialist</a>`;
             }
 
             container.innerHTML = html;
@@ -934,8 +937,8 @@
             
             // V10.15: Smart Tab applied to modal options
             container.innerHTML = `
-                <a href="${defUrl}" target="tab_sk_mail_def" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_mail_def', this.href)"><i data-lucide="mail"></i> Default Client</a>
-                <a href="${gmailUrl}" target="tab_sk_mail_gmail" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_mail_gmail', this.href)"><i data-lucide="send"></i> Gmail Web</a>
+                <a href="${defUrl}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_mail_def', this.href)"><i data-lucide="mail"></i> Default Client</a>
+                <a href="${gmailUrl}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_mail_gmail', this.href)"><i data-lucide="send"></i> Gmail Web</a>
                 <div onclick="navigator.clipboard.writeText('${email}'); alert('Email Copied');" class="smart-option"><i data-lucide="copy"></i> Copy Address</div>
             `;
             document.getElementById('email-modal').style.display = 'flex';
@@ -1128,7 +1131,7 @@
                         <div class="flex flex-col items-center">
                             <div class="horizontal-map-container">
                                 <iframe class="w-full h-full opacity-100" src="${mapEmbedUrl}" loading="lazy"></iframe>
-                                <a href="${mapLinkUrl}" target="${targetMapName}" class="absolute bottom-4 right-4 bg-white text-black p-3 rounded-full shadow-2xl hover:scale-110 transition-transform smart-tab-btn" onclick="smartTabClick(event, this, '${targetMapName}', this.href)">
+                                <a href="${mapLinkUrl}" class="absolute bottom-4 right-4 bg-white text-black p-3 rounded-full shadow-2xl hover:scale-110 transition-transform smart-tab-btn" onclick="smartTabClick(event, this, '${targetMapName}', this.href)">
                                     <span class="btn-text flex"><i data-lucide="navigation" class="w-6 h-6"></i></span>
                                 </a>
                             </div>
@@ -1164,7 +1167,7 @@
                             </div>
                             ` : ''}
                             
-                            ${isValidData(item.pdf) ? `<a href="${item.pdf}?v=10.15" target="${targetPdfName}" class="text-[10px] uppercase font-bold text-white/40 hover:text-[#FFC627] flex items-center justify-center gap-1.5 mt-2 smart-tab-btn" onclick="smartTabClick(event, this, '${targetPdfName}', '${item.pdf}?v=10.15')"><span class="btn-text flex items-center"><i data-lucide="file-text" class="w-3 h-3 mr-1"></i> Tech PDF</span></a>` : ''}
+                            ${isValidData(item.pdf) ? `<a href="${item.pdf}?v=10.15" class="text-[10px] uppercase font-bold text-white/40 hover:text-[#FFC627] flex items-center justify-center gap-1.5 mt-2 smart-tab-btn" onclick="smartTabClick(event, this, '${targetPdfName}', '${item.pdf}?v=10.15')"><span class="btn-text flex items-center"><i data-lucide="file-text" class="w-3 h-3 mr-1"></i> Tech PDF</span></a>` : ''}
                         </div>
                     </div>
                 </div>`;
