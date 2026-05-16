@@ -1213,12 +1213,16 @@
             m.classList.toggle('hidden'); m.classList.toggle('flex');
         });
 
+       /**
+         * STRICT SAME-TAB NAVIGATION
+         * Forces all links to load inside the exact same window.
+         */
+        window.smartTabClick = function(event, element, targetName, url) {
+            if(event) event.preventDefault(); 
+            window.location.href = url;
+        };
+
         window.onload = () => {
-            // Smart Tab Identity for Locations
-            window.name = 'tab_sk_Locations';
-            safeSetStorage('tab_sk_Locations', 'true');
-            window.addEventListener('beforeunload', () => { safeRemoveStorage('tab_sk_Locations'); });
-            
             loadSheetData();
             fetchInventoryData();
             setInterval(() => fetchInventoryData(true), 60000);
