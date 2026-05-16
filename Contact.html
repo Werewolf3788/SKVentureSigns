@@ -680,7 +680,6 @@
 
                         <input type="submit" id="submit-btn" class="btn-submit-contact" value="Submit">
                         <div id="form-status"></div>
-                        <p class="formspree-note">This form is protected by Formspree to ensure secure and reliable delivery of your inquiry.</p>
                     </form>
                 </div>
             </div>
@@ -776,36 +775,15 @@
         };
 
         /* =========================================================
-           V10.19 CROSS-TAB AWARENESS & AGGRESSIVE FOCUS
-           Modified to NOT force a new tab if it isn't already open
+           V10.20 STRICT SINGLE-TAB NAVIGATION
+           Forces all links to open in the exact same tab.
         ========================================================= */
         window.smartTabClick = function(event, element, targetName, url) {
             if(event) event.preventDefault(); // Stop standard link behavior
             
-            // If clicking a link to the tab we are CURRENTLY on, just navigate normally
-            if (window.name === targetName) {
-                window.location.href = url;
-                return;
-            }
-
-            const isTabAlreadyOpen = localStorage.getItem(targetName) === 'true';
-
-            if (isTabAlreadyOpen) {
-                // Set memory and visually indicate
-                if(element && element.classList) element.classList.add('already-open');
-                
-                // Jump to the already open tab
-                let tabWindow = window.open(url, targetName);
-                if (tabWindow) {
-                    tabWindow.focus();
-                } else {
-                    // Failsafe in case aggressive popup blockers intercept the focus attempt
-                    window.location.href = url;
-                }
-            } else {
-                // DO NOT open a new tab. Navigate locally within the current tab.
-                window.location.href = url;
-            }
+            // Force the browser to use the exact same tab for every link clicked.
+            // No window.open, no new tabs, no exceptions.
+            window.location.href = url;
         };
 
         /* =========================================================
