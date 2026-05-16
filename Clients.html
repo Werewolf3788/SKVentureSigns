@@ -6,14 +6,14 @@
         ADMIN: Kevin (Werewolf3788)
         CLIENT: Scott (S&K Venture Signs)
         STANDARDS: Responsive, No-Minify, G-Tag Integrated, GitHack Compatible
-        VERSION: 10.16 (ITC Integrated & Global Layout Sync - Current Tab Focused Navigation)
+        VERSION: 10.16 (STRICT SAME-TAB NAVIGATION UPDATE)
         TECHNICAL: Locked Header (125px -> 75px), Dynamic Modals, Auto-Night Mode, Precision Integration
-        TIMESTAMP: May 13, 2026
+        TIMESTAMP: May 15, 2026
         Nesting Code: Header/Footer Primary Wrapper Integrated
         
         NO STRIPPING, NO COMPRESSING, DON'T CHANGE WHAT I DIDN'T SAY TO CHANGE.
-        FIX: Ported Inter-Tab Communication (ITC) and Named Window Targeting from Services.
-        FIX: Modified ITC logic to navigate CURRENT tab if target isn't already open (No new tabs).
+        FIX: Completely stripped cross-tab switching logic.
+        FIX: All links now strictly force same-tab loading via window.location.href.
         FIX: Highlighted "Clients" tab dynamically.
         FIX: Ported footer CSS and layout (60px top padding, flexbox phone formatting, single-line address).
         FIX: Integrated Global Outline Color System.
@@ -185,11 +185,6 @@
         .header-scrolled .nav-link { color: var(--nav-text-scrolled); }
         .header-scrolled .nav-link.active { color: var(--sk-gold) !important; }
         .header-scrolled #menu-toggle { color: var(--nav-text-scrolled); }
-
-        /* V10.12/10.16 Smart Tab Indicators for Nav Links */
-        .nav-link.already-open:hover { 
-            color: #FF4500 !important; /* Glows Jet Orange to indicate it will switch tabs */
-        }
 
         #mobile-menu {
             background-color: var(--mobile-menu-bg);
@@ -542,8 +537,7 @@
     <header id="main-header" class="fixed top-0 left-0 w-full z-[1000] flex flex-col justify-center">
         <div class="main-container flex items-center justify-between h-full px-4 lg:px-0">
             <div class="flex-shrink-0 z-[1001]">
-                <!-- Removed target="_blank" from logo to ensure local site navigation -->
-                <a href="./index.html">
+                <a href="./index.html" onclick="smartTabClick(event, this, 'tab_sk_Home', this.href)">
                     <img src="https://raw.githubusercontent.com/Werewolf3788/SKVentureSigns/a19e4b81ccba61d2b1359a357e91972d6a3d33e8/images/S%26K%20Sign%20White.png" alt="S&K" id="header-logo" />
                 </a>
             </div>
@@ -633,9 +627,9 @@
         <div class="sk-modal-content" onclick="event.stopPropagation()">
             <div class="bg-[#3E0100] p-8 text-[#FFC627] text-center font-serif text-2xl">Start Navigation</div>
             <div class="p-8">
-                <a id="link-gmaps" target="_blank" class="smart-option"><i data-lucide="map"></i> Google Maps</a>
-                <a id="link-amaps" target="_blank" class="smart-option"><i data-lucide="navigation"></i> Apple Maps</a>
-                <a id="link-waze" target="_blank" class="smart-option"><i data-lucide="navigation-2"></i> Waze Navigation</a>
+                <a id="link-gmaps" class="smart-option"><i data-lucide="map"></i> Google Maps</a>
+                <a id="link-amaps" class="smart-option"><i data-lucide="navigation"></i> Apple Maps</a>
+                <a id="link-waze" class="smart-option"><i data-lucide="navigation-2"></i> Waze Navigation</a>
             </div>
             <div class="p-6 text-center text-sm font-bold modal-cancel-text" onclick="closeModals()">CANCEL</div>
         </div>
@@ -665,37 +659,13 @@
         let lightboxGallery = [];
         let currentLightboxIndex = 0;
 
-        /* =========================================================
-           V10.16 CROSS-TAB AWARENESS & AGGRESSIVE FOCUS
-           Modified to NOT force a new tab if it isn't already open
-        ========================================================= */
+        /**
+         * STRICT SAME-TAB NAVIGATION
+         * Forces all links to load inside the exact same window context.
+         */
         window.smartTabClick = function(event, element, targetName, url) {
-            event.preventDefault(); // Stop standard link behavior
-            
-            // If clicking a link to the tab we are CURRENTLY on, just navigate normally
-            if (window.name === targetName) {
-                window.location.href = url;
-                return;
-            }
-
-            // Check global cross-tab memory to see if the target tab is open elsewhere
-            const isTabAlreadyOpen = localStorage.getItem(targetName) === 'true';
-
-            if (isTabAlreadyOpen) {
-                // It IS open. Make element glow orange, and jump focus to that tab via targetName
-                element.classList.add('already-open');
-                let tabWindow = window.open(url, targetName);
-                if (tabWindow) {
-                    tabWindow.focus();
-                } else {
-                    // Failsafe in case aggressive popup blockers intercept the focus attempt
-                    window.location.href = url;
-                }
-            } else {
-                // It is NOT open anywhere else. 
-                // DO NOT open a new tab. Navigate locally within the current tab.
-                window.location.href = url;
-            }
+            if(event) event.preventDefault(); 
+            window.location.href = url;
         };
 
         /* =========================================================
@@ -762,34 +732,16 @@
 
             siteData.nav.forEach(n => {
                 const isActive = n.label.toLowerCase() === 'clients';
-                
-                // Generate unique target name derived from link name to prevent duplicate tabs
                 const uniqueTarget = `tab_sk_${n.label.replace(/[^a-zA-Z0-9]/g, '_')}`;
-
-                if (isActive) {
-                    // Self-Name the Window so other tabs can find it dynamically
-                    window.name = uniqueTarget;
-                    // Inform the browser's global memory that this page is alive
-                    localStorage.setItem(uniqueTarget, 'true');
-                    // Clean up the memory if the user explicitly closes the tab
-                    window.addEventListener('beforeunload', () => {
-                        localStorage.removeItem(uniqueTarget);
-                    });
-                }
-
-                // Check cross-tab global memory
-                const isOpen = localStorage.getItem(uniqueTarget) === 'true';
-                const openClass = isOpen && !isActive ? 'already-open' : '';
                 const desktopActive = isActive ? 'active' : '';
 
-                // Note: removed target attribute so pure clicks are handled cleanly by smartTabClick avoiding new tabs
-                dNav.innerHTML += `<li><a href="${n.url}" class="nav-link ${desktopActive} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a></li>`;
+                dNav.innerHTML += `<li><a href="${n.url}" class="nav-link ${desktopActive}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a></li>`;
                 
                 const mobileClass = isActive 
                     ? `text-2xl font-bold border-b border-black/10 dark:border-white/10 pb-3 text-[var(--sk-gold)]`
                     : `text-2xl font-bold border-b border-black/10 dark:border-white/10 pb-3`;
 
-                mNav.innerHTML += `<a href="${n.url}" class="${mobileClass} ${openClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a>`;
+                mNav.innerHTML += `<a href="${n.url}" class="${mobileClass}" onclick="smartTabClick(event, this, '${uniqueTarget}', '${n.url}')">${n.label}</a>`;
             });
 
             // Footer Matching Logic
@@ -896,15 +848,14 @@
             const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
             
             let html = '';
-            
             if (isMac) {
-                html += `<a href="tel:${clean}" target="_blank" class="smart-option"><i data-lucide="monitor"></i> FaceTime / iPhone</a>`;
+                html += `<a href="tel:${clean}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_tel', this.href)"><i data-lucide="monitor"></i> FaceTime / iPhone</a>`;
             } else {
-                html += `<a href="tel:${clean}" target="_blank" class="smart-option"><i data-lucide="phone"></i> Direct Call</a>`;
+                html += `<a href="tel:${clean}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_tel', this.href)"><i data-lucide="phone"></i> Direct Call</a>`;
             }
             
             if (num.includes('618')) {
-                html += `<a href="https://wa.me/1${clean}" target="_blank" class="smart-option"><i data-lucide="message-circle"></i> WhatsApp Specialist</a>`;
+                html += `<a href="https://wa.me/1${clean}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_wa', this.href)"><i data-lucide="message-circle"></i> WhatsApp Specialist</a>`;
             }
 
             container.innerHTML = html;
@@ -915,8 +866,8 @@
         function openEmailSmartActions(email) {
             const container = document.getElementById('email-options-container');
             container.innerHTML = `
-                <a href="mailto:${email}" target="_blank" class="smart-option"><i data-lucide="mail"></i> Default Client</a>
-                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${email}" target="_blank" class="smart-option"><i data-lucide="send"></i> Gmail Web</a>
+                <a href="mailto:${email}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_mail_def', this.href)"><i data-lucide="mail"></i> Default Client</a>
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${email}" class="smart-option" onclick="smartTabClick(event, this, 'tab_sk_mail_gmail', this.href)"><i data-lucide="send"></i> Gmail Web</a>
                 <div onclick="navigator.clipboard.writeText('${email}');" class="smart-option"><i data-lucide="copy"></i> Copy Address</div>
             `;
             document.getElementById('email-modal').style.display = 'flex';
@@ -926,9 +877,16 @@
         function openMapSmartActions() {
             const addrStr = `${siteData.addressStreet} ${siteData.addressCity}`;
             const addr = encodeURIComponent(addrStr);
-            document.getElementById('link-gmaps').href = `https://www.google.com/maps/dir/?api=1&destination=${addr}`;
-            document.getElementById('link-amaps').href = `http://maps.apple.com/?daddr=${addr}`;
-            document.getElementById('link-waze').href = `https://waze.com/ul?q=${addr}&navigate=yes`;
+            
+            const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${addr}`;
+            document.getElementById('link-gmaps').setAttribute('onclick', `smartTabClick(event, this, 'tab_sk_gmaps', '${gmapsUrl}')`);
+            
+            const amapsUrl = `http://maps.apple.com/?daddr=${addr}`;
+            document.getElementById('link-amaps').setAttribute('onclick', `smartTabClick(event, this, 'tab_sk_amaps', '${amapsUrl}')`);
+            
+            const wazeUrl = `https://waze.com/ul?q=${addr}&navigate=yes`;
+            document.getElementById('link-waze').setAttribute('onclick', `smartTabClick(event, this, 'tab_sk_waze', '${wazeUrl}')`);
+            
             document.getElementById('map-modal').style.display = 'flex';
             lucide.createIcons();
         }
@@ -954,18 +912,15 @@
 
             const overlay = document.getElementById('lightbox-overlay');
             const img = document.getElementById('lightbox-image');
-            img.style.opacity = 0; // Quick fade effect
+            img.style.opacity = 0;
 
             setTimeout(() => {
                 img.src = src;
-                
-                // Reset transforms for fresh open/change
                 lbScale = 1;
                 lbTranslateX = 0;
                 lbTranslateY = 0;
                 img.style.transform = `translate(0px, 0px) scale(1)`;
                 img.style.cursor = 'zoom-in';
-                
                 img.style.display = 'block';
                 img.style.opacity = 1;
             }, 50);
@@ -980,7 +935,6 @@
             if (lightboxGallery.length === 0) return;
             
             let newIndex = currentLightboxIndex + direction;
-            // Seamless wrap-around logic
             if (newIndex < 0) newIndex = lightboxGallery.length - 1;
             if (newIndex >= lightboxGallery.length) newIndex = 0;
             
@@ -1001,7 +955,6 @@
 
             if (!lbOverlay || !lbImg) return;
 
-            // Keyboard Navigation (Arrow Keys + Escape)
             document.addEventListener('keydown', (e) => {
                 if (lbOverlay.style.display === 'flex') {
                     if (e.key === 'ArrowLeft') navigateLightbox(null, -1);
@@ -1010,17 +963,15 @@
                 }
             });
 
-            // Desktop Mouse Wheel Zoom
             lbOverlay.addEventListener('wheel', (e) => {
                 if (lbOverlay.style.display !== 'flex') return;
                 e.preventDefault();
                 lbScale += e.deltaY * -0.005;
-                lbScale = Math.min(Math.max(0.5, lbScale), 5); // Limit zoom 0.5x to 5x
+                lbScale = Math.min(Math.max(0.5, lbScale), 5);
                 lbImg.style.transform = `translate(${lbTranslateX}px, ${lbTranslateY}px) scale(${lbScale})`;
                 lbImg.style.cursor = lbScale > 1 ? 'grab' : 'zoom-in';
             }, { passive: false });
 
-            // Mobile Touch Support for Pinch Zoom & Panning
             lbOverlay.addEventListener('touchstart', (e) => {
                 if (lbOverlay.style.display !== 'flex') return;
                 if (e.touches.length === 2) {
@@ -1037,8 +988,6 @@
 
             lbOverlay.addEventListener('touchmove', (e) => {
                 if (lbOverlay.style.display !== 'flex') return;
-                
-                // Allow default touch actions if not zoomed in (let native UI handle it)
                 if(lbScale > 1 || e.touches.length === 2) e.preventDefault(); 
                 
                 if (e.touches.length === 2) {
@@ -1059,7 +1008,6 @@
 
             lbOverlay.addEventListener('touchend', (e) => {
                 if (e.touches.length < 2) {
-                    // Lock in the new scale after pinch ends
                     const transformStr = lbImg.style.transform;
                     const match = transformStr.match(/scale\(([^)]+)\)/);
                     if (match) lbScale = parseFloat(match[1]);
@@ -1069,14 +1017,13 @@
                 }
             });
 
-            // Desktop Mouse Drag Support for Panning
             lbImg.addEventListener('mousedown', (e) => {
                 if (lbScale > 1) {
                     lbIsDragging = true;
                     lbStartX = e.pageX - lbTranslateX;
                     lbStartY = e.pageY - lbTranslateY;
                     lbImg.style.cursor = 'grabbing';
-                    e.preventDefault(); // prevent ghost image drag
+                    e.preventDefault();
                 }
             });
             window.addEventListener('mousemove', (e) => {
@@ -1100,14 +1047,12 @@
             const loading = document.getElementById('loading');
             const bar = document.getElementById('refresh-bar');
 
-            // Trigger visual progress bar during background sync
             if (isAutoRefresh && bar) { 
                 bar.style.width = '100%'; 
                 setTimeout(() => { bar.style.width = '0'; }, 1000); 
             }
 
             try {
-                // Cache buster guarantees fresh sheet data
                 const response = await fetch(`${CLIENTS_CSV_URL}&t=${Date.now()}`);
                 if (!response.ok) throw new Error('Network failure during data fetch');
                 
@@ -1116,14 +1061,12 @@
                     return row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
                 });
 
-                const data = rows.slice(1).filter(row => row.length >= 2 && row[0]); // Ensure valid rows only
+                const data = rows.slice(1).filter(row => row.length >= 2 && row[0]);
 
-                // Smart Check: Only redraw the DOM if the data actually changed
                 if (JSON.stringify(data) !== JSON.stringify(currentClientsData)) {
-                    currentClientsData = data; // Update state
-                    lightboxGallery = []; // Reset Gallery Index Array
+                    currentClientsData = data; 
+                    lightboxGallery = []; 
 
-                    // Precision Scroll Lock: Save scroll position & pin grid height
                     const savedScrollY = window.scrollY;
                     const currentGridHeight = grid.offsetHeight;
                     if(isAutoRefresh) grid.style.minHeight = `${currentGridHeight}px`;
@@ -1136,9 +1079,8 @@
                         const websiteUrl = row[1] || '#';
                         const imageUrl = row[2];
 
-                        lightboxGallery.push(imageUrl); // Register image to Lightbox system
+                        lightboxGallery.push(imageUrl); 
 
-                        // Convert item to a div wrapper instead of an entire link
                         const item = document.createElement('div');
                         item.className = 'gallery-item';
                         item.style.animationDelay = `${index * 0.05}s`;
@@ -1152,7 +1094,6 @@
 
                         grid.appendChild(item);
 
-                        // Re-attach interaction tracking specifically to the text link
                         const textLink = item.querySelector(`#client-link-${index}`);
                         if (textLink && websiteUrl !== '#' && websiteUrl !== '') {
                             textLink.addEventListener('click', function() {
@@ -1165,7 +1106,6 @@
                         }
                     });
 
-                    // Restore Scroll Position seamlessly after rendering loop completes
                     if(isAutoRefresh) {
                         setTimeout(() => {
                             grid.style.minHeight = '';
@@ -1220,9 +1160,9 @@
         window.onload = () => {
             loadSheetData();
             fetchCustomers();
-            setInterval(() => fetchCustomers(true), 60000); // 60-Second Auto-Sync Engine
+            setInterval(() => fetchCustomers(true), 60000); 
             trackSectionView();
-            initLightboxInteractions(); // Engage new Zoom Engine
+            initLightboxInteractions(); 
             
             const cookies = document.cookie.split('; ').reduce((acc, curr) => {
                 const [k, v] = curr.split('='); acc[k] = v; return acc;
