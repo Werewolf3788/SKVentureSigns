@@ -1,0 +1,78 @@
+/* Custom Skin Layers - Louisville Premium Widescreen Dashboard */
+:root {
+	--louis-red: #EB1C24;
+	--louis-black: #000000;
+	--louis-gold: #FFC10E;
+}
+
+/* Scrollbar Clean Panel Optimization */
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+::-webkit-scrollbar-track {
+	background: #000000;
+}
+::-webkit-scrollbar-thumb {
+	background: var(--louis-red);
+	border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: var(--louis-gold);
+}
+
+/* Dynamic Newspaper Clipping Component Layer Styles */
+.newspaper-card {
+	background-color: #fdfbf7 !important; /* Authentic Aged Newsprint Base */
+	border: 1px dashed #222222;
+	box-shadow: 4px 4px 0px #111111;
+	color: #1a1a1a !important;
+	cursor: pointer;
+	transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.newspaper-card:hover {
+	transform: translate(-1px, -1px);
+	box-shadow: 6px 6px 0px var(--louis-red);
+}
+
+.newspaper-card * {
+	color: #1a1a1a !important;
+}
+
+.newspaper-card h3 {
+	font-family: 'Playfair Display', 'Times New Roman', serif !important;
+	font-weight: 900 !important;
+	letter-spacing: -0.5px;
+}
+
+.newspaper-card p {
+	font-family: 'Times New Roman', Times, serif !important;
+}
+
+.newspaper-inner-border {
+	border-top: 1px solid #222222;
+	border-bottom: 3px double #222222;
+}
+
+/* Enforce fluid sizing logic onto external frames */
+iframe {
+	max-width: 100% !important;
+	width: 100% !important;
+	height: 100% !important;
+	border: none !important;
+}
+
+/* Force fluid image cell containment on showcase layouts */
+#partner-image {
+	max-width: 100% !important;
+	max-height: 100% !important;
+	width: auto !important;
+	height: auto !important;
+	object-fit: contain !important;
+}
+
+/* Handle modal freeze layout locks */
+body.modal-lock {
+	overflow: hidden;
+}
