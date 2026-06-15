@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Louisville, IL - SMLC Digital Town Square</title>
+	<link rel="pingback" href="https://staging.supportmylocalcommunity.com/xmlrpc.php" />
+	
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		tailwind.config = {
+			theme: {
+				extend: {
+					colors: {
+						louisRed: '#EB1C24',
+						louisBlack: '#000000',
+						louisGold: '#FFC10E',
+						panelDark: '#121212',
+						panelDarkest: '#080808'
+					}
+				}
+			}
+		}
+	</script>
+	
+	<link rel="stylesheet" href="./style.css?v=1.7" />
+
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-H6Q756MVE8"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-L376P3NPY4"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+		gtag('config', 'G-H6Q756MVE8', { 'cookie_flags': 'SameSite=None;Secure' });
+		gtag('config', 'G-L376P3NPY4', { 'cookie_flags': 'SameSite=None;Secure' });
+	</script>
+</head>
+<body class="bg-black text-white antialiased w-full">
+
+	<header class="w-full bg-black border-b-2 border-louisRed py-4 sticky top-0 z-50 shadow-lg shadow-black/80">
+		<div class="w-full px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+			<a href="https://staging.supportmylocalcommunity.com/">
+				<img class="h-10 w-auto" src="https://staging.supportmylocalcommunity.com/wp-content/uploads/2025/12/SMLC-logo-scaled-e1767473737771.png" alt="SMLC logo" />
+			</a>
+			<nav class="flex flex-wrap justify-center gap-2 md:gap-4">
+				<a href="https://staging.supportmylocalcommunity.com/" target="main-content-window" class="px-3 py-2 text-sm font-semibold text-white hover:text-louisGold transition">Home</a>
+				<a href="https://staging.supportmylocalcommunity.com/clay-city/" target="main-content-window" class="px-3 py-2 text-sm font-semibold text-white hover:text-louisGold transition">Clay City</a>
+				<a href="https://ourflora.com" target="main-content-window" class="px-3 py-2 text-sm font-semibold text-white hover:text-louisGold transition">Flora</a>
+				<a href="https://staging.supportmylocalcommunity.com/louisville/" target="main-content-window" class="px-3 py-2 text-sm font-semibold text-louisGold border border-louisGold bg-louisRed/10 rounded-lg transition">Louisville</a>
+				<a href="https://staging.supportmylocalcommunity.com/sailor-springs/" target="main-content-window" class="px-3 py-2 text-sm font-semibold text-white hover:text-louisGold transition">Sailor Springs</a>
+				<a href="https://staging.supportmylocalcommunity.com/xenia/" target="main-content-window" class="px-3 py-2 text-sm font-semibold text-white hover:text-louisGold transition">Xenia</a>
+			</nav>
+		</div>
+	</header>
+
+	<section class="w-full py-12 bg-gradient-to-br from-black via-panelDarkest to-louisRed flex items-center justify-center border-b-4 border-louisGold shadow-xl">
+		<div class="text-center px-4">
+			<span class="inline-block px-4 py-1 bg-louisGold text-black font-black text-xs uppercase tracking-wider rounded mb-3 shadow-md">Clay County Seat</span>
+			<h1 class="text-4xl md:text-6xl font-black text-white uppercase tracking-tight">Louisville, Illinois</h1>
+			<p class="text-louisGold font-bold tracking-widest text-xs uppercase mt-2">Est. 1861 | Zip Code 62858</p>
+			<div class="mt-4 text-xs font-mono font-bold text-neutral-300 bg-black/50 py-1.5 px-4 rounded-full max-w-max mx-auto border border-neutral-800">
+				ON THE LITTLE WABASH RIVER
+			</div>
+		</div>
+	</section>
+
+	<section class="w-full bg-neutral-950 py-3 border-b border-neutral-800 text-xs font-mono">
+		<div class="w-full px-8 flex justify-between items-center">
+			<div class="flex items-center gap-2">
+				<span class="w-2 h-2 rounded-full bg-louisRed animate-pulse"></span>
+				<span class="text-neutral-400 font-bold uppercase">Spotlight:</span>
+				<a id="ticker-link" href="#" target="main-content-window" class="text-louisGold font-bold hover:underline">Loading Local Partner...</a>
+			</div>
+			<div class="text-[10px] text-neutral-500 uppercase font-bold">Clay County Verified</div>
+		</div>
+	</section>
+
+	<div class="w-full px-8 py-8">
+		<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+			
+			<aside class="lg:col-span-3">
+				<div class="p-5 rounded-xl bg-gradient-to-b from-panelDark to-black border-2 border-louisGold/30 shadow-2xl">
+					<div class="border-b-2 border-louisRed pb-3 mb-4 text-center">
+						<span class="px-3 py-1 bg-louisRed text-white text-xs font-black uppercase tracking-wider rounded shadow">
+							Community Bulletin
+						</span>
+						<p id="month-label" class="text-[10px] font-mono uppercase tracking-widest text-louisGold mt-2">Dispatches</p>
+					</div>
+					<div class="text-[11px] font-mono text-neutral-400 bg-black/60 p-2 rounded border border-neutral-800 mb-4 flex justify-between items-center">
+						<span>CST Clock:</span>
+						<span id="chicago-clock" class="text-louisGold font-bold">--:-- --</span>
+					</div>
+					<div id="divi-event-list" class="space-y-4 max-h-[700px] overflow-y-auto pr-1">
+						<div class="text-center py-6 text-xs italic text-neutral-500">Connecting wire...</div>
+					</div>
+				</div>
+			</aside>
+
+			<main class="lg:col-span-6 space-y-8">
+				
+				<section class="bg-panelDark rounded-xl border-2 border-neutral-800 p-4 shadow-2xl">
+					<div class="flex items-center justify-between mb-3 border-b border-neutral-900 pb-2">
+						<div class="flex items-center gap-2">
+							<span class="text-louisRed text-base">🏀</span>
+							<h2 class="text-xs font-black uppercase tracking-wider text-white">Scorestream Panther Athletics</h2>
+						</div>
+						<span class="text-[10px] text-louisGold font-mono font-bold animate-pulse">● Live Ticker</span>
+					</div>
+					<div class="w-full h-[125px] min-h-[125px] bg-transparent rounded p-1">
+						<div class="scorestream-widget-container" data-ss_widget_type="horzScoreboard" data-user-widget-id="68988"></div>
+						<script async="async" type="text/javascript" src="https://scorestream.com/apiJsCdn/widgets/embed.js"></script>
+					</div>
+				</section>
+
+				<section class="p-6 rounded-xl bg-gradient-to-b from-panelDark to-black border-2 border-louisRed/30 shadow-2xl">
+					<div class="flex items-center justify-between border-b border-neutral-800 pb-3 mb-6">
+						<div class="flex items-center gap-2">
+							<span class="text-louisRed text-xl">📢</span>
+							<h2 class="text-base font-black uppercase tracking-wider text-white">Louisville Local Dispatches</h2>
+						</div>
+						<span class="text-[10px] font-mono text-louisGold bg-louisRed/10 px-2 py-0.5 rounded">SMLC Newsroom</span>
+					</div>
+					<div id="json-news-container" class="space-y-6">
+						<div class="text-center py-10 text-sm italic text-neutral-500">Reconstructing archives...</div>
+					</div>
+				</section>
+
+				<section class="p-6 rounded-xl bg-gradient-to-b from-panelDark to-black border-2 border-neutral-800 shadow-2xl">
+					<div class="flex items-center justify-between border-b border-neutral-800 pb-3 mb-4">
+						<div class="flex items-center gap-2">
+							<span class="text-louisGold text-xl">📰</span>
+							<h2 class="text-base font-black uppercase tracking-wider text-white">Louisville News Wire Feed</h2>
+						</div>
+						<span class="text-[10px] font-mono text-neutral-500">Google Alerts RSS</span>
+					</div>
+					<div id="rss-feed-container" class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+						<div class="text-center py-6 text-xs italic text-neutral-500">Querying feed...</div>
+					</div>
+				</section>
+
+			</main>
+
+			<aside class="lg:col-span-3 space-y-6">
+				
+				<div class="p-5 rounded-xl bg-gradient-to-b from-panelDark to-black border-2 border-louisRed/30 shadow-2xl">
+					<h3 class="text-xs font-black uppercase tracking-wider text-louisGold border-b border-neutral-800 pb-2 mb-3">Fuel Index Monitor</h3>
+					<div class="bg-black p-3 rounded-lg border border-neutral-800">
+						<div class="flex items-center gap-2 mb-3">
+							<div class="w-6 h-6 rounded bg-white p-0.5 flex items-center justify-center">
+								<img src="https://raw.githubusercontent.com/skventuresigns-design/smlc/main/gas-prices/image/Casey's.png" alt="Logo" class="max-h-full object-contain">
+							</div>
+							<div class="text-[10px] font-bold text-white font-mono leading-none">CASEY'S • LOUISVILLE</div>
+						</div>
+						<div class="grid grid-cols-2 gap-2 text-center font-mono">
+							<div class="bg-neutral-950 p-2 rounded border border-neutral-900">
+								<span class="block text-[8px] text-neutral-500 font-bold mb-1">REGULAR</span>
+								<span id="lv-reg" class="text-sm font-black text-emerald-400">--.--</span>
+							</div>
+							<div class="bg-neutral-950 p-2 rounded border border-neutral-900">
+								<span class="block text-[8px] text-neutral-500 font-bold mb-1">DIESEL</span>
+								<span id="lv-die" class="text-sm font-black text-louisGold">--.--</span>
+							</div>
+						</div>
+						<div class="text-[9px] text-neutral-500 font-mono mt-3 text-right" id="lv-time">Syncing...</div>
+					</div>
+				</div>
+
+				<div class="p-5 rounded-xl bg-gradient-to-b from-panelDark to-black border-2 border-louisGold/30 shadow-2xl">
+					<h3 class="text-xs font-black uppercase tracking-wider text-white border-b border-neutral-800 pb-2 mb-3">Local Showcase</h3>
+					<div class="text-center">
+						<div id="partner-image-frame" class="w-full h-32 bg-neutral-950 rounded border border-neutral-900 flex items-center justify-center mb-2 overflow-hidden relative cursor-zoom-in">
+							<img id="partner-image" src="" alt="Showcase Content Graphic" class="max-w-full max-h-full object-contain opacity-0 transition duration-300">
+							<div id="partner-loading" class="absolute inset-0 flex items-center justify-center bg-black/80">
+								<span class="border-2 border-t-transparent border-louisGold rounded-full w-4 h-4 animate-spin"></span>
+							</div>
+						</div>
+						<a id="partner-link" href="#" target="main-content-window" class="inline-block text-xs font-black text-white hover:text-louisGold hover:underline transition uppercase tracking-wide mt-1">
+							Connecting Partner...
+						</a>
+					</div>
+				</div>
+
+				<div class="p-5 rounded-xl bg-gradient-to-b from-panelDark to-black border-2 border-louisRed/30 shadow-2xl">
+					<h3 class="text-xs font-black uppercase tracking-wider text-white border-b border-neutral-800 pb-2 mb-3">Town Legacy History</h3>
+					<div id="history-json-container" class="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+						<div class="text-center py-4 text-xs italic text-neutral-500">Parsing records...</div>
+					</div>
+				</div>
+
+			</aside>
+		</div>
+	</div>
+
+	<div id="portal-lightbox" class="fixed inset-0 bg-black/95 backdrop-blur-sm z-[9999] opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
+		<div class="bg-neutral-900 border-2 border-louisGold max-w-3xl w-full rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-all duration-300 flex flex-col max-h-[90vh]">
+			
+			<div class="bg-black p-4 border-b border-neutral-800 flex justify-between items-center">
+				<div class="flex flex-col">
+					<span id="lightbox-label" class="text-[10px] font-mono uppercase tracking-widest text-louisGold font-bold">SMLC Dynamic Reader</span>
+					<span id="lightbox-meta" class="text-[11px] font-mono text-neutral-400 mt-0.5">Wire Sync Info</span>
+				</div>
+				<button onclick="closePortalLightbox()" class="w-8 h-8 rounded-full bg-neutral-800 hover:bg-louisRed text-white flex items-center justify-center font-bold font-mono transition shadow-lg">&times;</button>
+			</div>
+
+			<div class="p-6 overflow-y-auto space-y-4 flex-grow text-white flex flex-col">
+				<div id="lightbox-media-box" class="w-full hidden justify-center mb-4 bg-black/40 p-2 rounded border border-neutral-800">
+					<img id="lightbox-img" src="" alt="Expanded Content Display Layer" class="max-w-full max-h-[50vh] object-contain rounded-lg shadow-2xl">
+				</div>
+				<h3 id="lightbox-title" class="text-xl font-black uppercase tracking-tight leading-tight text-white">Title</h3>
+				<div class="border-t border-dashed border-neutral-700 my-2"></div>
+				<p id="lightbox-story" class="text-sm text-neutral-200 leading-relaxed whitespace-pre-line font-serif text-justify px-1">Story Body</p>
+			</div>
+
+			<div class="bg-black p-4 border-t border-neutral-800 flex flex-col sm:flex-row justify-between items-center gap-2 text-[10px] font-mono text-neutral-500">
+				<span>SUPPORT MY LOCAL COMMUNITY NETWORK © 2026</span>
+				<a id="lightbox-external-link" href="#" target="main-content-window" class="text-louisGold hover:underline font-bold text-xs uppercase tracking-wide">Visit Original Source Context &rarr;</a>
+			</div>
+		</div>
+	</div>
+
+	<footer class="bg-black border-t-4 border-louisRed py-12 mt-12">
+		<div class="w-full px-8 text-center flex flex-col items-center gap-3">
+			<img class="h-10 w-auto opacity-75 mb-2" src="https://staging.supportmylocalcommunity.com/wp-content/uploads/2025/12/SMLC-logo-scaled-e1767473737771.png" alt="SMLC logo" />
+			<p class="text-xs font-semibold text-neutral-400">All Content, Photographs, Writings, Letters and Documents © 2026 - <span class="text-white">Support My Local Community</span></p>
+			<p class="text-[11px] text-neutral-500">All Rights Reserved - <a href="https://www.skventuresigns.com" target="_blank" class="text-louisGold hover:underline font-bold">S&K Ventures</a></p>
+		</div>
+	</footer>
+
+	<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+	<script src="./script.js?v=1.7"></script>
+</body>
+</html>
