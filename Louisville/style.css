@@ -76,3 +76,39 @@ iframe {
 body.modal-lock {
 	overflow: hidden;
 }
+
+/* ==========================================================================
+   PRECISION INTEGRATION APPEND: Hiding Footer Asset & Widescreen Font Forcing
+   Timestamp: 2026-06-15 22:58:44 NYT
+   ========================================================================== */
+
+/* Remove Footer Image Asset */
+footer img {
+	display: none !important;
+}
+
+/* 
+   Force Widescreen legibility across your main informational containers.
+   This bypasses the restrictive Tailwind text utilities visible in image_5898a0.png.
+*/
+#divi-event-list p,
+#divi-event-list span,
+#divi-event-list div,
+#json-news-container p,
+#json-news-container span,
+#json-news-container div,
+#rss-feed-container p,
+#rss-feed-container div,
+#history-json-container p,
+#history-json-container div {
+	font-size: 16px !important; /* Forces 16px mobile/widescreen baseline */
+	line-height: 1.6 !important;
+}
+
+/* Ensure secondary block headings scale up elegantly alongside the text */
+#divi-event-list h3,
+#json-news-container h3,
+#history-json-container h4 {
+	font-size: 18px !important;
+	font-weight: bold !important;
+}
