@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <!-- 
-    PROJECT: S & K Ventures Billboard - Clean Image Query & CORS Engine
-    ADMIN: Kevin (Werewolf3788)
-    VERSION: 8.4 (Jetpack Query Stripper + CORS Block Removal + Tab & Global Merge)
+    PROJECT: S & K Ventures Billboard - Hybrid Precision Engine
+    ADMIN: Werewolf (Werewolf3788)
+    VERSION: 8.6 (v4.24 Raw Passthrough + Tab & Global Merging + Multiplier Spread)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: Sat, Aug 15, 2026 | 00:54:10 AM EDT (New York Time)
+    TIMESTAMP: Sat, Aug 15, 2026 | 00:55:00 AM EDT (New York Time)
     
     GOOGLE SHEET TAB SCHEMA (Per Tab):
       - Column A (Index 0): Name (Display/Reference)
       - Column B (Index 1): Image URL (PNG, JPG, JPEG, GIF, WEBP, SVG, Google Drive)
       - Column C (Index 2): Rotation Count (1, 2, 3, etc. Defaults to 1)
+
+    HOW TO CONFIGURE TOWN:
+      - Set active tab name below in LINE 55 via data-billboard-location
 -->
 <html lang="en">
 <head>
@@ -21,7 +24,7 @@
     <link href="//fonts.googleapis.com/css2?family=Great+Vibes&family=Satisfy&family=Pinyon+Script&family=Rouge+Script&family=Alex+Brush&display=swap" rel="stylesheet">
 
     <!-- Framework Assets scoped for the Widget -->
-    <script src="//cdn.tailwindcss.com?v=8.4"></script>
+    <script src="//cdn.tailwindcss.com?v=8.6"></script>
     <script src="//unpkg.com/lucide@latest"></script>
 
     <!-- Google Analytics Dual Tracking: S&K Ventures (G-H6Q756MVE8) & Kevin (G-L376P3NPY4) -->
@@ -33,8 +36,8 @@
         gtag('js', new Date());
         
         gtag('config', 'G-H6Q756MVE8', { 
-            'page_type': 'billboard_widget_v8.4', 
-            'layout_version': '8.4',
+            'page_type': 'billboard_widget_v8.6', 
+            'layout_version': '8.6',
             'retention': '14_months'
         });
         gtag('config', 'G-L376P3NPY4');
@@ -507,25 +510,6 @@
         if (lastWeatherData) updateWeatherUI(lastWeatherData);
     }
 
-    function parseCsvRow(row) {
-        const result = [];
-        let current = '';
-        let inQuotes = false;
-        for (let i = 0; i < row.length; i++) {
-            const char = row[i];
-            if (char === '"') {
-                inQuotes = !inQuotes;
-            } else if (char === ',' && !inQuotes) {
-                result.push(current.trim().replace(/^"|"$/g, ''));
-                current = '';
-            } else {
-                current += char;
-            }
-        }
-        result.push(current.trim().replace(/^"|"$/g, ''));
-        return result;
-    }
-
     function extractGoogleDriveId(url) {
         if (!url) return null;
         const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || 
@@ -534,52 +518,21 @@
         return (match && match[1]) ? match[1] : null;
     }
 
-    // Line 392: Cleans Jetpack queries (?fit=640%2C320&ssl=1), cleans skventuresigns SSL, & resolves direct hosts
-    function formatBillboardImage(url) {
+    // Pure v4.24 Lightweight String Cleaner & Passthrough
+    function cleanRawUrl(url) {
         if (!url) return "";
-        let clean = url.trim().replace(/^"|"$/g, '').replace(/&amp;/g, '&');
-        
-        // Strip Jetpack & WordPress resizing query parameters (%3F or ?)
-        if (clean.includes("?")) {
-            clean = clean.split("?")[0];
-        }
-        if (clean.includes("%3F") || clean.includes("%3f")) {
-            clean = clean.split(/%3[Ff]/)[0];
-        }
+        let clean = url.replace(/^"|"$|&amp;/g, '').trim();
 
-        // Strip duplicate concatenated URLs if present
-        if (clean.includes("http") && clean.lastIndexOf("http") > 0) {
-            clean = clean.substring(0, clean.lastIndexOf("http"));
-        }
+        // Strip Jetpack resize query string
+        if (clean.includes("?")) clean = clean.split("?")[0];
+        if (clean.includes("%3F") || clean.includes("%3f")) clean = clean.split(/%3[Ff]/)[0];
 
+        // Format Google Drive if present
         const driveId = extractGoogleDriveId(clean);
         if (driveId) {
             return `https://drive.google.com/thumbnail?id=${driveId}&sz=w1920`;
         }
 
-        // Automatic SSL Fix: Route skventuresigns.com URLs to GitHack Raw CDN
-        if (clean.includes("skventuresigns.com/images/")) {
-            const filename = clean.split("/images/").pop().replace(/https?:\/\/.*$/i, '').trim();
-            return `https://raw.githack.com/Werewolf3788/SKVentureSigns/main/images/${encodeURIComponent(filename)}`;
-        }
-
-        if (clean.includes("skventuresigns.com/")) {
-            const filename = clean.split("/").pop().replace(/https?:\/\/.*$/i, '').trim();
-            return `https://raw.githack.com/Werewolf3788/SKVentureSigns/main/images/${encodeURIComponent(filename)}`;
-        }
-
-        // Raw file names entered directly without domain
-        if (!clean.startsWith("http://") && !clean.startsWith("https://") && !clean.startsWith("//")) {
-            let filename = clean;
-            if (!/\.(png|jpg|jpeg|gif|webp|svg)$/i.test(filename)) {
-                filename = `${filename}.png`;
-            }
-            return `https://raw.githack.com/Werewolf3788/SKVentureSigns/main/images/${encodeURIComponent(filename)}`;
-        }
-
-        if (clean.startsWith('//')) {
-            clean = window.location.protocol + clean;
-        }
         return clean;
     }
 
@@ -590,7 +543,7 @@
         return (!isNaN(num) && num > 0) ? num : 1;
     }
 
-    // Spread Multiplexer Shuffle (Preserves Row-Order while spreading multipliers without duplicate back-to-backs)
+    // Spread Multiplexer: Maintains row order while distributing duplicates evenly
     function distributeSpreadAds(items) {
         if (!items || items.length === 0) return [];
         if (items.length === 1) {
@@ -611,11 +564,8 @@
 
         while (pool.some(item => item.remaining > 0)) {
             const available = pool.filter(item => item.remaining > 0);
-            
             let candidate = available.find(item => item.url !== previousUrl);
-            if (!candidate) {
-                candidate = available[0];
-            }
+            if (!candidate) candidate = available[0];
 
             result.push(candidate.url);
             candidate.remaining--;
@@ -625,10 +575,11 @@
         return result;
     }
 
+    // Fetches CSV for any Tab using v4.24 line-by-line regex matching
     async function fetchCsvByTabName(tabName) {
         if (!tabName) return [];
-        const cleanTabName = tabName.trim();
-        const encodedTab = encodeURIComponent(cleanTabName);
+        const cleanTab = tabName.trim();
+        const encodedTab = encodeURIComponent(cleanTab);
         const url1 = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodedTab}&t=${Date.now()}`;
         const url2 = `${PUB_BASE_URL}?output=csv&sheet=${encodedTab}&t=${Date.now()}`;
 
@@ -636,35 +587,27 @@
             let res = await fetch(url1);
             if (!res.ok) res = await fetch(url2);
             if (!res.ok) return [];
-            
+
             const text = await res.text();
             if (!text || text.includes("<!DOCTYPE html>")) return [];
-            
+
             const lines = text.split(/\r?\n/);
             const items = [];
 
             lines.forEach((line, idx) => {
                 if (idx === 0 || !line.trim()) return; // Skip Header
-                const cols = parseCsvRow(line);
-
-                let name = cols[0] ? cols[0].trim() : `Ad_Row_${idx + 1}`;
-                let rawUrl = cols[1] || "";
                 
-                if (!rawUrl || (!rawUrl.includes("http") && !rawUrl.includes("drive.google") && !rawUrl.includes("skventuresigns.com") && !rawUrl.includes("ourflora.com"))) {
-                    for (let c = 0; c < cols.length; c++) {
-                        const val = (cols[c] || '').trim();
-                        if (val.startsWith("http://") || val.startsWith("https://") || val.includes("drive.google.com") || val.startsWith("//") || val.includes("skventuresigns.com") || val.includes("ourflora.com")) {
-                            rawUrl = val;
-                            break;
-                        }
+                // v4.24 cell regex matcher
+                const cellMatch = line.match(/(".*?"|[^,]+)/g);
+                if (cellMatch) {
+                    let name = cellMatch[0] ? cellMatch[0].replace(/^"|"$/g, '').trim() : `Ad_${idx}`;
+                    let rawUrl = cellMatch[1] ? cellMatch[1].replace(/^"|"$/g, '').trim() : "";
+                    let multiplier = parseMultiplier(cellMatch[2] ? cellMatch[2].replace(/^"|"$/g, '').trim() : 1);
+                    
+                    let url = cleanRawUrl(rawUrl);
+                    if (url.startsWith('http') || url.startsWith('//') || url.startsWith('./') || url.startsWith('images/')) {
+                        items.push({ name: name, url: url, multiplier: multiplier, originalRow: idx + 1 });
                     }
-                }
-
-                let multiplier = parseMultiplier(cols[2]);
-                let url = formatBillboardImage(rawUrl);
-
-                if (url && (url.startsWith('http') || url.startsWith('//'))) {
-                    items.push({ name: name, url: url, multiplier: multiplier, originalRow: idx + 1 });
                 }
             });
 
@@ -674,6 +617,7 @@
         }
     }
 
+    // Fetches Global Tab
     async function fetchGlobalTabAds() {
         const variations = ['Global', 'global'];
         for (const v of variations) {
@@ -690,13 +634,15 @@
                     const items = [];
                     lines.forEach((line, idx) => {
                         if (idx === 0 || !line.trim()) return;
-                        const cols = parseCsvRow(line);
-                        let name = cols[0] ? cols[0].trim() : `Global_Row_${idx + 1}`;
-                        let rawUrl = cols[1] || cols[2] || "";
-                        let url = formatBillboardImage(rawUrl);
-                        let multiplier = parseMultiplier(cols[2]);
-                        if (url && (url.startsWith('http') || url.startsWith('//'))) {
-                            items.push({ name: name, url: url, multiplier: multiplier, originalRow: idx + 1 });
+                        const cellMatch = line.match(/(".*?"|[^,]+)/g);
+                        if (cellMatch) {
+                            let name = cellMatch[0] ? cellMatch[0].replace(/^"|"$/g, '').trim() : `Global_${idx}`;
+                            let rawUrl = cellMatch[1] ? cellMatch[1].replace(/^"|"$/g, '').trim() : "";
+                            let multiplier = parseMultiplier(cellMatch[2] ? cellMatch[2].replace(/^"|"$/g, '').trim() : 1);
+                            let url = cleanRawUrl(rawUrl);
+                            if (url.startsWith('http') || url.startsWith('//') || url.startsWith('./') || url.startsWith('images/')) {
+                                items.push({ name: name, url: url, multiplier: multiplier, originalRow: idx + 1 });
+                            }
                         }
                     });
                     if (items.length > 0) return items;
@@ -707,6 +653,7 @@
         return [];
     }
 
+    // Merges Active Town Tab + Global Tab in Exact Sequential Row Order
     async function fetchAdImages(isAutoSync = false) {
         try {
             const currentTab = activeConfig.tabName;
@@ -719,19 +666,21 @@
 
             let combinedAds = [...townAds, ...globalAds];
 
+            // Fallback: If both tabs are empty, fetch the primary published feed directly
             if (combinedAds.length === 0) {
                 const fallbackRes = await fetch(`${PUB_BASE_URL}?output=csv&t=${Date.now()}`);
                 const fallbackText = await fallbackRes.text();
                 const fallbackLines = fallbackText.split(/\r?\n/);
                 fallbackLines.forEach((line, idx) => {
                     if (idx === 0 || !line.trim()) return;
-                    const cols = parseCsvRow(line);
-                    let name = cols[0] ? cols[0].trim() : `Ad_Row_${idx + 1}`;
-                    let rawUrl = cols[1] || cols[2] || "";
-                    let url = formatBillboardImage(rawUrl);
-                    let multiplier = parseMultiplier(cols[2]);
-                    if (url && (url.startsWith('http') || url.startsWith('//'))) {
-                        combinedAds.push({ name, url, multiplier, originalRow: idx + 1 });
+                    const cellMatch = line.match(/(".*?"|[^,]+)/g);
+                    if (cellMatch && cellMatch[1]) {
+                        let name = cellMatch[0] ? cellMatch[0].replace(/^"|"$/g, '').trim() : `Ad_${idx}`;
+                        let url = cleanRawUrl(cellMatch[1]);
+                        let multiplier = parseMultiplier(cellMatch[2] ? cellMatch[2].replace(/^"|"$/g, '').trim() : 1);
+                        if (url.startsWith('http') || url.startsWith('//')) {
+                            combinedAds.push({ name: name, url: url, multiplier: multiplier, originalRow: idx + 1 });
+                        }
                     }
                 });
             }
@@ -747,7 +696,7 @@
         }
     }
 
-    // Line 570: Silent Skip Image Renderer - NO crossorigin="anonymous" to eliminate CORS errors on ourflora.com
+    // Direct v4.24 DOM Slide Injector + Silent Skip
     function renderSlides() {
         const viewport = document.getElementById('sk-ad-viewport');
         if (!viewport) return;
@@ -762,7 +711,7 @@
             image.src = url;
             image.setAttribute('referrerpolicy', 'no-referrer');
             
-            // Silent Skip: if an image fails, remove from rotation and advance seamlessly
+            // Silent Skip: if an image fails to load, remove it and advance without freezing
             image.onerror = function() {
                 slide.style.display = 'none';
                 const sIndex = adSlideElements.indexOf(slide);
