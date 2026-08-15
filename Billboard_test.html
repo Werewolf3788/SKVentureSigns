@@ -2,9 +2,9 @@
 <!-- ==========================================================================
      PROJECT: S&K Venture Signs - Universal Single-URL Programmatic Billboard Engine
      ADMIN / LEAD DEV: Werewolf (Werewolf3788)
-     VERSION: 34.0 (Option A: 20-Slot Dynamic Checker + Vistar Auto-Fill via Firebase)
+     VERSION: 36.0 (Balanced 50/50 Vistar & Blip Split with Dynamic Cross-Fill)
      PROTOCOL: Dual Compatibility over HTTP & HTTPS | Full Code | No-Strip
-     TIMESTAMP: Saturday, August 15, 2026, 14:24:28 EDT (24hr New York Time)
+     TIMESTAMP: Saturday, August 15, 2026, 14:33:10 EDT (24hr New York Time)
      
      FIREBASE RTDB: https://smlc-fuel-monitor-default-rtdb.firebaseio.com
      GA4 PROPERTY CONFIGURATION:
@@ -16,7 +16,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>S&K Venture Signs Billboard - 20 Slot Engine</title>
+    <title>S&K Venture Signs Billboard - Balanced Vistar & Blip Engine</title>
 
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐺</text></svg>">
@@ -40,8 +40,8 @@
 
         // Primary Site Tag: S&K Ventures (14-Month Data Retention, Signals Active)
         gtag('config', 'G-H6Q756MVE8', { 
-            'page_type': 'firebase_billboard_20_slot_engine', 
-            'layout_version': '34.0', 
+            'page_type': 'firebase_billboard_balanced_ssp_engine', 
+            'layout_version': '36.0', 
             'retention': '14_months',
             'traffic_type': 'internal'
         });
@@ -381,7 +381,7 @@
 </style>
 
 <!-- ==========================================================================
-     Line 287: JAVASCRIPT ENGINE (20-Slot Dynamic Checker + VAST Injection)
+     Line 287: JAVASCRIPT ENGINE (Balanced 50/50 Vistar & Blip Allocation)
      ========================================================================== -->
 <script>
 (function() {
@@ -414,7 +414,8 @@
         phone: "844-907-4450",
         screen_id: "SK-FLORA-01",
         venue_id: "SK-VENUE-IL-01",
-        vast_tag: "" 
+        vast_tag: "",  // Primary Vistar Media VAST endpoint
+        blip_tag: ""   // Primary Blip Billboards endpoint
     };
 
     let currentAdIndex = 0;
@@ -437,7 +438,7 @@
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    /* 4. PROGRAMMATIC VAST PARSER WITH DYNAMIC MACROS */
+    /* 4. DUAL VISTAR & BLIP MACRO INTERPOLATOR */
     function buildProgrammaticUrl(endpointUrl, locationMetadata) {
         if (!endpointUrl) return null;
         let resolvedUrl = endpointUrl;
@@ -464,12 +465,32 @@
             .replace(/\[HEIGHT\]/g, height);
     }
 
-    async function fetchProgrammaticAd(rawVastUrl, locationMetadata) {
-        const compiledUrl = buildProgrammaticUrl(rawVastUrl, locationMetadata);
+    /* 5. UNIVERSAL PROGRAMMATIC INGESTION (VAST XML + BLIP JSON) */
+    async function fetchProgrammaticAd(rawUrl, locationMetadata, providerName) {
+        const compiledUrl = buildProgrammaticUrl(rawUrl, locationMetadata);
         if (!compiledUrl) return null;
 
         try {
             const res = await fetch(compiledUrl, { cache: "no-store" });
+            const contentType = res.headers.get("content-type") || "";
+
+            // A. Handle Blip JSON Endpoints
+            if (contentType.includes("application/json") || providerName === "blip") {
+                const data = await res.json();
+                if (data && (data.image_url || data.media_url || data.url)) {
+                    const mediaUrl = data.image_url || data.media_url || data.url;
+                    const isVid = mediaUrl.match(/\.(mp4|webm)$/i);
+                    return {
+                        type: isVid ? 'video' : 'image',
+                        url: mediaUrl,
+                        isProgrammatic: true,
+                        provider: 'blip',
+                        impressions: data.impression_urls || (data.impression_url ? [data.impression_url] : [])
+                    };
+                }
+            }
+
+            // B. Handle Standard VAST XML (Vistar Media)
             const xmlText = await res.text();
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
@@ -484,15 +505,15 @@
 
             const mediaFile = xmlDoc.getElementsByTagName("MediaFile")[0];
             if (mediaFile && mediaFile.textContent) {
-                return { type: 'video', url: mediaFile.textContent.trim(), isProgrammatic: true, impressions: trackingUrls };
+                return { type: 'video', url: mediaFile.textContent.trim(), isProgrammatic: true, provider: 'vistar', impressions: trackingUrls };
             }
 
             const staticResource = xmlDoc.getElementsByTagName("StaticResource")[0];
             if (staticResource && staticResource.textContent) {
-                return { type: 'image', url: staticResource.textContent.trim(), isProgrammatic: true, impressions: trackingUrls };
+                return { type: 'image', url: staticResource.textContent.trim(), isProgrammatic: true, provider: 'vistar', impressions: trackingUrls };
             }
         } catch (e) {
-            console.warn("[SSP Engine] Programmatic fetch warning:", compiledUrl);
+            console.warn(`[Programmatic Engine] Fetch failed for ${providerName || 'SSP'}:`, compiledUrl);
         }
         return null;
     }
@@ -507,7 +528,7 @@
         });
     }
 
-    /* 5. INTERACTION HANDLERS */
+    /* 6. INTERACTION HANDLERS */
     window.handleInteraction = function() {
         const backBtn = document.getElementById('ghost-back-btn');
         const fsBtn = document.getElementById('fullscreen-toggle-btn');
@@ -553,7 +574,7 @@
         evt => document.addEventListener(evt, updateFsIcon)
     );
 
-    /* 6. DAY / NIGHT LIGHTING MODE */
+    /* 7. DAY / NIGHT LIGHTING MODE */
     function syncTimeTheme() {
         const root = document.getElementById('sk-billboard-root-container');
         if (!root) return;
@@ -568,7 +589,7 @@
         if (lastWeatherData) updateWeatherUI(lastWeatherData);
     }
 
-    /* 7. FIREBASE GEOFENCE & LOCATION ENGINE */
+    /* 8. FIREBASE GEOFENCE & LOCATION ENGINE */
     db.ref("billboard_network/Locations").on("value", snapshot => {
         const locations = snapshot.val();
         if (!locations) return;
@@ -608,15 +629,19 @@
         }
     });
 
-    /* 8. 20-SLOT DYNAMIC CHECKER & VAST INGESTION ENGINE */
+    /* 9. 20-SLOT BALANCED 50/50 VISTAR & BLIP ENGINE WITH CROSS-FILL */
     async function bindBillboardContent(locations, townKey, isRemotePreview) {
         const townData = locations[townKey] || locations["flora"] || {};
         const globalData = locations["global"] || {};
 
-        // Town VAST tag -> Global Network VAST tag -> Code Fallback
+        // Resolve Town-Specific vs Global Network tags
         const resolvedVastTag = (townData.vast_tag && townData.vast_tag.trim() !== "") 
             ? townData.vast_tag 
             : ((globalData.vast_tag && globalData.vast_tag.trim() !== "") ? globalData.vast_tag : activeLocation.vast_tag);
+
+        const resolvedBlipTag = (townData.blip_tag && townData.blip_tag.trim() !== "") 
+            ? townData.blip_tag 
+            : ((globalData.blip_tag && globalData.blip_tag.trim() !== "") ? globalData.blip_tag : activeLocation.blip_tag);
 
         activeLocation = {
             name: townData.name || townKey,
@@ -625,7 +650,8 @@
             phone: townData.phone || "844-907-4450",
             screen_id: townData.screen_id || `SK-${townKey.toUpperCase()}-01`,
             venue_id: townData.venue_id || `SK-VENUE-${townKey.toUpperCase()}`,
-            vast_tag: resolvedVastTag
+            vast_tag: resolvedVastTag,
+            blip_tag: resolvedBlipTag
         };
 
         const phoneDisplay = document.getElementById('sk-phone-display');
@@ -636,13 +662,14 @@
         }
 
         const rawAdQueue = [];
+        let openSlotCount = 0;
 
-        // Loop through all 20 fixed slots
+        // Iterate through all 20 fixed slots
         for (let slotNum = 1; slotNum <= TOTAL_ROTATION_SLOTS; slotNum++) {
             const slotKey = String(slotNum);
             const slotItem = townData[slotKey];
 
-            // 1. If slot has direct client image/video from Firebase, use it
+            // 1. Direct Local Advertiser from Firebase
             if (slotItem && slotItem.imageurl && slotItem.imageurl.trim() !== "") {
                 const isVideo = slotItem.imageurl.match(/\.(mp4|webm|ogg)$/i);
                 rawAdQueue.push({
@@ -652,9 +679,35 @@
                     isProgrammatic: false
                 });
             } 
-            // 2. If slot is blank or missing, automatically fetch Vistar Media programmatic creative
-            else if (activeLocation.vast_tag) {
-                const programmaticCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation);
+            // 2. Open Slot: Assign dynamically with 50/50 balance and cross-fill
+            else {
+                openSlotCount++;
+                let programmaticCreative = null;
+
+                // Alternate primary provider: Even-indexed empty slots target Vistar, Odd target Blip
+                const primaryProvider = (openSlotCount % 2 === 1) ? 'vistar' : 'blip';
+
+                if (primaryProvider === 'vistar' && activeLocation.vast_tag) {
+                    programmaticCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation, 'vistar');
+                    // Fallback to Blip if Vistar has no open ad
+                    if (!programmaticCreative && activeLocation.blip_tag) {
+                        programmaticCreative = await fetchProgrammaticAd(activeLocation.blip_tag, activeLocation, 'blip');
+                    }
+                } else if (primaryProvider === 'blip' && activeLocation.blip_tag) {
+                    programmaticCreative = await fetchProgrammaticAd(activeLocation.blip_tag, activeLocation, 'blip');
+                    // Fallback to Vistar if Blip has no open ad
+                    if (!programmaticCreative && activeLocation.vast_tag) {
+                        programmaticCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation, 'vistar');
+                    }
+                } else {
+                    // One-network fallback if only one tag is configured
+                    if (activeLocation.vast_tag) {
+                        programmaticCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation, 'vistar');
+                    } else if (activeLocation.blip_tag) {
+                        programmaticCreative = await fetchProgrammaticAd(activeLocation.blip_tag, activeLocation, 'blip');
+                    }
+                }
+
                 if (programmaticCreative) {
                     rawAdQueue.push({
                         slot: slotNum,
@@ -664,7 +717,7 @@
             }
         }
 
-        // Remote preview fallback: if viewing remotely and no local ads, load all town ads
+        // Remote preview fallback
         if (isRemotePreview && rawAdQueue.length === 0) {
             Object.keys(locations).forEach(tKey => {
                 const tObj = locations[tKey];
@@ -682,7 +735,7 @@
         }
     }
 
-    /* 9. SLIDE DISPLAY & ROTATION */
+    /* 10. SLIDE DISPLAY & ROTATION */
     function renderSlides() {
         const viewport = document.getElementById('sk-ad-viewport');
         if (!viewport) return;
@@ -746,7 +799,7 @@
         }
     }
 
-    /* 10. OPEN-METEO WEATHER FETCH */
+    /* 11. OPEN-METEO WEATHER FETCH */
     async function fetchWeather(lat, lon) {
         try {
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,is_day&temperature_unit=fahrenheit&timezone=auto`;
@@ -777,7 +830,7 @@
         }
     }
 
-    /* 11. 15-MINUTE BRANDING POSITION FLIPPER & 24HR TIME */
+    /* 12. 15-MINUTE BRANDING POSITION FLIPPER & 24HR TIME */
     function updateQuarterlySwap(quarter) {
         const logoGroup = document.querySelector('.sk-logo-group');
         const phoneDiv = document.querySelector('.sk-bottom-phone');
@@ -843,7 +896,7 @@
         }
     }
 
-    /* 12. INITIALIZATION & RECURRING TIMERS */
+    /* 13. ENGINE INITIALIZATION & RECURRING TIMERS */
     function initBillboard() {
         if (typeof lucide !== 'undefined') lucide.createIcons();
         syncTimeTheme();
