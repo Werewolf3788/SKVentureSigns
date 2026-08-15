@@ -1,21 +1,19 @@
 <!DOCTYPE html>
 <!-- 
-    PROJECT: S & K Ventures Billboard - Resilient Multi-Town & Weather Engine
+    PROJECT: S & K Ventures Billboard - Row Sequential Engine
     ADMIN: Kevin (Werewolf3788)
-    VERSION: 6.1 (Decoupled Weather Engine + Bulletproof Timing Sanitizer + Comma Multi-Town + Multi-CDN)
+    VERSION: 7.3 (Sequential Row-Order Indexing + Town & Global Merging + Multi-CDN)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: Sat, Aug 15, 2026 | 00:01 AM EDT (New York Time)
+    TIMESTAMP: Sat, Aug 15, 2026 | 00:35:17 AM EDT (New York Time)
     
-    GOOGLE SHEET CSV SCHEMA:
-      - Column A (Index 0): Business / Ad Name (Used for A-Z sorting)
-      - Column B (Index 1): Category / Tag
-      - Column C (Index 2): Ad Image Link (PNG, JPG, JPEG, GIF, WEBP, SVG, Google Drive)
-      - Column D (Index 3): Target Town(s) (e.g. "Altamont, Flora, Xenia" or Blank/Global)
-      - Column E (Index 4): Frequency Multiplier (1, 2, 3, 4, etc. Defaults to 1)
+    GOOGLE SHEET TAB SCHEMA (Per Tab):
+      - Column A (Index 0): Name (Display/Reference)
+      - Column B (Index 1): Image URL (PNG, JPG, JPEG, GIF, WEBP, SVG, Google Drive)
+      - Column C (Index 2): Rotation Count (1, 2, 3, etc. Defaults to 1)
 
-    HOW TO CONFIGURE:
-      - Active Town: Set in LINE 57 via data-billboard-location
-      - Slide Seconds: Set in LINE 309 via DISPLAY_SECONDS
+    HOW IT OPERATES:
+      - Reads rows top-to-bottom exactly as numbered in Google Sheets
+      - Loads the Town Tab first (Row 2 to End), then merges the Global Tab
 -->
 <html lang="en">
 <head>
@@ -27,7 +25,7 @@
     <link href="//fonts.googleapis.com/css2?family=Great+Vibes&family=Satisfy&family=Pinyon+Script&family=Rouge+Script&family=Alex+Brush&display=swap" rel="stylesheet">
 
     <!-- Framework Assets scoped for the Widget -->
-    <script src="//cdn.tailwindcss.com?v=6.1"></script>
+    <script src="//cdn.tailwindcss.com?v=7.3"></script>
     <script src="//unpkg.com/lucide@latest"></script>
 
     <!-- Google Analytics Dual Tracking: S&K Ventures (G-H6Q756MVE8) & Kevin (G-L376P3NPY4) -->
@@ -39,8 +37,8 @@
         gtag('js', new Date());
         
         gtag('config', 'G-H6Q756MVE8', { 
-            'page_type': 'billboard_widget_v6.1', 
-            'layout_version': '6.1',
+            'page_type': 'billboard_widget_v7.3', 
+            'layout_version': '7.3',
             'retention': '14_months'
         });
         gtag('config', 'G-L376P3NPY4');
@@ -51,9 +49,9 @@
 <!-- ================================================================= -->
 <!-- ★ ACTIVE BILLBOARD TOWN CONFIGURATION ★                           -->
 <!-- LOCATION: LINE 57 BELOW                                           -->
-<!-- Change data-billboard-location to one of the following towns:     -->
-<!-- "Altamont", "Brownstown", "ClayCity", "DeSoto", "Flora",          -->
-<!-- "Marshall", "Oliver", "Xenia", or "All" (for Global view)         -->
+<!-- Change data-billboard-location to match your Google Sheet Tab:    -->
+<!-- "Altamont", "Brownstown", "Clay City", "De Soto", "Flora",        -->
+<!-- "Marshall", "Oliver", "Xenia Billboard", "Xenia TV", "Flora Tv"   -->
 <!-- ================================================================= -->
 <div id="sk-billboard-root-container" class="light-mode" data-billboard-location="Altamont" onmousemove="handleInteraction()" ontouchstart="handleInteraction()">
 
@@ -108,7 +106,7 @@
 </div>
 
 <!-- ================================================================= -->
-<!-- ★ CSS STYLES (LINE 110 TO LINE 300) ★                             -->
+<!-- ★ CSS STYLES (LINE 110 TO LINE 320) ★                             -->
 <!-- ================================================================= -->
 <style>
     /* PAGE RESET */
@@ -252,16 +250,22 @@
 
     .sk-ad-slide.active { display: flex !important; }
 
+    /* DAYTIME: MAXIMUM OUTDOOR SUNLIGHT BRIGHTNESS */
     .sk-ad-slide img {
         width: 100% !important;
         height: 100% !important;
         object-fit: fill !important; 
-        filter: saturate(1.1) contrast(1.05) brightness(0.95) !important;
-        transition: filter 0.8s ease !important;
+        filter: saturate(1.15) contrast(1.05) brightness(1.05) !important;
+        transition: filter 1.5s ease-in-out !important;
     }
 
+    /* NIGHTTIME: CONTROLLED BILLBOARD DIMMING */
     .dark-mode .sk-ad-slide img {
-        filter: saturate(1.1) contrast(1.05) brightness(0.75) !important;
+        filter: saturate(1.05) contrast(0.98) brightness(0.72) !important;
+    }
+
+    .dark-mode #sk-bottom-bar {
+        background: #2b0100 !important;
     }
 
     #sk-bottom-bar {
@@ -279,6 +283,7 @@
         z-index: 10 !important;
         flex-wrap: nowrap !important;
         white-space: nowrap !important;
+        transition: background 1.5s ease-in-out !important;
     }
 
     .sk-logo-group, .sk-bottom-phone, .sk-info-stack {
@@ -379,60 +384,58 @@
 </style>
 
 <!-- ================================================================= -->
-<!-- ★ JAVASCRIPT ENGINE (LINE 305 TO LINE 600) ★                      -->
+<!-- ★ JAVASCRIPT ENGINE (LINE 325 TO LINE 650) ★                      -->
 <!-- ================================================================= -->
 <script>
 (function() {
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9aXB9z9jcsaA0U-LsuV4nIHwIIw2huGB8zaalh7It4GQP_DWFFdQ4Utaw_ajkdhx5ydn87BcfS82d/pub?gid=0&single=true&output=csv";
-    
-    // =================================================================
-    // ★ ROTATION TIMING CONFIGURATION ★
-    // Enter seconds (e.g., 12, 15, "15s") or milliseconds (12000).
-    // =================================================================
+    const SPREADSHEET_ID = "1iEt3DWDcDtOCfwixzPZWVWbvr64emJSQNN54SmUayXQ";
+    const PUB_BASE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9aXB9z9jcsaA0U-LsuV4nIHwIIw2huGB8zaalh7It4GQP_DWFFdQ4Utaw_ajkdhx5ydn87BcfS82d/pub";
     const DISPLAY_SECONDS = 12; 
 
-    // Bulletproof Timing Sanitizer
     function sanitizeInterval(val) {
         if (!val) return 12000;
         const cleaned = String(val).replace(/[^0-9.]/g, '');
         let num = parseFloat(cleaned);
         if (isNaN(num) || num <= 0) return 12000;
-        // If owner put seconds (e.g. 10 or 15 instead of 10000 or 15000)
         if (num < 1000) num = num * 1000;
-        return Math.max(num, 3000); // Enforce minimum 3 second rotation guard
+        return Math.max(num, 3000);
     }
 
     const displayInterval = sanitizeInterval(DISPLAY_SECONDS);
     
-    // Master Coordinates Matrix for Live Weather & Daylight Theme
+    // Master Coordinates for Weather & Solar Day/Night calculations
     const BILLBOARD_LOCATIONS = {
-        'altamont':   { name: 'Altamont, IL',   lat: 38.989268, lon: -88.959890 },
-        'brownstown': { name: 'Brownstown, IL', lat: 38.677100, lon: -88.391531 },
-        'claycity':   { name: 'Clay City, IL',  lat: 37.802706, lon: -89.226319 },
-        'desoto':     { name: 'De Soto, IL',    lat: 37.802706, lon: -89.226319 },
-        'flora':      { name: 'Flora, IL',      lat: 38.668700, lon: -88.485300 },
-        'marshall':   { name: 'Marshall, IL',   lat: 39.383585, lon: -87.721159 },
-        'oliver':     { name: 'Oliver, IL',     lat: 39.490667, lon: -87.682008 },
-        'xenia':      { name: 'Xenia, IL',      lat: 38.518540, lon: -88.649680 },
-        'default':    { name: 'S&K Ventures',   lat: 39.124300, lon: -88.552500 }
+        'altamont':       { name: 'Altamont, IL',       tab: 'Altamont',         lat: 38.989268, lon: -88.959890 },
+        'brownstown':     { name: 'Brownstown, IL',     tab: 'Brownstown',       lat: 38.677100, lon: -88.391531 },
+        'claycity':       { name: 'Clay City, IL',      tab: 'Clay City',        lat: 37.802706, lon: -89.226319 },
+        'desoto':         { name: 'De Soto, IL',        tab: 'De Soto',          lat: 37.802706, lon: -89.226319 },
+        'flora':          { name: 'Flora, IL',          tab: 'Flora',            lat: 38.668700, lon: -88.485300 },
+        'floratv':        { name: 'Flora TV, IL',       tab: 'Flora Tv',         lat: 38.668700, lon: -88.485300 },
+        'marshall':       { name: 'Marshall, IL',       tab: 'Marshall',         lat: 39.383585, lon: -87.721159 },
+        'oliver':         { name: 'Oliver, IL',         tab: 'Oliver',           lat: 39.490667, lon: -87.682008 },
+        'xeniabillboard': { name: 'Xenia Billboard, IL', tab: 'Xenia Billboard',  lat: 38.518540, lon: -88.649680 },
+        'xeniatv':        { name: 'Xenia TV, IL',        tab: 'Xenia TV',         lat: 38.518540, lon: -88.649680 },
+        'xenia':          { name: 'Xenia, IL',          tab: 'Xenia Billboard',  lat: 38.518540, lon: -88.649680 },
+        'global':         { name: 'Global Hub',         tab: 'Global',           lat: 39.124300, lon: -88.552500 }
     };
 
     function getActiveLocation() {
         const rootEl = document.getElementById('sk-billboard-root-container');
         const htmlAttrLocation = rootEl ? rootEl.getAttribute('data-billboard-location') : null;
         const urlParams = new URLSearchParams(window.location.search);
-        const urlLocation = urlParams.get('loc') || urlParams.get('location') || urlParams.get('billboard');
+        const urlLocation = urlParams.get('loc') || urlParams.get('location') || urlParams.get('billboard') || urlParams.get('tab');
         
-        const chosen = (htmlAttrLocation || urlLocation || 'default').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const raw = (htmlAttrLocation || urlLocation || 'Altamont').trim();
+        const key = raw.toLowerCase().replace(/[^a-z0-9]/g, '');
+        
         return {
-            key: chosen,
-            data: BILLBOARD_LOCATIONS[chosen] || BILLBOARD_LOCATIONS['default']
+            key: key,
+            tabName: raw,
+            coords: BILLBOARD_LOCATIONS[key] || { lat: 38.989268, lon: -88.959890 }
         };
     }
 
-    const activeLocConfig = getActiveLocation();
-    const requestedLocKey = activeLocConfig.key;
-    const activeLocation = activeLocConfig.data;
+    const activeConfig = getActiveLocation();
 
     let currentAdIndex = 0;
     let adSlideElements = [];
@@ -488,8 +491,16 @@
     function syncTimeTheme() {
         const root = document.getElementById('sk-billboard-root-container');
         if (!root) return;
-        let isNightTime = (isNightTimeSolar !== null) ? isNightTimeSolar : (new Date().getHours() < 6 || new Date().getHours() >= 19);
-        if (isNightTime) {
+        
+        let isNight = false;
+        if (isNightTimeSolar !== null) {
+            isNight = isNightTimeSolar;
+        } else {
+            const currentHour = new Date().getHours();
+            isNight = (currentHour < 6 || currentHour >= 19);
+        }
+
+        if (isNight) {
             root.classList.add('dark-mode');
             root.classList.remove('light-mode');
         } else {
@@ -546,17 +557,7 @@
         return (!isNaN(num) && num > 0) ? num : 1;
     }
 
-    function isTownMatchingLocation(rowLocationString, currentTownKey) {
-        if (!rowLocationString || rowLocationString === '' || rowLocationString === 'global' || rowLocationString === 'all' || rowLocationString === 'none') {
-            return true;
-        }
-        if (currentTownKey === 'default' || currentTownKey === 'all' || currentTownKey === 'global') {
-            return true;
-        }
-        const targetTowns = rowLocationString.split(',').map(t => t.toLowerCase().replace(/[^a-z0-9]/g, '').trim());
-        return targetTowns.includes(currentTownKey);
-    }
-
+    // Spread Multiplexer Shuffle (Preserves exact Row-Order while spreading multipliers without duplicate back-to-backs)
     function distributeSpreadAds(items) {
         if (!items || items.length === 0) return [];
         if (items.length === 1) {
@@ -565,7 +566,8 @@
             return res;
         }
 
-        const pool = items.map(item => ({
+        const pool = items.map((item, idx) => ({
+            rowIndex: idx,
             name: item.name,
             url: item.url,
             remaining: item.multiplier
@@ -575,12 +577,13 @@
         let previousUrl = null;
 
         while (pool.some(item => item.remaining > 0)) {
-            const activePool = pool.filter(item => item.remaining > 0)
-                                   .sort((a, b) => b.remaining - a.remaining);
-
-            let candidate = activePool.find(item => item.url !== previousUrl);
+            // Filter available ads in sequential row order
+            const available = pool.filter(item => item.remaining > 0);
+            
+            // Prefer next available ad that is not the same as the previous slide
+            let candidate = available.find(item => item.url !== previousUrl);
             if (!candidate) {
-                candidate = activePool[0];
+                candidate = available[0];
             }
 
             result.push(candidate.url);
@@ -591,70 +594,95 @@
         return result;
     }
 
-    async function fetchAdImages(isAutoSync = false) {
+    // Fetches CSV for any given tab name
+    async function fetchCsvByTabName(tabName) {
+        if (!tabName) return [];
+        const encodedTab = encodeURIComponent(tabName.trim());
+        const url1 = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodedTab}&t=${Date.now()}`;
+        const url2 = `${PUB_BASE_URL}?output=csv&sheet=${encodedTab}&t=${Date.now()}`;
+
         try {
-            const res = await fetch(`${CSV_URL}&t=${Date.now()}`);
+            let res = await fetch(url1);
+            if (!res.ok) res = await fetch(url2);
+            if (!res.ok) return [];
+            
             const text = await res.text();
             const lines = text.split(/\r?\n/);
-            let parsedItems = [];
-            
-            lines.forEach((line, idx) => {
-                if (idx === 0 || !line.trim()) return;
-                
-                const cols = parseCsvRow(line);
-                let name = cols[0] ? cols[0].trim() : `Ad_${idx}`;
-                
-                let rawUrl = "";
-                for (let c = 0; c < cols.length; c++) {
-                    const colVal = (cols[c] || '').trim();
-                    if (colVal.startsWith("http://") || colVal.startsWith("https://") || colVal.includes("drive.google.com") || colVal.startsWith("//")) {
-                        rawUrl = colVal;
-                        break;
-                    }
-                }
-                
-                let rawLocation = (cols[3] !== undefined && !cols[3].startsWith('http') ? cols[3] : (cols[1] || "")).toLowerCase().trim();
-                let multiplier = parseMultiplier(cols[4]);
-                let url = formatBillboardImage(rawUrl);
-                
-                if (url && url.startsWith('http')) {
-                    if (isTownMatchingLocation(rawLocation, requestedLocKey)) {
-                        parsedItems.push({ name: name, url: url, multiplier: multiplier });
-                    }
-                }
-            });
+            const items = [];
 
-            if (parsedItems.length === 0) {
-                lines.forEach((line, idx) => {
-                    if (idx === 0 || !line.trim()) return;
-                    const cols = parseCsvRow(line);
-                    let name = cols[0] ? cols[0].trim() : `Ad_${idx}`;
-                    let rawUrl = "";
+            lines.forEach((line, idx) => {
+                if (idx === 0 || !line.trim()) return; // Skip Header Row (Row 1)
+                const cols = parseCsvRow(line);
+
+                let name = cols[0] ? cols[0].trim() : `Ad_Row_${idx + 1}`;
+                let rawUrl = cols[1] || "";
+                
+                if (!rawUrl || (!rawUrl.includes("http") && !rawUrl.includes("drive.google"))) {
                     for (let c = 0; c < cols.length; c++) {
-                        const colVal = (cols[c] || '').trim();
-                        if (colVal.startsWith("http://") || colVal.startsWith("https://") || colVal.includes("drive.google.com") || colVal.startsWith("//")) {
-                            rawUrl = colVal;
+                        const val = (cols[c] || '').trim();
+                        if (val.startsWith("http://") || val.startsWith("https://") || val.includes("drive.google.com") || val.startsWith("//")) {
+                            rawUrl = val;
                             break;
                         }
                     }
+                }
+
+                let multiplier = parseMultiplier(cols[2]);
+                let url = formatBillboardImage(rawUrl);
+
+                if (url && url.startsWith('http')) {
+                    items.push({ name: name, url: url, multiplier: multiplier, originalRow: idx + 1 });
+                }
+            });
+
+            return items;
+        } catch (e) {
+            return [];
+        }
+    }
+
+    // Fetches Active Town Tab + Global Tab in Exact Row Order
+    async function fetchAdImages(isAutoSync = false) {
+        try {
+            const currentTab = activeConfig.tabName;
+            const isTargetGlobal = (currentTab.toLowerCase() === 'global');
+            
+            // Fetch Town Tab and Global Tab
+            const [townAds, globalAds] = await Promise.all([
+                fetchCsvByTabName(currentTab),
+                !isTargetGlobal ? fetchCsvByTabName('Global') : Promise.resolve([])
+            ]);
+
+            // Keep strict row order: Town Tab rows first, followed by Global Tab rows
+            let combinedAds = [...townAds, ...globalAds];
+
+            // Fallback: If both tabs were empty, fetch the default published feed
+            if (combinedAds.length === 0) {
+                const fallbackRes = await fetch(`${PUB_BASE_URL}?output=csv&t=${Date.now()}`);
+                const fallbackText = await fallbackRes.text();
+                const fallbackLines = fallbackText.split(/\r?\n/);
+                fallbackLines.forEach((line, idx) => {
+                    if (idx === 0 || !line.trim()) return;
+                    const cols = parseCsvRow(line);
+                    let name = cols[0] ? cols[0].trim() : `Ad_Row_${idx + 1}`;
+                    let rawUrl = cols[1] || cols[2] || "";
                     let url = formatBillboardImage(rawUrl);
-                    let multiplier = parseMultiplier(cols[4]);
+                    let multiplier = parseMultiplier(cols[2]);
                     if (url && url.startsWith('http')) {
-                        parsedItems.push({ name: name, url: url, multiplier: multiplier });
+                        combinedAds.push({ name, url, multiplier, originalRow: idx + 1 });
                     }
                 });
             }
 
-            parsedItems.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
-
-            const finalUrls = distributeSpreadAds(parsedItems);
+            // Distribute through Spread Multiplier in row order (No back-to-back repeats)
+            const finalUrls = distributeSpreadAds(combinedAds);
 
             if (finalUrls.length > 0 && JSON.stringify(finalUrls) !== JSON.stringify(currentImageUrls)) {
                 currentImageUrls = finalUrls;
                 renderSlides();
             }
         } catch (e) { 
-            console.warn("Billboard Ad Fetch Warning:", e); 
+            console.warn("Billboard Row Sequential Engine Warning:", e); 
         }
     }
 
@@ -682,7 +710,6 @@
                     this.dataset.fallbackTried = "2";
                     this.src = `https://drive.google.com/uc?export=view&id=${driveId}`;
                 } else {
-                    console.warn("Pruned unresolvable ad link:", url);
                     slide.style.display = 'none';
                     const sIndex = adSlideElements.indexOf(slide);
                     if (sIndex > -1) adSlideElements.splice(sIndex, 1);
@@ -698,15 +725,17 @@
         });
     }
 
-    // Direct isolated Weather Engine
     async function fetchWeather(lat, lon) {
         try {
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,is_day&temperature_unit=fahrenheit&timezone=auto`;
             const res = await fetch(url);
             if (!res.ok) return null;
             const data = await res.json();
+            
             if (data.timezone) targetTimeZone = data.timezone;
-            if (data.current && data.current.is_day !== undefined) isNightTimeSolar = (data.current.is_day === 0);
+            if (data.current && data.current.is_day !== undefined) {
+                isNightTimeSolar = (data.current.is_day === 0);
+            }
             
             if (data.current && data.current.temperature_2m !== undefined) {
                 const weatherData = { 
@@ -718,7 +747,6 @@
             }
             return null;
         } catch(e) { 
-            console.warn("Open-Meteo Weather Fetch Warning:", e);
             return null; 
         }
     }
@@ -813,24 +841,26 @@
     async function startBillboard() {
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
-        // 1. Launch Isolated Weather Sync
-        fetchWeather(activeLocation.lat, activeLocation.lon).then(w => {
+        // 1. Fetch Weather for Town Coordinates
+        fetchWeather(activeConfig.coords.lat, activeConfig.coords.lon).then(w => {
             updateWeatherUI(w);
             syncTimeTheme();
         });
 
-        // 2. Launch Local Clock
+        // 2. Start Clock
         updateLocalTime();
         setInterval(updateLocalTime, 1000);
 
-        // 3. Fetch Initial Ad Stream & Start Rotation
+        // 3. Fetch Tab + Global Ads in Row Sequence & Start Rotation
         await fetchAdImages();
         setInterval(rotateAds, displayInterval);
 
-        // 4. Background Sync Intervals
+        // 4. Background Sync (Weather every 5 min, Ads every 1 min)
         setInterval(() => {
-            fetchWeather(activeLocation.lat, activeLocation.lon).then(w => updateWeatherUI(w));
-            syncTimeTheme();
+            fetchWeather(activeConfig.coords.lat, activeConfig.coords.lon).then(w => {
+                updateWeatherUI(w);
+                syncTimeTheme();
+            });
         }, 300000); 
 
         setInterval(() => fetchAdImages(true), 60000);
