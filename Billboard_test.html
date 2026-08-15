@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <!-- 
-    PROJECT: S & K Ventures Billboard - Row Sequential Engine
+    PROJECT: S & K Ventures Billboard - Clean Dual-Tab Engine
     ADMIN: Kevin (Werewolf3788)
-    VERSION: 7.3 (Sequential Row-Order Indexing + Town & Global Merging + Multi-CDN)
+    VERSION: 7.5 (Clean "Global" Tab + Town Tab Direct Sync + Row Order Indexing)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: Sat, Aug 15, 2026 | 00:35:17 AM EDT (New York Time)
+    TIMESTAMP: Sat, Aug 15, 2026 | 00:42:00 AM EDT (New York Time)
     
     GOOGLE SHEET TAB SCHEMA (Per Tab):
       - Column A (Index 0): Name (Display/Reference)
       - Column B (Index 1): Image URL (PNG, JPG, JPEG, GIF, WEBP, SVG, Google Drive)
       - Column C (Index 2): Rotation Count (1, 2, 3, etc. Defaults to 1)
 
-    HOW IT OPERATES:
-      - Reads rows top-to-bottom exactly as numbered in Google Sheets
-      - Loads the Town Tab first (Row 2 to End), then merges the Global Tab
+    HOW TO CONFIGURE TOWN:
+      - Set active tab name below in LINE 57 via data-billboard-location
 -->
 <html lang="en">
 <head>
@@ -25,7 +24,7 @@
     <link href="//fonts.googleapis.com/css2?family=Great+Vibes&family=Satisfy&family=Pinyon+Script&family=Rouge+Script&family=Alex+Brush&display=swap" rel="stylesheet">
 
     <!-- Framework Assets scoped for the Widget -->
-    <script src="//cdn.tailwindcss.com?v=7.3"></script>
+    <script src="//cdn.tailwindcss.com?v=7.5"></script>
     <script src="//unpkg.com/lucide@latest"></script>
 
     <!-- Google Analytics Dual Tracking: S&K Ventures (G-H6Q756MVE8) & Kevin (G-L376P3NPY4) -->
@@ -37,8 +36,8 @@
         gtag('js', new Date());
         
         gtag('config', 'G-H6Q756MVE8', { 
-            'page_type': 'billboard_widget_v7.3', 
-            'layout_version': '7.3',
+            'page_type': 'billboard_widget_v7.5', 
+            'layout_version': '7.5',
             'retention': '14_months'
         });
         gtag('config', 'G-L376P3NPY4');
@@ -52,6 +51,7 @@
 <!-- Change data-billboard-location to match your Google Sheet Tab:    -->
 <!-- "Altamont", "Brownstown", "Clay City", "De Soto", "Flora",        -->
 <!-- "Marshall", "Oliver", "Xenia Billboard", "Xenia TV", "Flora Tv"   -->
+<!-- (The 'Global' tab is automatically mixed into whichever town is set)-->
 <!-- ================================================================= -->
 <div id="sk-billboard-root-container" class="light-mode" data-billboard-location="Altamont" onmousemove="handleInteraction()" ontouchstart="handleInteraction()">
 
@@ -384,7 +384,7 @@
 </style>
 
 <!-- ================================================================= -->
-<!-- ★ JAVASCRIPT ENGINE (LINE 325 TO LINE 650) ★                      -->
+<!-- ★ JAVASCRIPT ENGINE (LINE 325 TO LINE 670) ★                      -->
 <!-- ================================================================= -->
 <script>
 (function() {
@@ -557,7 +557,7 @@
         return (!isNaN(num) && num > 0) ? num : 1;
     }
 
-    // Spread Multiplexer Shuffle (Preserves exact Row-Order while spreading multipliers without duplicate back-to-backs)
+    // Spread Multiplexer Shuffle (Preserves Row-Order while spreading multipliers without duplicate back-to-backs)
     function distributeSpreadAds(items) {
         if (!items || items.length === 0) return [];
         if (items.length === 1) {
@@ -577,10 +577,8 @@
         let previousUrl = null;
 
         while (pool.some(item => item.remaining > 0)) {
-            // Filter available ads in sequential row order
             const available = pool.filter(item => item.remaining > 0);
             
-            // Prefer next available ad that is not the same as the previous slide
             let candidate = available.find(item => item.url !== previousUrl);
             if (!candidate) {
                 candidate = available[0];
@@ -594,10 +592,11 @@
         return result;
     }
 
-    // Fetches CSV for any given tab name
+    // Fetches CSV for any given tab name with robust encoding & fallbacks
     async function fetchCsvByTabName(tabName) {
         if (!tabName) return [];
-        const encodedTab = encodeURIComponent(tabName.trim());
+        const cleanTabName = tabName.trim();
+        const encodedTab = encodeURIComponent(cleanTabName);
         const url1 = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodedTab}&t=${Date.now()}`;
         const url2 = `${PUB_BASE_URL}?output=csv&sheet=${encodedTab}&t=${Date.now()}`;
 
@@ -607,11 +606,13 @@
             if (!res.ok) return [];
             
             const text = await res.text();
+            if (!text || text.includes("<!DOCTYPE html>")) return [];
+            
             const lines = text.split(/\r?\n/);
             const items = [];
 
             lines.forEach((line, idx) => {
-                if (idx === 0 || !line.trim()) return; // Skip Header Row (Row 1)
+                if (idx === 0 || !line.trim()) return; // Skip Header
                 const cols = parseCsvRow(line);
 
                 let name = cols[0] ? cols[0].trim() : `Ad_Row_${idx + 1}`;
@@ -641,22 +642,55 @@
         }
     }
 
+    // Fetches the Global Tab using both named query and direct first-tab index (gid=0)
+    async function fetchGlobalTabAds() {
+        // 1. Try named tab 'Global'
+        let ads = await fetchCsvByTabName('Global');
+        if (ads && ads.length > 0) return ads;
+
+        // 2. Try raw published base URL (gid=0 index for first tab)
+        try {
+            const res = await fetch(`${PUB_BASE_URL}?output=csv&gid=0&t=${Date.now()}`);
+            if (res.ok) {
+                const text = await res.text();
+                if (text && !text.includes("<!DOCTYPE html>")) {
+                    const lines = text.split(/\r?\n/);
+                    const items = [];
+                    lines.forEach((line, idx) => {
+                        if (idx === 0 || !line.trim()) return;
+                        const cols = parseCsvRow(line);
+                        let name = cols[0] ? cols[0].trim() : `Global_Row_${idx + 1}`;
+                        let rawUrl = cols[1] || cols[2] || "";
+                        let url = formatBillboardImage(rawUrl);
+                        let multiplier = parseMultiplier(cols[2]);
+                        if (url && url.startsWith('http')) {
+                            items.push({ name: name, url: url, multiplier: multiplier, originalRow: idx + 1 });
+                        }
+                    });
+                    if (items.length > 0) return items;
+                }
+            }
+        } catch (e) {}
+
+        return [];
+    }
+
     // Fetches Active Town Tab + Global Tab in Exact Row Order
     async function fetchAdImages(isAutoSync = false) {
         try {
             const currentTab = activeConfig.tabName;
             const isTargetGlobal = (currentTab.toLowerCase() === 'global');
             
-            // Fetch Town Tab and Global Tab
+            // Simultaneously fetch Town Tab & Global Tab
             const [townAds, globalAds] = await Promise.all([
                 fetchCsvByTabName(currentTab),
-                !isTargetGlobal ? fetchCsvByTabName('Global') : Promise.resolve([])
+                !isTargetGlobal ? fetchGlobalTabAds() : Promise.resolve([])
             ]);
 
-            // Keep strict row order: Town Tab rows first, followed by Global Tab rows
+            // Combine ads: Town Tab rows first, then Global Tab rows
             let combinedAds = [...townAds, ...globalAds];
 
-            // Fallback: If both tabs were empty, fetch the default published feed
+            // Fallback: If both tabs were empty, fetch the primary published sheet feed
             if (combinedAds.length === 0) {
                 const fallbackRes = await fetch(`${PUB_BASE_URL}?output=csv&t=${Date.now()}`);
                 const fallbackText = await fallbackRes.text();
@@ -682,7 +716,7 @@
                 renderSlides();
             }
         } catch (e) { 
-            console.warn("Billboard Row Sequential Engine Warning:", e); 
+            console.warn("Billboard Dual Tab Sync Engine Warning:", e); 
         }
     }
 
@@ -851,7 +885,7 @@
         updateLocalTime();
         setInterval(updateLocalTime, 1000);
 
-        // 3. Fetch Tab + Global Ads in Row Sequence & Start Rotation
+        // 3. Fetch Active Tab + Global Tab Ads in Row Sequence & Start Rotation
         await fetchAdImages();
         setInterval(rotateAds, displayInterval);
 
