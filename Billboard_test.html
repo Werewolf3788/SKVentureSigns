@@ -1,26 +1,28 @@
 <!DOCTYPE html>
 <!-- 
-    PROJECT: S & K Ventures Billboard - NovaStar TB40 Dedicated Engine
+    PROJECT: S&K Venture Signs - Universal Single-URL Programmatic Billboard Engine
     ADMIN: Werewolf (Werewolf3788)
-    VERSION: 9.0 (NovaStar TB40 Android WebView Optimized + ViPlex / VNNOX Ready)
-    STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: Sat, Aug 15, 2026 | 01:34:00 AM EDT (New York Time)
+    VERSION: 27.0 (Single URL Everywhere: Auto GPS Geofence + Smart Remote Fallback + Global & VAST Support)
+    PROTOCOL: Works over HTTP & HTTPS | Full Code | No-Strip
+    TIMESTAMP: Saturday, August 15, 2026, 03:05:00 AM EDT (24hr New York Time)
     
-    SOURCE: https://docs.google.com/spreadsheets/d/e/2PACX-1vT9aXB9z9jcsaA0U-LsuV4nIHwIIw2huGB8zaalh7It4GQP_DWFFdQ4Utaw_ajkdhx5ydn87BcfS82d/pub?gid=0&single=true&output=csv
+    FIREBASE RTDB: https://smlc-fuel-monitor-default-rtdb.firebaseio.com
 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>S & K Ventures Billboard - TB40</title>
+    <title>S&K Venture Signs Billboard</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐺</text></svg>">
 
-    <!-- Font Imports -->
+    <!-- Fonts & Icons (Protocol-relative for http & https) -->
     <link href="//fonts.googleapis.com/css2?family=Great+Vibes&family=Satisfy&family=Pinyon+Script&family=Rouge+Script&family=Alex+Brush&display=swap" rel="stylesheet">
-
-    <!-- Icon Asset -->
     <script src="//unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase App & Realtime Database SDKs -->
+    <script src="//www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="//www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <!-- Google Analytics: Dual Tracking -->
     <script async src="//www.googletagmanager.com/gtag/js?id=G-H6Q756MVE8"></script>
@@ -29,7 +31,7 @@
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-H6Q756MVE8', { 'page_type': 'tb40_billboard_widget_v9.0', 'layout_version': '9.0', 'retention': '14_months' });
+        gtag('config', 'G-H6Q756MVE8', { 'page_type': 'firebase_billboard_single_url', 'layout_version': '27.0', 'retention': '14_months' });
         gtag('config', 'G-L376P3NPY4');
     </script>
 </head>
@@ -37,7 +39,7 @@
 
 <div id="sk-billboard-root-container" class="light-mode" onmousemove="handleInteraction()" ontouchstart="handleInteraction()">
 
-    <!-- Mobile / Portrait Lock Overlay -->
+    <!-- Mobile Portrait Lock Overlay -->
     <div id="landscape-lock">
         <div class="lock-content">
             <i data-lucide="rotate-cw" style="width: 64px; height: 64px; margin-bottom: 16px;"></i>
@@ -58,12 +60,11 @@
     </button>
 
     <div id="sk-billboard-display">
-        <!-- Ad Stage: Viewport -->
+        <!-- Ad Stage Viewport -->
         <div id="sk-ad-viewport"></div>
 
-        <!-- Full-Width Bottom Bar: Branding, Weather, & Time -->
+        <!-- Full-Width Bottom Bar -->
         <div id="sk-bottom-bar">
-            <!-- Brand Logo Slot -->
             <div class="sk-logo-group">
                 <div class="sk-logo">
                     <img src="//raw.githack.com/Werewolf3788/SKVentureSigns/main/images/S%26K%20Name.png" 
@@ -74,10 +75,8 @@
                 </div>
             </div>
             
-            <!-- Phone Number Slot -->
-            <div class="sk-bottom-phone">844-907-4450</div>
+            <div class="sk-bottom-phone" id="sk-phone-display">844-907-4450</div>
             
-            <!-- Weather & Clock Slot -->
             <div class="sk-info-stack">
                 <div class="sk-weather">
                     <div id="sk-temp-val">--°</div>
@@ -86,14 +85,10 @@
             </div>
         </div>
 
-        <!-- Hardware LED Vignette Overlay -->
         <div class="sk-led-overlay"></div>
     </div>
 </div>
 
-<!-- ================================================================= -->
-<!-- ★ SELF-CONTAINED CSS (OPTIMIZED FOR NOVASTAR ANDROID WEBVIEW) ★  -->
-<!-- ================================================================= -->
 <style>
     /* HARDWARE LEVEL RESET */
     html, body {
@@ -208,7 +203,6 @@
         overflow: hidden !important;
     }
 
-    /* AD VIEWPORT WITH GPU ACCELERATION */
     #sk-ad-viewport {
         position: absolute !important;
         top: 0 !important;
@@ -229,11 +223,13 @@
         justify-content: center !important;
         align-items: center !important;
         background: #000 !important;
+        position: absolute;
+        inset: 0;
     }
 
     .sk-ad-slide.active { display: flex !important; }
 
-    .sk-ad-slide img {
+    .sk-ad-slide img, .sk-ad-slide video {
         width: 100% !important;
         height: 100% !important;
         object-fit: fill !important; 
@@ -241,11 +237,10 @@
         transition: filter 0.8s ease !important;
     }
 
-    .dark-mode .sk-ad-slide img {
+    .dark-mode .sk-ad-slide img, .dark-mode .sk-ad-slide video {
         filter: saturate(1.08) contrast(1.02) brightness(0.75) !important;
     }
 
-    /* FULL-WIDTH FLUID BOTTOM BAR */
     #sk-bottom-bar {
         position: absolute !important;
         bottom: 0 !important;
@@ -273,11 +268,7 @@
         transition: opacity 0.5s ease-in-out !important;
     }
 
-    .sk-logo-group {
-        order: 1;
-        justify-content: flex-start; 
-    }
-
+    .sk-logo-group { order: 1; justify-content: flex-start; }
     .sk-bottom-phone {
         order: 2;
         justify-content: center; 
@@ -322,12 +313,7 @@
         font-size: clamp(16px, 2vw, 42px) !important;
     }
 
-    .sk-weather { 
-        display: flex !important; 
-        flex-direction: column !important; 
-        align-items: center !important; 
-        justify-content: center !important; 
-    }
+    .sk-weather { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; }
 
     #sk-temp-val { 
         font-size: clamp(24px, 3.8vw, 80px) !important; 
@@ -357,25 +343,67 @@
     }
 </style>
 
-<!-- ================================================================= -->
-<!-- ★ TB40 COMPATIBLE RUNTIME JAVASCRIPT ENGINE ★                    -->
-<!-- ================================================================= -->
 <script>
 (function() {
-    // Single Flat CSV Endpoint matching your live Google Sheets setup
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9aXB9z9jcsaA0U-LsuV4nIHwIIw2huGB8zaalh7It4GQP_DWFFdQ4Utaw_ajkdhx5ydn87BcfS82d/pub?gid=0&single=true&output=csv";
-    const displayInterval = 12000; // 12-second billboard standard slide rotation
-    const syncInterval = 30000;    // 30-second live background sheet sync
+    const firebaseConfig = {
+        apiKey: "AIzaSyBYPbGWDhPUnCSnPWDP9wtiKe2P5WpinXg",
+        authDomain: "smlc-fuel-monitor.firebaseapp.com",
+        databaseURL: "https://smlc-fuel-monitor-default-rtdb.firebaseio.com",
+        projectId: "smlc-fuel-monitor",
+        storageBucket: "smlc-fuel-monitor.firebasestorage.app",
+        messagingSenderId: "22397440085",
+        appId: "1:22397440085:web:c00e716858ed58895bc4dc",
+        measurementId: "G-687D605K75"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const displayInterval = 12000;      // 12-second billboard slide rotation
     const memoryRefreshCycle = 1800000; // 30-minute hardware GC reload
-    
+
+    let activeLocation = { name: "Flora", lat: 38.668700, lon: -88.485300, phone: "844-907-4450" };
     let currentAdIndex = 0;
     let adSlideElements = [];
-    let lastWeatherData = null; 
-    let targetTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; 
-    let isNightTimeSolar = null; 
+    let currentAdQueue = [];
+    let lastWeatherData = null;
+    let targetTimeZone = "America/Chicago"; // Central Time default for S&K territory
+    let isNightTimeSolar = null;
     let interactionTimer;
-    let currentImageUrls = [];
     let currentQuarterTracker = null;
+
+    // Haversine Distance Calculation
+    function calculateDistanceMiles(lat1, lon1, lat2, lon2) {
+        const R = 3958.8;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    // Programmatic VAST XML / Blip Endpoint Ingestion
+    async function fetchProgrammaticAd(vastUrl) {
+        if (!vastUrl) return null;
+        try {
+            const res = await fetch(vastUrl);
+            const xmlText = await res.text();
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+            const mediaFile = xmlDoc.getElementsByTagName("MediaFile")[0];
+            if (mediaFile && mediaFile.textContent) {
+                return { type: 'video', url: mediaFile.textContent.trim(), isProgrammatic: true };
+            }
+
+            const staticResource = xmlDoc.getElementsByTagName("StaticResource")[0];
+            if (staticResource && staticResource.textContent) {
+                return { type: 'image', url: staticResource.textContent.trim(), isProgrammatic: true };
+            }
+        } catch (e) {}
+        return null;
+    }
 
     window.handleInteraction = function() {
         const backBtn = document.getElementById('ghost-back-btn');
@@ -387,7 +415,7 @@
             if(backBtn) backBtn.classList.remove('active'); 
             if(fsBtn) fsBtn.classList.remove('active'); 
         }, 3000);
-    }
+    };
 
     window.toggleFullScreen = function() {
         const root = document.documentElement;
@@ -433,108 +461,159 @@
         if(lastWeatherData) updateWeatherUI(lastWeatherData);
     }
 
-    // Strict URL Image Filter: Converts Google Drive links and ignores non-image websites
-    function filterAndCleanImageUrl(url) {
-        if (!url) return null;
-        let clean = url.replace(/^"|"$|&amp;/g, '').trim();
+    // MAIN SINGLE-URL GEOLOCATION ENGINE
+    db.ref("billboard_network/Locations").on("value", snapshot => {
+        const locations = snapshot.val();
+        if (!locations) return;
 
-        // Convert Google Drive links
-        if (clean.includes("drive.google.com")) {
-            const match = clean.match(/(?:id=|\/d\/|file\/d\/)([a-zA-Z0-9_-]{25,})/);
-            if (match && match[1]) {
-                return "https://drive.google.com/thumbnail?id=" + match[1] + "&sz=w1920";
-            }
-        }
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    let userLat = pos.coords.latitude;
+                    let userLon = pos.coords.longitude;
+                    let closestKey = "flora";
+                    let minDistance = Infinity;
 
-        // Validate image file formats (rejects website homepages like https://www.wabash.net/)
-        const isRealImage = /\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$/i.test(clean) || 
-                            clean.includes("googleusercontent.com") || 
-                            clean.includes("drive.google.com");
-
-        if (!isRealImage) {
-            return null; // Bypasses plain websites & blank rows
-        }
-
-        return clean;
-    }
-
-    // Live Sheet Polling with Timestamp Cache-Busting
-    async function fetchAdImages(isAutoSync = false) {
-        try {
-            const timestamp = Date.now();
-            const res = await fetch(`${CSV_URL}&t=${timestamp}&cb=${Math.random()}`, {
-                cache: 'no-store',
-                headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }
-            });
-            
-            const text = await res.text();
-            const lines = text.split(/\r?\n/);
-            let loadedUrls = [];
-
-            lines.forEach((line, idx) => {
-                if (idx === 0 || !line.trim()) return; // Skip Header Row
-                
-                const cellMatch = line.match(/(".*?"|[^,]+)/g);
-                if (cellMatch) {
-                    // Check every column from Col B onwards to locate the working ad image URL
-                    for (let c = 1; c < cellMatch.length; c++) {
-                        let candidate = cellMatch[c].replace(/^"|"$/g, '').trim();
-                        if (candidate.startsWith('http') || candidate.startsWith('//')) {
-                            let validImageUrl = filterAndCleanImageUrl(candidate);
-                            if (validImageUrl) {
-                                loadedUrls.push(validImageUrl);
-                                break;
+                    Object.keys(locations).forEach(key => {
+                        if (key !== "global" && locations[key].lat && locations[key].lon) {
+                            let dist = calculateDistanceMiles(userLat, userLon, locations[key].lat, locations[key].lon);
+                            if (dist < minDistance) {
+                                minDistance = dist;
+                                closestKey = key;
                             }
                         }
-                    }
-                }
-            });
+                    });
 
-            // Live hot swap: Only update DOM if the spreadsheet rows changed
-            if (loadedUrls.length > 0 && JSON.stringify(loadedUrls) !== JSON.stringify(currentImageUrls)) {
-                currentImageUrls = loadedUrls;
+                    // If within 40 miles of a board, bind strictly to that town.
+                    // If you are remote (testing from afar), load complete network fallback!
+                    if (minDistance <= 40) {
+                        bindBillboardContent(locations, closestKey, false);
+                    } else {
+                        bindBillboardContent(locations, "flora", true); // Full Network Preview
+                    }
+                },
+                err => {
+                    // Fallback to Full Network Preview if GPS prompt ignored
+                    bindBillboardContent(locations, "flora", true);
+                },
+                { timeout: 5000 }
+            );
+        } else {
+            bindBillboardContent(locations, "flora", true);
+        }
+    });
+
+    async function bindBillboardContent(locations, townKey, isRemotePreview) {
+        const townData = locations[townKey] || locations["flora"];
+        const globalData = locations["global"] || {};
+
+        if (townData) {
+            activeLocation = townData;
+            const phoneDisplay = document.getElementById('sk-phone-display');
+            if (phoneDisplay) phoneDisplay.innerText = activeLocation.phone || "844-907-4450";
+            
+            if (activeLocation.lat && activeLocation.lon) {
+                fetchWeather(activeLocation.lat, activeLocation.lon);
+            }
+
+            const rawAdQueue = [];
+
+            // 1. If viewing remotely, include ads from all towns + global so you see everything
+            if (isRemotePreview) {
+                Object.keys(locations).forEach(tKey => {
+                    const tObj = locations[tKey];
+                    Object.keys(tObj).forEach(k => {
+                        if (!isNaN(parseInt(k)) && tObj[k] && tObj[k].imageurl) {
+                            if (!rawAdQueue.some(item => item.url === tObj[k].imageurl)) {
+                                rawAdQueue.push({ type: 'image', url: tObj[k].imageurl, isProgrammatic: false });
+                            }
+                        }
+                    });
+                });
+            } else {
+                // 2. Hardware Mode: Target Town Ads only
+                Object.keys(townData).forEach(key => {
+                    if (!isNaN(parseInt(key)) && townData[key] && townData[key].imageurl) {
+                        rawAdQueue.push({ type: 'image', url: townData[key].imageurl, isProgrammatic: false });
+                    }
+                });
+
+                // Plus Global network ads
+                Object.keys(globalData).forEach(key => {
+                    if (!isNaN(parseInt(key)) && globalData[key] && globalData[key].imageurl) {
+                        if (!rawAdQueue.some(item => item.url === globalData[key].imageurl)) {
+                            rawAdQueue.push({ type: 'image', url: globalData[key].imageurl, isProgrammatic: false });
+                        }
+                    }
+                });
+            }
+
+            // 3. Programmatic VAST / Blip Ingestion
+            const vastUrl = townData.vast_tag || globalData.vast_tag;
+            if (vastUrl) {
+                const programmaticItem = await fetchProgrammaticAd(vastUrl);
+                if (programmaticItem) rawAdQueue.push(programmaticItem);
+            }
+
+            if (JSON.stringify(rawAdQueue) !== JSON.stringify(currentAdQueue)) {
+                currentAdQueue = rawAdQueue;
                 renderSlides();
             }
-        } catch (e) { 
-            console.warn("TB40 Billboard Polling Warning:", e); 
         }
     }
 
     function renderSlides() {
         const viewport = document.getElementById('sk-ad-viewport');
-        if(!viewport) return;
+        if (!viewport) return;
         viewport.innerHTML = '';
         adSlideElements = [];
         currentAdIndex = 0;
-        
-        currentImageUrls.forEach((url, idx) => {
+
+        currentAdQueue.forEach((item, idx) => {
             const slide = document.createElement('div');
             slide.className = `sk-ad-slide ${idx === 0 ? 'active' : ''}`;
-            const image = document.createElement('img');
-            image.src = url;
-            image.setAttribute('referrerpolicy', 'no-referrer');
-            
-            // Bypass on network failure so it never blocks rotation
-            image.onerror = function() {
-                slide.style.display = 'none';
-                const sIndex = adSlideElements.indexOf(slide);
-                if (sIndex > -1) {
-                    adSlideElements.splice(sIndex, 1);
-                }
-                if (adSlideElements.length > 0 && slide.classList.contains('active')) {
-                    if (currentAdIndex >= adSlideElements.length) {
-                        currentAdIndex = 0;
-                    }
-                    if (adSlideElements[currentAdIndex]) {
-                        adSlideElements[currentAdIndex].classList.add('active');
-                    }
-                }
-            };
 
-            slide.appendChild(image);
+            if (item.type === 'video') {
+                const video = document.createElement('video');
+                video.src = item.url;
+                video.autoplay = true;
+                video.muted = true;
+                video.loop = true;
+                video.playsInline = true;
+                video.setAttribute('referrerpolicy', 'no-referrer');
+                slide.appendChild(video);
+            } else {
+                const image = document.createElement('img');
+                image.src = item.url;
+                image.setAttribute('referrerpolicy', 'no-referrer');
+                image.onerror = function() {
+                    slide.style.display = 'none';
+                    const sIndex = adSlideElements.indexOf(slide);
+                    if (sIndex > -1) adSlideElements.splice(sIndex, 1);
+                    if (adSlideElements.length > 0 && slide.classList.contains('active')) {
+                        if (currentAdIndex >= adSlideElements.length) currentAdIndex = 0;
+                        if (adSlideElements[currentAdIndex]) adSlideElements[currentAdIndex].classList.add('active');
+                    }
+                };
+                slide.appendChild(image);
+            }
+
             viewport.appendChild(slide);
             adSlideElements.push(slide);
         });
+    }
+
+    function rotateAds() {
+        if (adSlideElements.length === 0) return;
+        adSlideElements[currentAdIndex].classList.remove('active');
+        currentAdIndex = (currentAdIndex + 1) % adSlideElements.length;
+        adSlideElements[currentAdIndex].classList.add('active');
+
+        const video = adSlideElements[currentAdIndex].querySelector('video');
+        if (video) {
+            video.currentTime = 0;
+            video.play().catch(()=>{});
+        }
     }
 
     async function fetchWeather(lat, lon) {
@@ -545,15 +624,16 @@
             if (data.timezone) targetTimeZone = data.timezone;
             if (data.current && data.current.is_day !== undefined) isNightTimeSolar = (data.current.is_day === 0);
             const weatherData = { temp: Math.round(data.current.temperature_2m), realfeel: Math.round(data.current.apparent_temperature) };
-            lastWeatherData = weatherData; 
-            return weatherData;
-        } catch(e) { return null; }
+            lastWeatherData = weatherData;
+            updateWeatherUI(weatherData);
+            syncTimeTheme();
+        } catch(e) {}
     }
 
     function updateWeatherUI(weather) {
-        if(!weather) return;
+        if (!weather) return;
         const tempDisplay = document.getElementById('sk-temp-val');
-        if(tempDisplay) {
+        if (tempDisplay) {
             tempDisplay.innerText = `${weather.temp}°`;
             let tempColor = "#ffffff";
             const t = weather.temp;
@@ -564,13 +644,6 @@
             else tempColor = "#ef4444"; 
             tempDisplay.style.color = tempColor;
         }
-    }
-
-    function rotateAds() {
-        if(adSlideElements.length === 0) return;
-        adSlideElements[currentAdIndex].classList.remove('active');
-        currentAdIndex = (currentAdIndex + 1) % adSlideElements.length;
-        adSlideElements[currentAdIndex].classList.add('active');
     }
 
     function updateQuarterlySwap(quarter) {
@@ -600,7 +673,7 @@
 
     function updateLocalTime() {
         const timeEl = document.getElementById('sk-time-val');
-        if(!timeEl) return;
+        if (!timeEl) return;
         
         let currentMin = new Date().getMinutes();
 
@@ -620,7 +693,7 @@
             const isInitialLoad = (currentQuarterTracker === null);
             currentQuarterTracker = currentQuarter;
             
-            if(isInitialLoad) {
+            if (isInitialLoad) {
                 const logoGroup = document.querySelector('.sk-logo-group');
                 const phoneDiv = document.querySelector('.sk-bottom-phone');
                 if (logoGroup && phoneDiv) {
@@ -638,45 +711,22 @@
         }
     }
 
-    async function startBillboard() {
+    function initBillboard() {
         if (typeof lucide !== 'undefined') lucide.createIcons();
         syncTimeTheme();
-        
-        // 1. Initial Load of Ad Images
-        await fetchAdImages();
-        
-        // 2. Initial Weather Check (Uses Central Illinois Billboard Fallback Coordinates)
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                async (p) => { updateWeatherUI(await fetchWeather(p.coords.latitude, p.coords.longitude)); syncTimeTheme(); },
-                async (e) => { updateWeatherUI(await fetchWeather(38.6687, -88.4853)); syncTimeTheme(); },
-                { timeout: 5000 }
-            );
-        } else {
-            fetchWeather(38.6687, -88.4853).then(w => { updateWeatherUI(w); syncTimeTheme(); });
-        }
-        
-        // 3. Local Time Clock (1 sec)
+
         updateLocalTime();
         setTimeout(() => { setInterval(updateLocalTime, 1000); }, 500);
-        
-        // 4. Slide Rotator (12 sec)
         setInterval(rotateAds, displayInterval);
-        
-        // 5. Day/Night Solar Sync (5 min)
-        setInterval(syncTimeTheme, 300000); 
-        
-        // 6. LIVE GOOGLE SHEET AUTO-SYNC (Every 30 seconds in background)
-        setInterval(() => fetchAdImages(true), syncInterval);
+        setInterval(syncTimeTheme, 300000);
 
-        // 7. TB40 KIOSK HARD MEMORY REFRESH (Every 30 minutes)
         setInterval(() => {
             window.location.reload();
         }, memoryRefreshCycle);
     }
 
-    if (document.readyState === "complete" || document.readyState === "interactive") startBillboard();
-    else document.addEventListener("DOMContentLoaded", startBillboard);
+    if (document.readyState === "complete" || document.readyState === "interactive") initBillboard();
+    else document.addEventListener("DOMContentLoaded", initBillboard);
 })();
 </script>
 </body>
