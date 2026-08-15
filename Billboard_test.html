@@ -2,9 +2,9 @@
 <!-- ==========================================================================
      PROJECT: S&K Venture Signs - Universal Single-URL Programmatic Billboard Engine
      ADMIN / LEAD DEV: Werewolf (Werewolf3788)
-     VERSION: 46.0 (Kiosk Hardened + SMLC GA4 Custom Impression Tracker + Auto-CORS Bridge)
+     VERSION: 47.0 (GAS v25.0 Matched Tree + 0-Index Scanner + SMLC GA4 Beacons)
      PROTOCOL: Dual Compatibility over HTTP & HTTPS | Full Code | No-Strip
-     TIMESTAMP: Saturday, August 15, 2026, 15:28:26 EDT (24hr New York Time)
+     TIMESTAMP: Saturday, August 15, 2026, 15:35:36 EDT (24hr New York Time)
      
      FIREBASE RTDB: https://smlc-fuel-monitor-default-rtdb.firebaseio.com
      GA4 PROPERTY CONFIGURATION:
@@ -37,7 +37,7 @@
         // Primary Site Tag: S&K Ventures (14-Month Retention & Signals Enabled)
         gtag('config', 'G-H6Q756MVE8', { 
             'page_type': 'billboard_kiosk_engine', 
-            'layout_version': '46.0', 
+            'layout_version': '47.0', 
             'retention': '14_months',
             'traffic_type': 'internal'
         });
@@ -385,7 +385,7 @@
 </style>
 
 <!-- ==========================================================================
-     Line 311: JAVASCRIPT ENGINE (Kiosk Hardened + SMLC GA4 Impression Logging)
+     Line 311: JAVASCRIPT ENGINE (GAS v25.0 Matched Data Engine)
      ========================================================================== -->
 <script>
 (function() {
@@ -409,7 +409,7 @@
     /* 2. ENGINE CONFIGURATION */
     const TOTAL_ROTATION_SLOTS = 20;
     const displayInterval = 12000;      // 12-second ad duration
-    const memoryRefreshCycle = 1800000; // 30-minute hardware GC reload
+    const memoryRefreshCycle = 1800000; // 30-minute reload
 
     let activeLocation = { 
         name: "Flora", 
@@ -433,7 +433,8 @@
 
     function getTownFromUrl() {
         const params = new URLSearchParams(window.location.search);
-        return params.get('town') ? params.get('town').toLowerCase().trim() : null;
+        var raw = params.get('town');
+        return raw ? raw.toLowerCase().replace(/[^a-z0-9]/g, '') : null;
     }
 
     function calculateDistanceMiles(lat1, lon1, lat2, lon2) {
@@ -486,7 +487,7 @@
         gtag('event', 'billboard_ad_impression', {
             'send_to': 'G-H6Q756MVE8',
             'event_category': 'Digital Billboard Impressions',
-            'event_label': adItem.url || adItem.headline || 'Direct Local Ad',
+            'event_label': adItem.name || adItem.url || 'Direct Ad',
             'ad_provider': providerType,
             'screen_location': activeLocation.name || 'Flora',
             'screen_id': activeLocation.screen_id || 'SK-DEFAULT',
@@ -521,6 +522,7 @@
                     return {
                         type: isVid ? 'video' : 'image',
                         url: mediaUrl,
+                        name: "Blip Programmatic Ad",
                         isProgrammatic: true,
                         provider: 'blip',
                         impressions: data.impression_urls || (data.impression_url ? [data.impression_url] : [])
@@ -542,12 +544,12 @@
 
             const mediaFile = xmlDoc.getElementsByTagName("MediaFile")[0];
             if (mediaFile && mediaFile.textContent) {
-                return { type: 'video', url: mediaFile.textContent.trim(), isProgrammatic: true, provider: 'vistar', impressions: trackingUrls };
+                return { type: 'video', url: mediaFile.textContent.trim(), name: "Vistar Video Ad", isProgrammatic: true, provider: 'vistar', impressions: trackingUrls };
             }
 
             const staticResource = xmlDoc.getElementsByTagName("StaticResource")[0];
             if (staticResource && staticResource.textContent) {
-                return { type: 'image', url: staticResource.textContent.trim(), isProgrammatic: true, provider: 'vistar', impressions: trackingUrls };
+                return { type: 'image', url: staticResource.textContent.trim(), name: "Vistar Static Ad", isProgrammatic: true, provider: 'vistar', impressions: trackingUrls };
             }
         } catch (e) {}
         return null;
@@ -605,14 +607,10 @@
         if (lastWeatherData) updateWeatherUI(lastWeatherData);
     }
 
-    /* 7. FIREBASE REALTIME LISTENER */
-    db.ref().on("value", snapshot => {
-        const rootData = snapshot.val();
-        if (!rootData) return;
-
-        const locations = (rootData.billboard_network && rootData.billboard_network.Locations) 
-            ? rootData.billboard_network.Locations 
-            : (rootData.Locations || rootData);
+    /* 7. FIREBASE REALTIME LISTENER (MATCHED TO GAS v25.0 TREE) */
+    db.ref("billboard_network/Locations").on("value", snapshot => {
+        const locations = snapshot.val();
+        if (!locations) return;
 
         const urlTown = getTownFromUrl();
         if (urlTown && locations[urlTown]) {
@@ -655,28 +653,21 @@
         }
     });
 
-    /* 8. CONTENT BINDER (ON-SITE 20-SLOT VS REMOTE MASTER FEED) */
+    /* 8. CONTENT BINDER (ZERO-INDEX AWARE + GLOBAL POOL INGESTION) */
     function bindBillboardContent(locations, townKey, isRemoteMasterFeed) {
-        const townData = locations[townKey] || locations["flora"] || {};
+        const cleanTownKey = townKey.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const townData = locations[cleanTownKey] || locations["flora"] || {};
         const globalData = locations["global"] || {};
 
-        const resolvedVastTag = (townData.vast_tag && townData.vast_tag.trim() !== "") 
-            ? townData.vast_tag 
-            : ((globalData.vast_tag && globalData.vast_tag.trim() !== "") ? globalData.vast_tag : activeLocation.vast_tag);
-
-        const resolvedBlipTag = (townData.blip_tag && townData.blip_tag.trim() !== "") 
-            ? townData.blip_tag 
-            : ((globalData.blip_tag && globalData.blip_tag.trim() !== "") ? globalData.blip_tag : activeLocation.blip_tag);
-
         activeLocation = {
-            name: townData.name || townKey,
+            name: townData.name || townData.tab || "Flora",
             lat: townData.lat || 38.668700,
             lon: townData.lon || -88.485300,
             phone: townData.phone || "844-907-4450",
-            screen_id: townData.screen_id || `SK-${townKey.toUpperCase()}-01`,
-            venue_id: townData.venue_id || `SK-VENUE-${townKey.toUpperCase()}`,
-            vast_tag: resolvedVastTag,
-            blip_tag: resolvedBlipTag
+            screen_id: `SK-${cleanTownKey.toUpperCase()}-01`,
+            venue_id: `SK-VENUE-${cleanTownKey.toUpperCase()}`,
+            vast_tag: townData.vast_tag || globalData.vast_tag || activeLocation.vast_tag,
+            blip_tag: townData.blip_tag || globalData.blip_tag || activeLocation.blip_tag
         };
 
         const phoneDisplay = document.getElementById('sk-phone-display');
@@ -688,45 +679,44 @@
 
         const immediateQueue = [];
 
-        // A. REMOTE PREVIEW MODE: Load ALL ads from ALL towns
-        if (isRemoteMasterFeed) {
-            function extractAllAds(obj) {
-                if (!obj || typeof obj !== 'object') return;
-                const urlVal = obj.imageurl || obj.imageUrl || obj.url || (typeof obj === 'string' && obj.startsWith('http') ? obj : null);
-                if (urlVal && typeof urlVal === 'string' && (urlVal.startsWith('http') || urlVal.startsWith('//'))) {
-                    const cleanUrl = urlVal.trim();
-                    if (!cleanUrl.includes('blipbillboards.com') && !cleanUrl.includes('vistar') && !cleanUrl.includes('S%26K%20Name.png')) {
-                        if (!immediateQueue.some(item => item.url === cleanUrl)) {
-                            const isVid = cleanUrl.match(/\.(mp4|webm|ogg)$/i);
-                            immediateQueue.push({ type: isVid ? 'video' : 'image', url: cleanUrl, isProgrammatic: false });
-                        }
+        // Helper to extract ads stored as 0, 1, 2... from a town object
+        function ingestTownSlots(tObj) {
+            if (!tObj) return;
+            Object.keys(tObj).forEach(k => {
+                if (!isNaN(parseInt(k)) && tObj[k] && tObj[k].imageurl) {
+                    const cleanUrl = tObj[k].imageurl.trim();
+                    if (!immediateQueue.some(item => item.url === cleanUrl)) {
+                        const isVid = cleanUrl.match(/\.(mp4|webm|ogg)$/i);
+                        immediateQueue.push({
+                            type: isVid ? 'video' : 'image',
+                            url: cleanUrl,
+                            name: tObj[k].name || "Direct Local Ad",
+                            isProgrammatic: false
+                        });
                     }
                 }
-                Object.keys(obj).forEach(k => {
-                    if (typeof obj[k] === 'object') extractAllAds(obj[k]);
-                });
-            }
-            extractAllAds(locations);
-        }
-        // B. ON-SITE HARDWARE MODE: Strict 20-slot town loop
-        else {
-            for (let slotNum = 1; slotNum <= TOTAL_ROTATION_SLOTS; slotNum++) {
-                const slotKey = String(slotNum);
-                const slotItem = townData[slotKey];
-                if (slotItem && slotItem.imageurl && slotItem.imageurl.trim() !== "") {
-                    const cleanUrl = slotItem.imageurl.trim();
-                    const isVid = cleanUrl.match(/\.(mp4|webm|ogg)$/i);
-                    immediateQueue.push({ type: isVid ? 'video' : 'image', url: cleanUrl, isProgrammatic: false });
-                }
-            }
+            });
         }
 
-        // House ad fallback if database is completely blank
+        // A. REMOTE PREVIEW MODE: Ingest ALL direct ads across all 11 tabs
+        if (isRemoteMasterFeed) {
+            Object.keys(locations).forEach(tKey => {
+                ingestTownSlots(locations[tKey]);
+            });
+        } 
+        // B. ON-SITE HARDWARE MODE: Town Direct Ads + Global Shared Ad Pool
+        else {
+            ingestTownSlots(townData);
+            ingestTownSlots(globalData);
+        }
+
+        // Fallback House Ad if database has zero ads
         if (immediateQueue.length === 0) {
             immediateQueue.push({
                 type: 'house',
                 headline: "ADVERTISE HERE",
                 subhead: `CALL ${activeLocation.phone}`,
+                name: "S&K House Ad",
                 isProgrammatic: false
             });
         }
