@@ -1,18 +1,15 @@
 <!DOCTYPE html>
 <!-- 
-    PROJECT: S & K Ventures Billboard - Clean Dual-Tab Engine
+    PROJECT: S & K Ventures Billboard - Resilient Multi-Tab Engine
     ADMIN: Kevin (Werewolf3788)
-    VERSION: 7.5 (Clean "Global" Tab + Town Tab Direct Sync + Row Order Indexing)
+    VERSION: 7.6 (Fixed URL Sanitizer, SSL/GitHack Auto-Routing, Safe Index Guard)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: Sat, Aug 15, 2026 | 00:42:00 AM EDT (New York Time)
+    TIMESTAMP: Sat, Aug 15, 2026 | 00:41:25 AM EDT (New York Time)
     
     GOOGLE SHEET TAB SCHEMA (Per Tab):
       - Column A (Index 0): Name (Display/Reference)
-      - Column B (Index 1): Image URL (PNG, JPG, JPEG, GIF, WEBP, SVG, Google Drive)
+      - Column B (Index 1): Image URL (PNG, JPG, JPEG, GIF, WEBP, SVG, Google Drive, GitHack)
       - Column C (Index 2): Rotation Count (1, 2, 3, etc. Defaults to 1)
-
-    HOW TO CONFIGURE TOWN:
-      - Set active tab name below in LINE 57 via data-billboard-location
 -->
 <html lang="en">
 <head>
@@ -24,7 +21,7 @@
     <link href="//fonts.googleapis.com/css2?family=Great+Vibes&family=Satisfy&family=Pinyon+Script&family=Rouge+Script&family=Alex+Brush&display=swap" rel="stylesheet">
 
     <!-- Framework Assets scoped for the Widget -->
-    <script src="//cdn.tailwindcss.com?v=7.5"></script>
+    <script src="//cdn.tailwindcss.com?v=7.6"></script>
     <script src="//unpkg.com/lucide@latest"></script>
 
     <!-- Google Analytics Dual Tracking: S&K Ventures (G-H6Q756MVE8) & Kevin (G-L376P3NPY4) -->
@@ -36,8 +33,8 @@
         gtag('js', new Date());
         
         gtag('config', 'G-H6Q756MVE8', { 
-            'page_type': 'billboard_widget_v7.5', 
-            'layout_version': '7.5',
+            'page_type': 'billboard_widget_v7.6', 
+            'layout_version': '7.6',
             'retention': '14_months'
         });
         gtag('config', 'G-L376P3NPY4');
@@ -47,7 +44,7 @@
 
 <!-- ================================================================= -->
 <!-- ★ ACTIVE BILLBOARD TOWN CONFIGURATION ★                           -->
-<!-- LOCATION: LINE 57 BELOW                                           -->
+<!-- LOCATION: LINE 55 BELOW                                           -->
 <!-- Change data-billboard-location to match your Google Sheet Tab:    -->
 <!-- "Altamont", "Brownstown", "Clay City", "De Soto", "Flora",        -->
 <!-- "Marshall", "Oliver", "Xenia Billboard", "Xenia TV", "Flora Tv"   -->
@@ -384,7 +381,7 @@
 </style>
 
 <!-- ================================================================= -->
-<!-- ★ JAVASCRIPT ENGINE (LINE 325 TO LINE 670) ★                      -->
+<!-- ★ JAVASCRIPT ENGINE (LINE 325 TO LINE 690) ★                      -->
 <!-- ================================================================= -->
 <script>
 (function() {
@@ -537,9 +534,24 @@
         return (match && match[1]) ? match[1] : null;
     }
 
+    // Line 392: Cleans bad concatenated URLs and resolves skventuresigns.com SSL cert errors
     function formatBillboardImage(url) {
         if (!url) return "";
         let clean = url.trim().replace(/^"|"$/g, '').replace(/&amp;/g, '&');
+        
+        // Fix mangled concatenation (e.g. "...Revivehttps://www.skventuresigns.compng")
+        if (clean.includes("http") && clean.lastIndexOf("http") > 0) {
+            clean = clean.substring(0, clean.lastIndexOf("http"));
+        }
+        // Fix missing extension dot (e.g. "...png" or "...jpg")
+        clean = clean.replace(/(png|jpg|jpeg|gif|webp)$/i, '.$1').replace(/\.\./g, '.');
+
+        // Fix invalid SSL certificate domain: skventuresigns.com -> GitHack Raw CDN
+        if (clean.includes("skventuresigns.com/images/")) {
+            const filename = clean.split("/images/").pop();
+            return `https://raw.githack.com/Werewolf3788/SKVentureSigns/main/images/${encodeURIComponent(filename)}`;
+        }
+
         const driveId = extractGoogleDriveId(clean);
         if (driveId) {
             return `https://drive.google.com/thumbnail?id=${driveId}&sz=w1920`;
@@ -557,7 +569,6 @@
         return (!isNaN(num) && num > 0) ? num : 1;
     }
 
-    // Spread Multiplexer Shuffle (Preserves Row-Order while spreading multipliers without duplicate back-to-backs)
     function distributeSpreadAds(items) {
         if (!items || items.length === 0) return [];
         if (items.length === 1) {
@@ -592,7 +603,6 @@
         return result;
     }
 
-    // Fetches CSV for any given tab name with robust encoding & fallbacks
     async function fetchCsvByTabName(tabName) {
         if (!tabName) return [];
         const cleanTabName = tabName.trim();
@@ -612,16 +622,16 @@
             const items = [];
 
             lines.forEach((line, idx) => {
-                if (idx === 0 || !line.trim()) return; // Skip Header
+                if (idx === 0 || !line.trim()) return;
                 const cols = parseCsvRow(line);
 
                 let name = cols[0] ? cols[0].trim() : `Ad_Row_${idx + 1}`;
                 let rawUrl = cols[1] || "";
                 
-                if (!rawUrl || (!rawUrl.includes("http") && !rawUrl.includes("drive.google"))) {
+                if (!rawUrl || (!rawUrl.includes("http") && !rawUrl.includes("drive.google") && !rawUrl.includes("skventuresigns.com"))) {
                     for (let c = 0; c < cols.length; c++) {
                         const val = (cols[c] || '').trim();
-                        if (val.startsWith("http://") || val.startsWith("https://") || val.includes("drive.google.com") || val.startsWith("//")) {
+                        if (val.startsWith("http://") || val.startsWith("https://") || val.includes("drive.google.com") || val.startsWith("//") || val.includes("skventuresigns.com")) {
                             rawUrl = val;
                             break;
                         }
@@ -642,13 +652,13 @@
         }
     }
 
-    // Fetches the Global Tab using both named query and direct first-tab index (gid=0)
     async function fetchGlobalTabAds() {
-        // 1. Try named tab 'Global'
-        let ads = await fetchCsvByTabName('Global');
-        if (ads && ads.length > 0) return ads;
+        const variations = ['Global', 'global', '2 Global', '2  Global'];
+        for (const v of variations) {
+            const ads = await fetchCsvByTabName(v);
+            if (ads && ads.length > 0) return ads;
+        }
 
-        // 2. Try raw published base URL (gid=0 index for first tab)
         try {
             const res = await fetch(`${PUB_BASE_URL}?output=csv&gid=0&t=${Date.now()}`);
             if (res.ok) {
@@ -675,22 +685,18 @@
         return [];
     }
 
-    // Fetches Active Town Tab + Global Tab in Exact Row Order
     async function fetchAdImages(isAutoSync = false) {
         try {
             const currentTab = activeConfig.tabName;
             const isTargetGlobal = (currentTab.toLowerCase() === 'global');
             
-            // Simultaneously fetch Town Tab & Global Tab
             const [townAds, globalAds] = await Promise.all([
                 fetchCsvByTabName(currentTab),
                 !isTargetGlobal ? fetchGlobalTabAds() : Promise.resolve([])
             ]);
 
-            // Combine ads: Town Tab rows first, then Global Tab rows
             let combinedAds = [...townAds, ...globalAds];
 
-            // Fallback: If both tabs were empty, fetch the primary published sheet feed
             if (combinedAds.length === 0) {
                 const fallbackRes = await fetch(`${PUB_BASE_URL}?output=csv&t=${Date.now()}`);
                 const fallbackText = await fallbackRes.text();
@@ -708,7 +714,6 @@
                 });
             }
 
-            // Distribute through Spread Multiplier in row order (No back-to-back repeats)
             const finalUrls = distributeSpreadAds(combinedAds);
 
             if (finalUrls.length > 0 && JSON.stringify(finalUrls) !== JSON.stringify(currentImageUrls)) {
@@ -746,9 +751,17 @@
                 } else {
                     slide.style.display = 'none';
                     const sIndex = adSlideElements.indexOf(slide);
-                    if (sIndex > -1) adSlideElements.splice(sIndex, 1);
+                    if (sIndex > -1) {
+                        adSlideElements.splice(sIndex, 1);
+                    }
+                    // Safe Rotator recovery: prevents 'classList of undefined' crash
                     if (adSlideElements.length > 0 && slide.classList.contains('active')) {
-                        rotateAds();
+                        if (currentAdIndex >= adSlideElements.length) {
+                            currentAdIndex = 0;
+                        }
+                        if (adSlideElements[currentAdIndex]) {
+                            adSlideElements[currentAdIndex].classList.add('active');
+                        }
                     }
                 }
             };
@@ -801,11 +814,21 @@
         }
     }
 
+    // Line 620: Safe Rotator with strict bounds-checking
     function rotateAds() {
-        if (adSlideElements.length === 0) return;
-        adSlideElements[currentAdIndex].classList.remove('active');
+        if (!adSlideElements || adSlideElements.length === 0) return;
+        
+        // Remove active from current safely
+        if (adSlideElements[currentAdIndex]) {
+            adSlideElements[currentAdIndex].classList.remove('active');
+        }
+        
         currentAdIndex = (currentAdIndex + 1) % adSlideElements.length;
-        adSlideElements[currentAdIndex].classList.add('active');
+        
+        // Add active to next slide safely
+        if (adSlideElements[currentAdIndex]) {
+            adSlideElements[currentAdIndex].classList.add('active');
+        }
     }
 
     function updateQuarterlySwap(quarter) {
@@ -875,21 +898,17 @@
     async function startBillboard() {
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
-        // 1. Fetch Weather for Town Coordinates
         fetchWeather(activeConfig.coords.lat, activeConfig.coords.lon).then(w => {
             updateWeatherUI(w);
             syncTimeTheme();
         });
 
-        // 2. Start Clock
         updateLocalTime();
         setInterval(updateLocalTime, 1000);
 
-        // 3. Fetch Active Tab + Global Tab Ads in Row Sequence & Start Rotation
         await fetchAdImages();
         setInterval(rotateAds, displayInterval);
 
-        // 4. Background Sync (Weather every 5 min, Ads every 1 min)
         setInterval(() => {
             fetchWeather(activeConfig.coords.lat, activeConfig.coords.lon).then(w => {
                 updateWeatherUI(w);
