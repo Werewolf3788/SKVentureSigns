@@ -2,9 +2,9 @@
 <!-- ==========================================================================
      PROJECT: S&K Venture Signs - Universal Single-URL Programmatic Billboard Engine
      ADMIN / LEAD DEV: Werewolf (Werewolf3788)
-     VERSION: 36.0 (Balanced 50/50 Vistar & Blip Split with Dynamic Cross-Fill)
+     VERSION: 38.0 (Auto-CORS Bridge + Balanced Vistar & Blip Engine + 20-Slot Split)
      PROTOCOL: Dual Compatibility over HTTP & HTTPS | Full Code | No-Strip
-     TIMESTAMP: Saturday, August 15, 2026, 14:33:10 EDT (24hr New York Time)
+     TIMESTAMP: Saturday, August 15, 2026, 14:58:15 EDT (24hr New York Time)
      
      FIREBASE RTDB: https://smlc-fuel-monitor-default-rtdb.firebaseio.com
      GA4 PROPERTY CONFIGURATION:
@@ -16,7 +16,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>S&K Venture Signs Billboard - Balanced Vistar & Blip Engine</title>
+    <title>S&K Venture Signs Billboard - Auto-CORS Balanced Engine</title>
 
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐺</text></svg>">
@@ -40,8 +40,8 @@
 
         // Primary Site Tag: S&K Ventures (14-Month Data Retention, Signals Active)
         gtag('config', 'G-H6Q756MVE8', { 
-            'page_type': 'firebase_billboard_balanced_ssp_engine', 
-            'layout_version': '36.0', 
+            'page_type': 'firebase_billboard_autocors_ssp_engine', 
+            'layout_version': '38.0', 
             'retention': '14_months',
             'traffic_type': 'internal'
         });
@@ -128,7 +128,7 @@
      Line 117: CSS STYLESHEET (Layout, Visual Hierarchy, Transitions)
      ========================================================================== -->
 <style>
-    /* [RESET] Line 121: Hardware screen fill & lock scrolling */
+    /* [RESET] Hardware screen fill & lock scrolling */
     html, body {
         margin: 0 !important;
         padding: 0 !important;
@@ -140,7 +140,7 @@
         -webkit-user-select: none !important;
     }
 
-    /* [ROOT CONTAINER] Line 134: Color variables and responsive scaling */
+    /* [ROOT CONTAINER] Color variables and responsive scaling */
     #sk-billboard-root-container {
         --bb-bottom-bg: #3E0100;
         --bb-text: #ffffff; 
@@ -162,14 +162,14 @@
         z-index: 1 !important;
     }
 
-    /* [NIGHT MODE] Line 158: Dimmed ambient theme for evening playback */
+    /* [NIGHT MODE] Dimmed ambient theme for evening playback */
     #sk-billboard-root-container.dark-mode {
         --bb-bottom-bg: #220000;
         --bb-text: #ffffff;
         --bb-border: rgba(255, 255, 255, 0.1);
     }
 
-    /* [INTERACTIVE BUTTONS] Line 165: 44px minimum touch targets */
+    /* [INTERACTIVE BUTTONS] 44px minimum touch targets */
     #ghost-back-btn, #fullscreen-toggle-btn {
         position: absolute !important;
         top: 25px !important;
@@ -199,7 +199,7 @@
     #fullscreen-toggle-btn { right: 25px !important; }
     #ghost-back-btn.active, #fullscreen-toggle-btn.active { opacity: 1; visibility: visible; }
 
-    /* [CARD 1: PORTRAIT OVERLAY] Line 197 */
+    /* [CARD 1: PORTRAIT OVERLAY] */
     #landscape-lock {
         position: absolute !important;
         inset: 0 !important;
@@ -217,7 +217,7 @@
         #landscape-lock { display: flex !important; }
     }
 
-    /* [STAGE & AD VIEWPORT] Line 215 */
+    /* [STAGE & AD VIEWPORT] */
     #sk-billboard-display {
         position: absolute !important;
         inset: 0 !important;
@@ -267,7 +267,7 @@
         filter: saturate(1.08) contrast(1.02) brightness(0.75) !important;
     }
 
-    /* [CARD 2: BOTTOM STATUS BAR] Line 269 */
+    /* [CARD 2: BOTTOM STATUS BAR] */
     #sk-bottom-bar {
         position: absolute !important;
         bottom: 0 !important;
@@ -381,7 +381,7 @@
 </style>
 
 <!-- ==========================================================================
-     Line 287: JAVASCRIPT ENGINE (Balanced 50/50 Vistar & Blip Allocation)
+     Line 287: JAVASCRIPT ENGINE (Auto-CORS Bridge + Dual Vistar & Blip)
      ========================================================================== -->
 <script>
 (function() {
@@ -415,7 +415,7 @@
         screen_id: "ca0e14ae-b80e-45f8-bb68-5375d9e02bbd",
         venue_id: "34tyu3",
         vast_tag: "",  // Primary Vistar Media VAST endpoint
-        blip_tag: "https://app.blipbillboards.com/api/v1/signs/ca0e14ae-b80e-45f8-bb68-5375d9e02bbd/ad"
+        blip_tag: "https://app.blipbillboards.com/api/v1/signs/ca0e14ae-b80e-45f8-bb68-5375d9e02bbd/ad"   // Primary Blip Billboards endpoint
     };
 
     let currentAdIndex = 0;
@@ -465,16 +465,21 @@
             .replace(/\[HEIGHT\]/g, height);
     }
 
-    /* 5. UNIVERSAL PROGRAMMATIC INGESTION (VAST XML + BLIP JSON) */
+    /* 5. UNIVERSAL PROGRAMMATIC INGESTION WITH AUTO-CORS PROXY */
     async function fetchProgrammaticAd(rawUrl, locationMetadata, providerName) {
-        const compiledUrl = buildProgrammaticUrl(rawUrl, locationMetadata);
+        let compiledUrl = buildProgrammaticUrl(rawUrl, locationMetadata);
         if (!compiledUrl) return null;
+
+        // Auto-wrap browser-restricted APIs (like Blip) with a CORS proxy bridge
+        if (compiledUrl.includes("blipbillboards.com") && !compiledUrl.includes("corsproxy.io")) {
+            compiledUrl = "https://corsproxy.io/?" + encodeURIComponent(compiledUrl);
+        }
 
         try {
             const res = await fetch(compiledUrl, { cache: "no-store" });
             const contentType = res.headers.get("content-type") || "";
 
-            // A. Handle Blip JSON Endpoints
+            // A. Handle Blip JSON Response
             if (contentType.includes("application/json") || providerName === "blip") {
                 const data = await res.json();
                 if (data && (data.image_url || data.media_url || data.url)) {
@@ -664,7 +669,7 @@
         const rawAdQueue = [];
         let openSlotCount = 0;
 
-        // Iterate through all 20 fixed slots
+        // Iterate through all 20 fixed billboard slots
         for (let slotNum = 1; slotNum <= TOTAL_ROTATION_SLOTS; slotNum++) {
             const slotKey = String(slotNum);
             const slotItem = townData[slotKey];
