@@ -1,22 +1,27 @@
 <!DOCTYPE html>
-<!-- 
-    PROJECT: S&K Venture Signs - Universal Single-URL Programmatic Billboard Engine
-    ADMIN: Werewolf (Werewolf3788)
-    VERSION: 27.0 (Single URL Everywhere: Auto GPS Geofence + Smart Remote Fallback + Global & VAST Support)
-    PROTOCOL: Works over HTTP & HTTPS | Full Code | No-Strip
-    TIMESTAMP: Saturday, August 15, 2026, 03:05:00 AM EDT (24hr New York Time)
-    
-    FIREBASE RTDB: https://smlc-fuel-monitor-default-rtdb.firebaseio.com
--->
+<!-- ==========================================================================
+     PROJECT: S&K Venture Signs - Universal Single-URL Programmatic Billboard Engine
+     ADMIN / LEAD DEV: Werewolf (Werewolf3788)
+     VERSION: 30.0 (All-In-One Unified Production Engine - Fully Commented)
+     PROTOCOL: Dual Compatibility over HTTP & HTTPS | Full Code | No-Strip
+     TIMESTAMP: Saturday, August 15, 2026, 14:25:00 EDT (24hr New York Time)
+     
+     FIREBASE RTDB: https://smlc-fuel-monitor-default-rtdb.firebaseio.com
+     GA4 CONFIGURATION:
+       - G-H6Q756MVE8 (S&K Ventures / Support My Local Community)
+       - G-CTYHDF4MSD (PSN / Entertainment / Billboard Media Tracking)
+       - G-L376P3NPY4 (Secondary Stream Analytics)
+     ========================================================================== -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>S&K Venture Signs Billboard</title>
 
+    <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐺</text></svg>">
 
-    <!-- Fonts & Icons (Protocol-relative for http & https) -->
+    <!-- Fonts & Icons (Protocol-relative for both HTTP and HTTPS) -->
     <link href="//fonts.googleapis.com/css2?family=Great+Vibes&family=Satisfy&family=Pinyon+Script&family=Rouge+Script&family=Alex+Brush&display=swap" rel="stylesheet">
     <script src="//unpkg.com/lucide@latest"></script>
 
@@ -24,22 +29,44 @@
     <script src="//www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="//www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    <!-- Google Analytics: Dual Tracking -->
+    <!-- Google Analytics: GTM & Dual GA4 Multi-Stream Tracking -->
     <script async src="//www.googletagmanager.com/gtag/js?id=G-H6Q756MVE8"></script>
+    <script async src="//www.googletagmanager.com/gtag/js?id=G-CTYHDF4MSD"></script>
     <script async src="//www.googletagmanager.com/gtag/js?id=G-L376P3NPY4"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-H6Q756MVE8', { 'page_type': 'firebase_billboard_single_url', 'layout_version': '27.0', 'retention': '14_months' });
+
+        // Primary Site Tag: S&K Ventures (14-Month Retention, Enhanced Measurement)
+        gtag('config', 'G-H6Q756MVE8', { 
+            'page_type': 'firebase_billboard_single_url', 
+            'layout_version': '30.0', 
+            'retention': '14_months',
+            'traffic_type': 'internal'
+        });
+
+        // Media Tracking & Progress Tag
+        gtag('config', 'G-CTYHDF4MSD', {
+            'page_type': 'programmatic_screen_stream',
+            'screen_id': 'auto_geofence_node',
+            'retention': '14_months'
+        });
+
+        // Auxiliary Stream
         gtag('config', 'G-L376P3NPY4');
     </script>
 </head>
 <body>
 
+<!-- ==========================================================================
+     Line 63: HTML DOM BILLBOARD LAYOUT
+     ========================================================================== -->
+
+<!-- [ROOT CONTAINER] Box holding complete display stage and touch/interaction listeners -->
 <div id="sk-billboard-root-container" class="light-mode" onmousemove="handleInteraction()" ontouchstart="handleInteraction()">
 
-    <!-- Mobile Portrait Lock Overlay -->
+    <!-- [CARD 1: PORTRAIT ORIENTATION LOCK] Prompts user to rotate handheld screens -->
     <div id="landscape-lock">
         <div class="lock-content">
             <i data-lucide="rotate-cw" style="width: 64px; height: 64px; margin-bottom: 16px;"></i>
@@ -47,36 +74,43 @@
         </div>
     </div>
 
-    <!-- Interactive Ghost Back Button -->
+    <!-- [BUTTON 1: GHOST NAVIGATION] Fades in on screen touch to return to homepage -->
     <a href="./index.html" id="ghost-back-btn">
         <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
         <span>Back to Site</span>
     </a>
 
-    <!-- Interactive Full Screen Button -->
+    <!-- [BUTTON 2: FULLSCREEN TOGGLE] Toggles hardware fullscreen -->
     <button id="fullscreen-toggle-btn" onclick="toggleFullScreen()">
         <i data-lucide="maximize" id="fs-icon" style="width: 20px; height: 20px;"></i>
         <span>Full Screen</span>
     </button>
 
+    <!-- [MAIN BILLBOARD STAGE] -->
     <div id="sk-billboard-display">
-        <!-- Ad Stage Viewport -->
+        
+        <!-- [AD VIEWPORT BOX] Dynamic ad slide rotation container -->
         <div id="sk-ad-viewport"></div>
 
-        <!-- Full-Width Bottom Bar -->
+        <!-- [CARD 2: BOTTOM STATUS BAR] Full-width branding and status info -->
         <div id="sk-bottom-bar">
+            
+            <!-- [BOX A: BRANDING LOGO] S&K Venture Signs Logo with text fallback -->
             <div class="sk-logo-group">
                 <div class="sk-logo">
                     <img src="//raw.githack.com/Werewolf3788/SKVentureSigns/main/images/S%26K%20Name.png" 
-                         alt="S&K Venture Signs" 
+                         alt="" 
+                         data-alt-text="S&K Venture Signs Official Logo"
                          class="sk-brand-img"
                          onerror="this.style.display='none'; document.getElementById('sk-fallback-text').style.display='block';">
                     <div id="sk-fallback-text" style="display:none;">S & K VENTURE SIGNS</div>
                 </div>
             </div>
             
+            <!-- [BOX B: PHONE CALL TO ACTION] Billboard Contact Number (Swaps position every 15 min) -->
             <div class="sk-bottom-phone" id="sk-phone-display">844-907-4450</div>
             
+            <!-- [BOX C: WEATHER & 24HR CLOCK] Live Temperature from Open-Meteo & Central Time -->
             <div class="sk-info-stack">
                 <div class="sk-weather">
                     <div id="sk-temp-val">--°</div>
@@ -85,23 +119,28 @@
             </div>
         </div>
 
+        <!-- [LED OVERLAY] Digital LED Mesh Pattern Overlay -->
         <div class="sk-led-overlay"></div>
     </div>
 </div>
 
+<!-- ==========================================================================
+     Line 117: CSS STYLESHEET (Layout, Visual Hierarchy, Transitions)
+     ========================================================================== -->
 <style>
-    /* HARDWARE LEVEL RESET */
+    /* [RESET] Line 121: Hardware screen fill & lock scrolling */
     html, body {
         margin: 0 !important;
         padding: 0 !important;
         width: 100vw !important;
         height: 100vh !important;
         overflow: hidden !important;
-        background: #000 !important;
+        background: #000000 !important;
         user-select: none !important;
         -webkit-user-select: none !important;
     }
 
+    /* [ROOT CONTAINER] Line 134: Color variables and responsive scaling */
     #sk-billboard-root-container {
         --bb-bottom-bg: #3E0100;
         --bb-text: #ffffff; 
@@ -116,23 +155,24 @@
         inset: 0 !important;
         margin: 0 !important;
         padding: 0 !important;
-        background: #000 !important;
+        background: #000000 !important;
         font-family: 'Arial Black', Gadget, sans-serif !important;
         box-sizing: border-box !important;
         overflow: hidden !important;
         z-index: 1 !important;
     }
 
+    /* [NIGHT MODE] Line 158: Dimmed ambient theme for evening playback */
     #sk-billboard-root-container.dark-mode {
-        --bb-bottom-bg: #3E0100;
+        --bb-bottom-bg: #220000;
         --bb-text: #ffffff;
         --bb-border: rgba(255, 255, 255, 0.1);
     }
 
-    #ghost-back-btn {
+    /* [INTERACTIVE BUTTONS] Line 165: 44px touch targets */
+    #ghost-back-btn, #fullscreen-toggle-btn {
         position: absolute !important;
         top: 25px !important;
-        left: 25px !important;
         z-index: 2000 !important;
         background: rgba(0, 0, 0, 0.85) !important;
         color: var(--sk-yellow) !important;
@@ -146,36 +186,20 @@
         font-weight: 800 !important;
         font-size: 13px !important;
         text-transform: uppercase !important;
+        min-height: 44px !important;
+        min-width: 44px !important;
+        box-sizing: border-box !important;
         opacity: 0;
         visibility: hidden;
         transition: opacity 0.4s ease, visibility 0.4s ease !important;
-    }
-    #ghost-back-btn.active { opacity: 1; visibility: visible; }
-
-    #fullscreen-toggle-btn {
-        position: absolute !important;
-        top: 25px !important;
-        right: 25px !important;
-        z-index: 2000 !important;
-        background: rgba(0, 0, 0, 0.85) !important;
-        color: var(--sk-yellow) !important;
-        padding: 10px 22px !important;
-        border-radius: 50px !important;
-        border: 2px solid var(--sk-yellow) !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 8px !important;
-        text-decoration: none !important;
-        font-weight: 800 !important;
-        font-size: 13px !important;
-        text-transform: uppercase !important;
         cursor: pointer !important;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.4s ease, visibility 0.4s ease !important;
     }
-    #fullscreen-toggle-btn.active { opacity: 1; visibility: visible; }
 
+    #ghost-back-btn { left: 25px !important; }
+    #fullscreen-toggle-btn { right: 25px !important; }
+    #ghost-back-btn.active, #fullscreen-toggle-btn.active { opacity: 1; visibility: visible; }
+
+    /* [CARD 1: PORTRAIT OVERLAY] Line 197 */
     #landscape-lock {
         position: absolute !important;
         inset: 0 !important;
@@ -188,16 +212,18 @@
         color: var(--sk-yellow) !important;
         text-align: center !important;
     }
+
     @media screen and (orientation: portrait) and (max-width: 1024px) {
         #landscape-lock { display: flex !important; }
     }
 
+    /* [STAGE & AD VIEWPORT] Line 215 */
     #sk-billboard-display {
         position: absolute !important;
         inset: 0 !important;
         width: 100% !important;
         height: 100% !important;
-        background: #000 !important;
+        background: #000000 !important;
         display: flex !important;
         flex-direction: column !important;
         overflow: hidden !important;
@@ -210,7 +236,7 @@
         width: 100% !important;
         height: calc(100% - var(--bar-height)) !important; 
         z-index: 1 !important;
-        background: #000 !important;
+        background: #000000 !important;
         overflow: hidden !important;
         transform: translateZ(0);
         -webkit-transform: translateZ(0);
@@ -222,7 +248,7 @@
         height: 100% !important;
         justify-content: center !important;
         align-items: center !important;
-        background: #000 !important;
+        background: #000000 !important;
         position: absolute;
         inset: 0;
     }
@@ -241,6 +267,7 @@
         filter: saturate(1.08) contrast(1.02) brightness(0.75) !important;
     }
 
+    /* [CARD 2: BOTTOM STATUS BAR] Line 269 */
     #sk-bottom-bar {
         position: absolute !important;
         bottom: 0 !important;
@@ -268,23 +295,8 @@
         transition: opacity 0.5s ease-in-out !important;
     }
 
+    /* Box A: Branding Logo */
     .sk-logo-group { order: 1; justify-content: flex-start; }
-    .sk-bottom-phone {
-        order: 2;
-        justify-content: center; 
-        color: var(--bb-text) !important;
-        font-weight: 900 !important;
-        font-size: clamp(20px, 2.4vw, 52px) !important;
-        letter-spacing: 4px !important; 
-        -webkit-text-stroke: 1.5px black !important;
-    }
-
-    .sk-info-stack {
-        order: 3;
-        justify-content: flex-end; 
-        gap: clamp(10px, 1.8vw, 35px) !important;
-        color: var(--bb-text) !important;
-    }
 
     .sk-logo {
         height: 100% !important;
@@ -313,12 +325,36 @@
         font-size: clamp(16px, 2vw, 42px) !important;
     }
 
-    .sk-weather { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; }
+    /* Box B: Phone CTA */
+    .sk-bottom-phone {
+        order: 2;
+        justify-content: center; 
+        color: var(--bb-text) !important;
+        font-weight: 900 !important;
+        font-size: clamp(20px, 2.4vw, 52px) !important;
+        letter-spacing: 4px !important; 
+        -webkit-text-stroke: 1.5px black !important;
+    }
+
+    /* Box C: Live Weather & Clock */
+    .sk-info-stack {
+        order: 3;
+        justify-content: flex-end; 
+        gap: clamp(10px, 1.8vw, 35px) !important;
+        color: var(--bb-text) !important;
+    }
+
+    .sk-weather { 
+        display: flex !important; 
+        flex-direction: column !important; 
+        align-items: center !important; 
+        justify-content: center !important; 
+    }
 
     #sk-temp-val { 
         font-size: clamp(24px, 3.8vw, 80px) !important; 
         font-weight: 900 !important; 
-        line-height: 1 !important;
+        line-height: 1 !important; 
         -webkit-text-stroke: 1.5px black !important;
     }
 
@@ -332,6 +368,7 @@
         -webkit-text-stroke: 1.5px black !important;
     }
 
+    /* LED Overlay Mesh */
     .sk-led-overlay {
         position: absolute !important;
         inset: 0 !important;
@@ -343,8 +380,12 @@
     }
 </style>
 
+<!-- ==========================================================================
+     Line 287: JAVASCRIPT ENGINE (Firebase RTDB, Geofence, VAST, Weather, 24hr Clock)
+     ========================================================================== -->
 <script>
 (function() {
+    /* 1. FIREBASE INITIALIZATION & CONFIG */
     const firebaseConfig = {
         apiKey: "AIzaSyBYPbGWDhPUnCSnPWDP9wtiKe2P5WpinXg",
         authDomain: "smlc-fuel-monitor.firebaseapp.com",
@@ -356,23 +397,34 @@
         measurementId: "G-687D605K75"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
     const db = firebase.database();
 
-    const displayInterval = 12000;      // 12-second billboard slide rotation
+    /* 2. STATE & ENGINE TIMERS */
+    const displayInterval = 12000;      // 12-second slide rotation
     const memoryRefreshCycle = 1800000; // 30-minute hardware GC reload
 
-    let activeLocation = { name: "Flora", lat: 38.668700, lon: -88.485300, phone: "844-907-4450" };
+    let activeLocation = { 
+        name: "Flora", 
+        lat: 38.668700, 
+        lon: -88.485300, 
+        phone: "844-907-4450",
+        screen_id: "SK-FLORA-01",
+        venue_id: "SK-VENUE-IL-01"
+    };
+
     let currentAdIndex = 0;
     let adSlideElements = [];
     let currentAdQueue = [];
     let lastWeatherData = null;
-    let targetTimeZone = "America/Chicago"; // Central Time default for S&K territory
+    let targetTimeZone = "America/Chicago"; // Central Time default
     let isNightTimeSolar = null;
-    let interactionTimer;
+    let interactionTimer = null;
     let currentQuarterTracker = null;
 
-    // Haversine Distance Calculation
+    /* 3. HAVERSINE FORMULA (Distance to sign boards) */
     function calculateDistanceMiles(lat1, lon1, lat2, lon2) {
         const R = 3958.8;
         const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -383,43 +435,93 @@
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    // Programmatic VAST XML / Blip Endpoint Ingestion
-    async function fetchProgrammaticAd(vastUrl) {
-        if (!vastUrl) return null;
+    /* 4. PROGRAMMATIC VAST PARSER & MACRO INJECTOR */
+    function buildProgrammaticUrl(endpointUrl, locationMetadata) {
+        if (!endpointUrl) return null;
+        let resolvedUrl = endpointUrl;
+        if (resolvedUrl.startsWith("//")) {
+            resolvedUrl = window.location.protocol + resolvedUrl;
+        }
+
+        const timestamp = new Date().getTime();
+        const screenId = locationMetadata.screen_id || "SK-DEFAULT-SCREEN";
+        const venueId = locationMetadata.venue_id || "SK-DEFAULT-VENUE";
+        const lat = locationMetadata.lat || 38.668700;
+        const lon = locationMetadata.lon || -88.485300;
+        const width = window.innerWidth || 1920;
+        const height = (window.innerHeight - 100) || 1080;
+
+        return resolvedUrl
+            .replace(/\[SCREEN_ID\]/g, encodeURIComponent(screenId))
+            .replace(/\[VENUE_ID\]/g, encodeURIComponent(venueId))
+            .replace(/\[TIMESTAMP\]/g, timestamp)
+            .replace(/\[CACHEBUSTER\]/g, timestamp)
+            .replace(/\[LAT\]/g, lat)
+            .replace(/\[LON\]/g, lon)
+            .replace(/\[WIDTH\]/g, width)
+            .replace(/\[HEIGHT\]/g, height);
+    }
+
+    async function fetchProgrammaticAd(rawVastUrl, locationMetadata) {
+        const compiledUrl = buildProgrammaticUrl(rawVastUrl, locationMetadata);
+        if (!compiledUrl) return null;
+
         try {
-            const res = await fetch(vastUrl);
+            const res = await fetch(compiledUrl, { cache: "no-store" });
             const xmlText = await res.text();
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
+            const impressionTags = xmlDoc.getElementsByTagName("Impression");
+            const trackingUrls = [];
+            for (let i = 0; i < impressionTags.length; i++) {
+                if (impressionTags[i].textContent) {
+                    trackingUrls.push(impressionTags[i].textContent.trim());
+                }
+            }
+
             const mediaFile = xmlDoc.getElementsByTagName("MediaFile")[0];
             if (mediaFile && mediaFile.textContent) {
-                return { type: 'video', url: mediaFile.textContent.trim(), isProgrammatic: true };
+                return { type: 'video', url: mediaFile.textContent.trim(), isProgrammatic: true, impressions: trackingUrls };
             }
 
             const staticResource = xmlDoc.getElementsByTagName("StaticResource")[0];
             if (staticResource && staticResource.textContent) {
-                return { type: 'image', url: staticResource.textContent.trim(), isProgrammatic: true };
+                return { type: 'image', url: staticResource.textContent.trim(), isProgrammatic: true, impressions: trackingUrls };
             }
-        } catch (e) {}
+        } catch (e) {
+            console.warn("[SSP Engine] Programmatic fetch failed:", compiledUrl);
+        }
         return null;
     }
 
+    function fireImpressionBeacons(impressions) {
+        if (!impressions || !Array.isArray(impressions)) return;
+        impressions.forEach(url => {
+            if (url) {
+                const beacon = new Image();
+                beacon.src = url;
+            }
+        });
+    }
+
+    /* 5. INTERACTIVE CONTROLLERS (Exposed globally for HTML tags) */
     window.handleInteraction = function() {
         const backBtn = document.getElementById('ghost-back-btn');
         const fsBtn = document.getElementById('fullscreen-toggle-btn');
-        if(backBtn) backBtn.classList.add('active');
-        if(fsBtn) fsBtn.classList.add('active');
+        if (backBtn) backBtn.classList.add('active');
+        if (fsBtn) fsBtn.classList.add('active');
+        
         clearTimeout(interactionTimer);
         interactionTimer = setTimeout(() => { 
-            if(backBtn) backBtn.classList.remove('active'); 
-            if(fsBtn) fsBtn.classList.remove('active'); 
+            if (backBtn) backBtn.classList.remove('active'); 
+            if (fsBtn) fsBtn.classList.remove('active'); 
         }, 3000);
     };
 
     window.toggleFullScreen = function() {
         const root = document.documentElement;
-        if (!document.fullscreenElement) { 
+        if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) { 
             if (root.requestFullscreen) root.requestFullscreen();
             else if (root.webkitRequestFullscreen) root.webkitRequestFullscreen();
             else if (root.msRequestFullscreen) root.msRequestFullscreen();
@@ -430,23 +532,26 @@
         }
     };
 
-    ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(
-        evt => document.addEventListener(evt, updateFsIcon)
-    );
-
     function updateFsIcon() {
         const fsIcon = document.getElementById('fs-icon');
         const fsText = document.querySelector('#fullscreen-toggle-btn span');
-        if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
-            if(fsIcon) fsIcon.setAttribute('data-lucide', 'minimize');
-            if(fsText) fsText.innerText = "Exit Full Screen";
+        const isFS = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+        
+        if (isFS) {
+            if (fsIcon) fsIcon.setAttribute('data-lucide', 'minimize');
+            if (fsText) fsText.innerText = "Exit Full Screen";
         } else {
-            if(fsIcon) fsIcon.setAttribute('data-lucide', 'maximize');
-            if(fsText) fsText.innerText = "Full Screen";
+            if (fsIcon) fsIcon.setAttribute('data-lucide', 'maximize');
+            if (fsText) fsText.innerText = "Full Screen";
         }
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
+    ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(
+        evt => document.addEventListener(evt, updateFsIcon)
+    );
+
+    /* 6. DAY / NIGHT LIGHTING MODE */
     function syncTimeTheme() {
         const root = document.getElementById('sk-billboard-root-container');
         if (!root) return;
@@ -458,10 +563,10 @@
             root.classList.add('light-mode');
             root.classList.remove('dark-mode');
         }
-        if(lastWeatherData) updateWeatherUI(lastWeatherData);
+        if (lastWeatherData) updateWeatherUI(lastWeatherData);
     }
 
-    // MAIN SINGLE-URL GEOLOCATION ENGINE
+    /* 7. FIREBASE GEOFENCE & LOCATION SYNC */
     db.ref("billboard_network/Locations").on("value", snapshot => {
         const locations = snapshot.val();
         if (!locations) return;
@@ -484,16 +589,14 @@
                         }
                     });
 
-                    // If within 40 miles of a board, bind strictly to that town.
-                    // If you are remote (testing from afar), load complete network fallback!
+                    // 40-mile radius hardware lock
                     if (minDistance <= 40) {
                         bindBillboardContent(locations, closestKey, false);
                     } else {
-                        bindBillboardContent(locations, "flora", true); // Full Network Preview
+                        bindBillboardContent(locations, "flora", true);
                     }
                 },
-                err => {
-                    // Fallback to Full Network Preview if GPS prompt ignored
+                () => {
                     bindBillboardContent(locations, "flora", true);
                 },
                 { timeout: 5000 }
@@ -503,14 +606,24 @@
         }
     });
 
+    /* 8. AD QUEUE BUILDER */
     async function bindBillboardContent(locations, townKey, isRemotePreview) {
         const townData = locations[townKey] || locations["flora"];
         const globalData = locations["global"] || {};
 
         if (townData) {
-            activeLocation = townData;
+            activeLocation = {
+                name: townData.name || townKey,
+                lat: townData.lat || 38.668700,
+                lon: townData.lon || -88.485300,
+                phone: townData.phone || "844-907-4450",
+                screen_id: townData.screen_id || `SK-${townKey.toUpperCase()}-01`,
+                venue_id: townData.venue_id || `SK-VENUE-${townKey.toUpperCase()}`,
+                vast_tag: townData.vast_tag || globalData.vast_tag || ""
+            };
+
             const phoneDisplay = document.getElementById('sk-phone-display');
-            if (phoneDisplay) phoneDisplay.innerText = activeLocation.phone || "844-907-4450";
+            if (phoneDisplay) phoneDisplay.innerText = activeLocation.phone;
             
             if (activeLocation.lat && activeLocation.lon) {
                 fetchWeather(activeLocation.lat, activeLocation.lon);
@@ -518,7 +631,7 @@
 
             const rawAdQueue = [];
 
-            // 1. If viewing remotely, include ads from all towns + global so you see everything
+            // Direct Advertisers
             if (isRemotePreview) {
                 Object.keys(locations).forEach(tKey => {
                     const tObj = locations[tKey];
@@ -531,14 +644,12 @@
                     });
                 });
             } else {
-                // 2. Hardware Mode: Target Town Ads only
                 Object.keys(townData).forEach(key => {
                     if (!isNaN(parseInt(key)) && townData[key] && townData[key].imageurl) {
                         rawAdQueue.push({ type: 'image', url: townData[key].imageurl, isProgrammatic: false });
                     }
                 });
 
-                // Plus Global network ads
                 Object.keys(globalData).forEach(key => {
                     if (!isNaN(parseInt(key)) && globalData[key] && globalData[key].imageurl) {
                         if (!rawAdQueue.some(item => item.url === globalData[key].imageurl)) {
@@ -548,11 +659,12 @@
                 });
             }
 
-            // 3. Programmatic VAST / Blip Ingestion
-            const vastUrl = townData.vast_tag || globalData.vast_tag;
-            if (vastUrl) {
-                const programmaticItem = await fetchProgrammaticAd(vastUrl);
-                if (programmaticItem) rawAdQueue.push(programmaticItem);
+            // Programmatic VAST Ingestion
+            if (activeLocation.vast_tag) {
+                const programmaticCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation);
+                if (programmaticCreative) {
+                    rawAdQueue.push(programmaticCreative);
+                }
             }
 
             if (JSON.stringify(rawAdQueue) !== JSON.stringify(currentAdQueue)) {
@@ -562,6 +674,7 @@
         }
     }
 
+    /* 9. SLIDE DISPLAY & ROTATION */
     function renderSlides() {
         const viewport = document.getElementById('sk-ad-viewport');
         if (!viewport) return;
@@ -601,6 +714,10 @@
             viewport.appendChild(slide);
             adSlideElements.push(slide);
         });
+
+        if (currentAdQueue[0] && currentAdQueue[0].isProgrammatic) {
+            fireImpressionBeacons(currentAdQueue[0].impressions);
+        }
     }
 
     function rotateAds() {
@@ -609,6 +726,11 @@
         currentAdIndex = (currentAdIndex + 1) % adSlideElements.length;
         adSlideElements[currentAdIndex].classList.add('active');
 
+        const activeMedia = currentAdQueue[currentAdIndex];
+        if (activeMedia && activeMedia.isProgrammatic) {
+            fireImpressionBeacons(activeMedia.impressions);
+        }
+
         const video = adSlideElements[currentAdIndex].querySelector('video');
         if (video) {
             video.currentTime = 0;
@@ -616,6 +738,7 @@
         }
     }
 
+    /* 10. OPEN-METEO WEATHER FETCH */
     async function fetchWeather(lat, lon) {
         try {
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,is_day&temperature_unit=fahrenheit&timezone=auto`;
@@ -646,6 +769,7 @@
         }
     }
 
+    /* 11. 15-MINUTE BRANDING POSITION FLIPPER & 24HR TIME */
     function updateQuarterlySwap(quarter) {
         const logoGroup = document.querySelector('.sk-logo-group');
         const phoneDiv = document.querySelector('.sk-bottom-phone');
@@ -711,6 +835,7 @@
         }
     }
 
+    /* 12. INITIALIZATION & RECURRING TIMERS */
     function initBillboard() {
         if (typeof lucide !== 'undefined') lucide.createIcons();
         syncTimeTheme();
@@ -725,8 +850,11 @@
         }, memoryRefreshCycle);
     }
 
-    if (document.readyState === "complete" || document.readyState === "interactive") initBillboard();
-    else document.addEventListener("DOMContentLoaded", initBillboard);
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+        initBillboard();
+    } else {
+        document.addEventListener("DOMContentLoaded", initBillboard);
+    }
 })();
 </script>
 </body>
