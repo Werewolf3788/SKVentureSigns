@@ -2,9 +2,9 @@
 <!-- ==========================================================================
      PROJECT: S&K Venture Signs - Universal Single-URL Programmatic Billboard Engine
      ADMIN / LEAD DEV: Werewolf (Werewolf3788)
-     VERSION: 45.0 (Dedicated S&K Tracking + Strict Geofence vs Master Feed Preview)
+     VERSION: 46.0 (Kiosk Hardened + SMLC GA4 Custom Impression Tracker + Auto-CORS Bridge)
      PROTOCOL: Dual Compatibility over HTTP & HTTPS | Full Code | No-Strip
-     TIMESTAMP: Saturday, August 15, 2026, 15:35:00 EDT (24hr New York Time)
+     TIMESTAMP: Saturday, August 15, 2026, 15:28:26 EDT (24hr New York Time)
      
      FIREBASE RTDB: https://smlc-fuel-monitor-default-rtdb.firebaseio.com
      GA4 PROPERTY CONFIGURATION:
@@ -14,7 +14,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>S&K Venture Signs Billboard</title>
+    <title>S&K Venture Signs Billboard - Kiosk Engine</title>
 
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐺</text></svg>">
@@ -34,10 +34,10 @@
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
-        // Primary Site Tag: S&K Ventures
+        // Primary Site Tag: S&K Ventures (14-Month Retention & Signals Enabled)
         gtag('config', 'G-H6Q756MVE8', { 
             'page_type': 'billboard_kiosk_engine', 
-            'layout_version': '45.0', 
+            'layout_version': '46.0', 
             'retention': '14_months',
             'traffic_type': 'internal'
         });
@@ -45,7 +45,7 @@
 </head>
 <body oncontextmenu="return false;">
 
-<!-- [ROOT CONTAINER] Holds complete stage and monitors interaction -->
+<!-- [ROOT CONTAINER] Holds complete display stage and touch/interaction listeners -->
 <div id="sk-billboard-root-container" class="light-mode" onmousemove="handleInteraction()" ontouchstart="handleInteraction()">
 
     <!-- [CARD 1: PORTRAIT ORIENTATION LOCK] -->
@@ -77,7 +77,7 @@
         <!-- [CARD 2: BOTTOM STATUS BAR] -->
         <div id="sk-bottom-bar">
             
-            <!-- [BOX A: BRANDING LOGO] -->
+            <!-- [BOX A: BRANDING LOGO] S&K Venture Signs Logo with text fallback -->
             <div class="sk-logo-group">
                 <div class="sk-logo">
                     <img src="//raw.githack.com/Werewolf3788/SKVentureSigns/main/images/S%26K%20Name.png" 
@@ -107,7 +107,7 @@
 </div>
 
 <!-- ==========================================================================
-     Line 104: CSS STYLESHEET (Layout & Visuals)
+     Line 105: CSS STYLESHEET (Layout, Visual Hierarchy, Kiosk Protection)
      ========================================================================== -->
 <style>
     /* [RESET] Hardware screen fill, lock scrolling & hide cursor */
@@ -385,7 +385,7 @@
 </style>
 
 <!-- ==========================================================================
-     Line 310: JAVASCRIPT ENGINE (Geofence Lock vs Universal Master Ingestion)
+     Line 311: JAVASCRIPT ENGINE (Kiosk Hardened + SMLC GA4 Impression Logging)
      ========================================================================== -->
 <script>
 (function() {
@@ -406,10 +406,10 @@
     }
     const db = firebase.database();
 
-    /* 2. CONFIGURATION */
+    /* 2. ENGINE CONFIGURATION */
     const TOTAL_ROTATION_SLOTS = 20;
-    const displayInterval = 12000;
-    const memoryRefreshCycle = 1800000;
+    const displayInterval = 12000;      // 12-second ad duration
+    const memoryRefreshCycle = 1800000; // 30-minute hardware GC reload
 
     let activeLocation = { 
         name: "Flora", 
@@ -472,7 +472,31 @@
             .replace(/\[HEIGHT\]/g, height);
     }
 
-    /* 3. PROGRAMMATIC FETCHER WITH TIMEOUT & CORS BRIDGE */
+    /* 3. GA4 SMLC BILLBOARD IMPRESSION LOGGER */
+    function logSmlcAdImpression(adItem) {
+        if (typeof gtag !== 'function' || !adItem) return;
+
+        let providerType = 'direct_local';
+        if (adItem.isProgrammatic) {
+            providerType = (adItem.provider === 'blip') ? 'blip_programmatic' : 'vistar_programmatic';
+        } else if (adItem.type === 'house') {
+            providerType = 'house_fallback';
+        }
+
+        gtag('event', 'billboard_ad_impression', {
+            'send_to': 'G-H6Q756MVE8',
+            'event_category': 'Digital Billboard Impressions',
+            'event_label': adItem.url || adItem.headline || 'Direct Local Ad',
+            'ad_provider': providerType,
+            'screen_location': activeLocation.name || 'Flora',
+            'screen_id': activeLocation.screen_id || 'SK-DEFAULT',
+            'media_type': adItem.type || 'image',
+            'creative_url': adItem.url || 'house_ad',
+            'value': 1
+        });
+    }
+
+    /* 4. PROGRAMMATIC FETCHER WITH TIMEOUT & CORS PROXY */
     async function fetchProgrammaticAd(rawUrl, locationMetadata, providerName) {
         let compiledUrl = buildProgrammaticUrl(rawUrl, locationMetadata);
         if (!compiledUrl) return null;
@@ -539,7 +563,7 @@
         });
     }
 
-    /* 4. UI INTERACTION */
+    /* 5. UI INTERACTION */
     window.handleInteraction = function() {
         const backBtn = document.getElementById('ghost-back-btn');
         const fsBtn = document.getElementById('fullscreen-toggle-btn');
@@ -566,7 +590,7 @@
         }
     };
 
-    /* 5. THEME & GEOFENCE */
+    /* 6. THEME & GEOFENCE */
     function syncTimeTheme() {
         const root = document.getElementById('sk-billboard-root-container');
         if (!root) return;
@@ -581,7 +605,7 @@
         if (lastWeatherData) updateWeatherUI(lastWeatherData);
     }
 
-    /* 6. FIREBASE REALTIME LISTENER */
+    /* 7. FIREBASE REALTIME LISTENER */
     db.ref().on("value", snapshot => {
         const rootData = snapshot.val();
         if (!rootData) return;
@@ -616,9 +640,9 @@
 
                     // 40-Mile Geofence check
                     if (minDistance <= 40) {
-                        bindBillboardContent(locations, closestKey, false); // On-site hardware mode
+                        bindBillboardContent(locations, closestKey, false);
                     } else {
-                        bindBillboardContent(locations, "flora", true);    // Remote master preview mode
+                        bindBillboardContent(locations, "flora", true);
                     }
                 },
                 () => {
@@ -631,7 +655,7 @@
         }
     });
 
-    /* 7. CONTENT BINDER (ON-SITE 20-SLOT VS REMOTE MASTER FEED) */
+    /* 8. CONTENT BINDER (ON-SITE 20-SLOT VS REMOTE MASTER FEED) */
     function bindBillboardContent(locations, townKey, isRemoteMasterFeed) {
         const townData = locations[townKey] || locations["flora"] || {};
         const globalData = locations["global"] || {};
@@ -697,7 +721,7 @@
             }
         }
 
-        // House ad fallback if database is empty
+        // House ad fallback if database is completely blank
         if (immediateQueue.length === 0) {
             immediateQueue.push({
                 type: 'house',
@@ -731,7 +755,7 @@
         }
     }
 
-    /* 8. SLIDE DISPLAY & ROTATION */
+    /* 9. SLIDE DISPLAY & ROTATION */
     function renderSlides() {
         const viewport = document.getElementById('sk-ad-viewport');
         if (!viewport) return;
@@ -777,8 +801,12 @@
             adSlideElements.push(slide);
         });
 
-        if (currentAdQueue[0] && currentAdQueue[0].isProgrammatic) {
-            fireImpressionBeacons(currentAdQueue[0].impressions);
+        // Fire beacons & GA4 impression for the first active slide
+        if (currentAdQueue[0]) {
+            if (currentAdQueue[0].isProgrammatic && currentAdQueue[0].impressions) {
+                fireImpressionBeacons(currentAdQueue[0].impressions);
+            }
+            logSmlcAdImpression(currentAdQueue[0]);
         }
     }
 
@@ -789,8 +817,13 @@
         adSlideElements[currentAdIndex].classList.add('active');
 
         const activeMedia = currentAdQueue[currentAdIndex];
-        if (activeMedia && activeMedia.isProgrammatic) {
-            fireImpressionBeacons(activeMedia.impressions);
+        if (activeMedia) {
+            // 1. Third-party payout impression beacons
+            if (activeMedia.isProgrammatic && activeMedia.impressions) {
+                fireImpressionBeacons(activeMedia.impressions);
+            }
+            // 2. SMLC Custom GA4 Impression Logging
+            logSmlcAdImpression(activeMedia);
         }
 
         const video = adSlideElements[currentAdIndex].querySelector('video');
@@ -800,7 +833,7 @@
         }
     }
 
-    /* 9. OPEN-METEO WEATHER FETCH */
+    /* 10. OPEN-METEO WEATHER FETCH */
     async function fetchWeather(lat, lon) {
         try {
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,is_day&temperature_unit=fahrenheit&timezone=auto`;
@@ -831,7 +864,7 @@
         }
     }
 
-    /* 10. 15-MINUTE BRANDING POSITION FLIPPER & 24HR TIME */
+    /* 11. 15-MINUTE BRANDING POSITION FLIPPER & 24HR TIME */
     function updateQuarterlySwap(quarter) {
         const logoGroup = document.querySelector('.sk-logo-group');
         const phoneDiv = document.querySelector('.sk-bottom-phone');
@@ -897,7 +930,7 @@
         }
     }
 
-    /* 11. INITIALIZATION */
+    /* 12. INITIALIZATION */
     function initBillboard() {
         if (typeof lucide !== 'undefined') lucide.createIcons();
         syncTimeTheme();
