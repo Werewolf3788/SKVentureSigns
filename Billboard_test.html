@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <!-- 
-    PROJECT: S & K Ventures Billboard - Auto-Refreshing Live Engine
+    PROJECT: S & K Ventures Billboard - NovaStar TB40 Dedicated Engine
     ADMIN: Werewolf (Werewolf3788)
-    VERSION: 4.27 (Seamless Background Polling + Auto Cache-Busting + Kiosk Memory Cycle)
+    VERSION: 9.0 (NovaStar TB40 Android WebView Optimized + ViPlex / VNNOX Ready)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: Sat, Aug 15, 2026 | 01:25:00 AM EDT (New York Time)
+    TIMESTAMP: Sat, Aug 15, 2026 | 01:34:00 AM EDT (New York Time)
     
     SOURCE: https://docs.google.com/spreadsheets/d/e/2PACX-1vT9aXB9z9jcsaA0U-LsuV4nIHwIIw2huGB8zaalh7It4GQP_DWFFdQ4Utaw_ajkdhx5ydn87BcfS82d/pub?gid=0&single=true&output=csv
 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S & K Ventures Billboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>S & K Ventures Billboard - TB40</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐺</text></svg>">
 
     <!-- Font Imports -->
     <link href="//fonts.googleapis.com/css2?family=Great+Vibes&family=Satisfy&family=Pinyon+Script&family=Rouge+Script&family=Alex+Brush&display=swap" rel="stylesheet">
 
-    <!-- Framework Assets -->
-    <script src="//cdn.tailwindcss.com?v=4.27"></script>
+    <!-- Icon Asset -->
     <script src="//unpkg.com/lucide@latest"></script>
 
     <!-- Google Analytics: Dual Tracking -->
@@ -30,7 +29,7 @@
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-H6Q756MVE8', { 'page_type': 'billboard_widget_v4.27', 'layout_version': '4.27', 'retention': '14_months' });
+        gtag('config', 'G-H6Q756MVE8', { 'page_type': 'tb40_billboard_widget_v9.0', 'layout_version': '9.0', 'retention': '14_months' });
         gtag('config', 'G-L376P3NPY4');
     </script>
 </head>
@@ -38,32 +37,33 @@
 
 <div id="sk-billboard-root-container" class="light-mode" onmousemove="handleInteraction()" ontouchstart="handleInteraction()">
 
-    <!-- Mobile Landscape Lock Overlay -->
+    <!-- Mobile / Portrait Lock Overlay -->
     <div id="landscape-lock">
         <div class="lock-content">
-            <i data-lucide="rotate-cw" class="w-16 h-16 mb-4 animate-bounce"></i>
-            <p>Please Rotate Your Device<br><span class="text-sm opacity-60 uppercase font-bold tracking-widest">Landscape Mode Required</span></p>
+            <i data-lucide="rotate-cw" style="width: 64px; height: 64px; margin-bottom: 16px;"></i>
+            <p style="font-size: 20px; font-weight: bold; margin: 0;">Landscape Orientation Required</p>
         </div>
     </div>
 
     <!-- Interactive Ghost Back Button -->
     <a href="./index.html" id="ghost-back-btn">
-        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
         <span>Back to Site</span>
     </a>
 
     <!-- Interactive Full Screen Button -->
     <button id="fullscreen-toggle-btn" onclick="toggleFullScreen()">
-        <i data-lucide="maximize" class="w-5 h-5" id="fs-icon"></i>
+        <i data-lucide="maximize" id="fs-icon" style="width: 20px; height: 20px;"></i>
         <span>Full Screen</span>
     </button>
 
     <div id="sk-billboard-display">
-        <!-- Ad Stage: Only active working images get injected here -->
+        <!-- Ad Stage: Viewport -->
         <div id="sk-ad-viewport"></div>
 
-        <!-- Full-Width Bottom Bar -->
+        <!-- Full-Width Bottom Bar: Branding, Weather, & Time -->
         <div id="sk-bottom-bar">
+            <!-- Brand Logo Slot -->
             <div class="sk-logo-group">
                 <div class="sk-logo">
                     <img src="//raw.githack.com/Werewolf3788/SKVentureSigns/main/images/S%26K%20Name.png" 
@@ -74,8 +74,10 @@
                 </div>
             </div>
             
+            <!-- Phone Number Slot -->
             <div class="sk-bottom-phone">844-907-4450</div>
             
+            <!-- Weather & Clock Slot -->
             <div class="sk-info-stack">
                 <div class="sk-weather">
                     <div id="sk-temp-val">--°</div>
@@ -84,37 +86,39 @@
             </div>
         </div>
 
+        <!-- Hardware LED Vignette Overlay -->
         <div class="sk-led-overlay"></div>
     </div>
 </div>
 
+<!-- ================================================================= -->
+<!-- ★ SELF-CONTAINED CSS (OPTIMIZED FOR NOVASTAR ANDROID WEBVIEW) ★  -->
+<!-- ================================================================= -->
 <style>
+    /* HARDWARE LEVEL RESET */
     html, body {
         margin: 0 !important;
         padding: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
+        width: 100vw !important;
+        height: 100vh !important;
         overflow: hidden !important;
-        background: #000;
+        background: #000 !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
     }
 
     #sk-billboard-root-container {
         --bb-bottom-bg: #3E0100;
         --bb-text: #ffffff; 
         --bb-border: rgba(255, 255, 255, 0.2);
-        --bar-height: clamp(75px, 11vh, 140px);
+        --bar-height: clamp(70px, 11vh, 130px);
         --sk-yellow: #FAC429;
         
-        all: initial !important;
         display: block !important;
         width: 100% !important;
         height: 100% !important;
         position: absolute !important;
         inset: 0 !important;
-        
-        container-type: inline-size;
-        container-name: billboard;
-
         margin: 0 !important;
         padding: 0 !important;
         background: #000 !important;
@@ -126,56 +130,54 @@
 
     #sk-billboard-root-container.dark-mode {
         --bb-bottom-bg: #3E0100;
-        --bb-text: #ffffff; 
+        --bb-text: #ffffff;
         --bb-border: rgba(255, 255, 255, 0.1);
     }
 
     #ghost-back-btn {
         position: absolute !important;
-        top: 30px !important;
-        left: 30px !important;
+        top: 25px !important;
+        left: 25px !important;
         z-index: 2000 !important;
-        background: rgba(0, 0, 0, 0.8) !important;
+        background: rgba(0, 0, 0, 0.85) !important;
         color: var(--sk-yellow) !important;
-        padding: 12px 24px !important;
+        padding: 10px 22px !important;
         border-radius: 50px !important;
         border: 2px solid var(--sk-yellow) !important;
         display: flex !important;
         align-items: center !important;
-        gap: 10px !important;
+        gap: 8px !important;
         text-decoration: none !important;
-        font-family: 'Poppins', sans-serif !important;
         font-weight: 800 !important;
-        font-size: 14px !important;
+        font-size: 13px !important;
         text-transform: uppercase !important;
         opacity: 0;
         visibility: hidden;
-        transition: opacity 0.5s ease, visibility 0.5s ease !important;
+        transition: opacity 0.4s ease, visibility 0.4s ease !important;
     }
     #ghost-back-btn.active { opacity: 1; visibility: visible; }
 
     #fullscreen-toggle-btn {
         position: absolute !important;
-        top: 30px !important;
-        right: 30px !important;
+        top: 25px !important;
+        right: 25px !important;
         z-index: 2000 !important;
-        background: rgba(0, 0, 0, 0.8) !important;
+        background: rgba(0, 0, 0, 0.85) !important;
         color: var(--sk-yellow) !important;
-        padding: 12px 24px !important;
+        padding: 10px 22px !important;
         border-radius: 50px !important;
         border: 2px solid var(--sk-yellow) !important;
         display: flex !important;
         align-items: center !important;
-        gap: 10px !important;
+        gap: 8px !important;
         text-decoration: none !important;
-        font-family: 'Poppins', sans-serif !important;
         font-weight: 800 !important;
-        font-size: 14px !important;
+        font-size: 13px !important;
         text-transform: uppercase !important;
         cursor: pointer !important;
         opacity: 0;
         visibility: hidden;
-        transition: opacity 0.5s ease, visibility 0.5s ease !important;
+        transition: opacity 0.4s ease, visibility 0.4s ease !important;
     }
     #fullscreen-toggle-btn.active { opacity: 1; visibility: visible; }
 
@@ -190,7 +192,6 @@
         align-items: center !important;
         color: var(--sk-yellow) !important;
         text-align: center !important;
-        font-family: 'Poppins', sans-serif !important;
     }
     @media screen and (orientation: portrait) and (max-width: 1024px) {
         #landscape-lock { display: flex !important; }
@@ -207,6 +208,7 @@
         overflow: hidden !important;
     }
 
+    /* AD VIEWPORT WITH GPU ACCELERATION */
     #sk-ad-viewport {
         position: absolute !important;
         top: 0 !important;
@@ -215,15 +217,18 @@
         height: calc(100% - var(--bar-height)) !important; 
         z-index: 1 !important;
         background: #000 !important;
-        overflow: hidden;
+        overflow: hidden !important;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
     }
 
     .sk-ad-slide {
         display: none !important;
         width: 100% !important;
         height: 100% !important;
-        justify-content: center;
-        align-items: center;
+        justify-content: center !important;
+        align-items: center !important;
+        background: #000 !important;
     }
 
     .sk-ad-slide.active { display: flex !important; }
@@ -232,14 +237,15 @@
         width: 100% !important;
         height: 100% !important;
         object-fit: fill !important; 
-        filter: saturate(1.1) contrast(1.05) brightness(0.95) !important;
+        filter: saturate(1.12) contrast(1.05) brightness(0.98) !important;
         transition: filter 0.8s ease !important;
     }
 
     .dark-mode .sk-ad-slide img {
-        filter: saturate(1.1) contrast(1.05) brightness(0.75) !important;
+        filter: saturate(1.08) contrast(1.02) brightness(0.75) !important;
     }
 
+    /* FULL-WIDTH FLUID BOTTOM BAR */
     #sk-bottom-bar {
         position: absolute !important;
         bottom: 0 !important;
@@ -250,11 +256,12 @@
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
-        padding: 0 clamp(15px, 3vw, 60px) !important;
+        padding: 0 clamp(15px, 2.5vw, 50px) !important;
         gap: clamp(10px, 2vw, 30px) !important;
         z-index: 10 !important;
         flex-wrap: nowrap !important;
         white-space: nowrap !important;
+        box-sizing: border-box !important;
     }
 
     .sk-logo-group, .sk-bottom-phone, .sk-info-stack {
@@ -276,15 +283,15 @@
         justify-content: center; 
         color: var(--bb-text) !important;
         font-weight: 900 !important;
-        font-size: clamp(20px, 2.5vw, 55px) !important;
-        letter-spacing: 5px !important; 
+        font-size: clamp(20px, 2.4vw, 52px) !important;
+        letter-spacing: 4px !important; 
         -webkit-text-stroke: 1.5px black !important;
     }
 
     .sk-info-stack {
         order: 3;
         justify-content: flex-end; 
-        gap: clamp(10px, 2vw, 40px) !important;
+        gap: clamp(10px, 1.8vw, 35px) !important;
         color: var(--bb-text) !important;
     }
 
@@ -298,7 +305,7 @@
     }
 
     .sk-brand-img {
-        height: 160% !important;
+        height: 150% !important;
         max-height: none !important;
         max-width: 100% !important;
         width: auto !important;
@@ -312,25 +319,30 @@
     #sk-fallback-text {
         font-family: 'Arial Black', Gadget, sans-serif !important;
         font-weight: 900 !important;
-        font-size: clamp(16px, 2vw, 45px) !important;
+        font-size: clamp(16px, 2vw, 42px) !important;
     }
 
-    .sk-weather { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; }
+    .sk-weather { 
+        display: flex !important; 
+        flex-direction: column !important; 
+        align-items: center !important; 
+        justify-content: center !important; 
+    }
 
     #sk-temp-val { 
-        font-size: clamp(24px, 4vw, 85px) !important; 
+        font-size: clamp(24px, 3.8vw, 80px) !important; 
         font-weight: 900 !important; 
         line-height: 1 !important;
         -webkit-text-stroke: 1.5px black !important;
     }
 
     #sk-time-val {
-        font-size: clamp(24px, 4vw, 85px) !important; 
+        font-size: clamp(24px, 3.8vw, 80px) !important; 
         font-weight: 900 !important; 
         line-height: 1 !important; 
         font-family: 'Courier New', monospace !important;
         border-left: 4px solid var(--bb-border) !important;
-        padding-left: clamp(10px, 2vw, 40px) !important;
+        padding-left: clamp(10px, 1.8vw, 35px) !important;
         -webkit-text-stroke: 1.5px black !important;
     }
 
@@ -339,27 +351,22 @@
         inset: 0 !important;
         background-image: radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px) !important;
         background-size: 4px 4px !important;
-        box-shadow: inset 0 0 150px rgba(0,0,0,0.3) !important;
+        box-shadow: inset 0 0 120px rgba(0,0,0,0.3) !important;
         pointer-events: none !important;
         z-index: 5 !important;
     }
-
-    @media (max-width: 1024px) {
-        #fullscreen-toggle-btn { right: 15px !important; padding: 10px 18px !important; font-size: 12px !important; }
-    }
-
-    @media (max-width: 768px) {
-        #fullscreen-toggle-btn { top: 15px !important; right: 15px !important; padding: 8px 16px !important; font-size: 11px !important; }
-        #ghost-back-btn { top: 15px !important; left: 15px !important; padding: 8px 16px !important; font-size: 11px !important; }
-    }
 </style>
 
+<!-- ================================================================= -->
+<!-- ★ TB40 COMPATIBLE RUNTIME JAVASCRIPT ENGINE ★                    -->
+<!-- ================================================================= -->
 <script>
 (function() {
+    // Single Flat CSV Endpoint matching your live Google Sheets setup
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9aXB9z9jcsaA0U-LsuV4nIHwIIw2huGB8zaalh7It4GQP_DWFFdQ4Utaw_ajkdhx5ydn87BcfS82d/pub?gid=0&single=true&output=csv";
-    const displayInterval = 12000; // Slide rotation time (12 seconds)
-    const syncInterval = 30000;    // Background sheet check every 30 seconds
-    const hardRefreshCycle = 1800000; // 30-minute memory refresh to keep TV browser fast
+    const displayInterval = 12000; // 12-second billboard standard slide rotation
+    const syncInterval = 30000;    // 30-second live background sheet sync
+    const memoryRefreshCycle = 1800000; // 30-minute hardware GC reload
     
     let currentAdIndex = 0;
     let adSlideElements = [];
@@ -426,7 +433,7 @@
         if(lastWeatherData) updateWeatherUI(lastWeatherData);
     }
 
-    // STRICT IMAGE URL FILTER: Bypasses blank cells & website homepages
+    // Strict URL Image Filter: Converts Google Drive links and ignores non-image websites
     function filterAndCleanImageUrl(url) {
         if (!url) return null;
         let clean = url.replace(/^"|"$|&amp;/g, '').trim();
@@ -451,11 +458,11 @@
         return clean;
     }
 
-    // Auto-Polling Engine with No-Cache Headers
+    // Live Sheet Polling with Timestamp Cache-Busting
     async function fetchAdImages(isAutoSync = false) {
         try {
             const timestamp = Date.now();
-            const res = await fetch(`${CSV_URL}&t=${timestamp}&cachebust=${Math.random()}`, {
+            const res = await fetch(`${CSV_URL}&t=${timestamp}&cb=${Math.random()}`, {
                 cache: 'no-store',
                 headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }
             });
@@ -465,11 +472,11 @@
             let loadedUrls = [];
 
             lines.forEach((line, idx) => {
-                if (idx === 0 || !line.trim()) return; // Skip Header
+                if (idx === 0 || !line.trim()) return; // Skip Header Row
                 
                 const cellMatch = line.match(/(".*?"|[^,]+)/g);
                 if (cellMatch) {
-                    // Automatically checks Column C / Column B for valid image URLs
+                    // Check every column from Col B onwards to locate the working ad image URL
                     for (let c = 1; c < cellMatch.length; c++) {
                         let candidate = cellMatch[c].replace(/^"|"$/g, '').trim();
                         if (candidate.startsWith('http') || candidate.startsWith('//')) {
@@ -483,13 +490,13 @@
                 }
             });
 
-            // If the sheet has changed, update live in the background without refreshing the page
+            // Live hot swap: Only update DOM if the spreadsheet rows changed
             if (loadedUrls.length > 0 && JSON.stringify(loadedUrls) !== JSON.stringify(currentImageUrls)) {
                 currentImageUrls = loadedUrls;
                 renderSlides();
             }
         } catch (e) { 
-            console.warn("Billboard Live Polling Engine:", e); 
+            console.warn("TB40 Billboard Polling Warning:", e); 
         }
     }
 
@@ -638,15 +645,15 @@
         // 1. Initial Load of Ad Images
         await fetchAdImages();
         
-        // 2. Initial Weather Check
+        // 2. Initial Weather Check (Uses Central Illinois Billboard Fallback Coordinates)
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
                 async (p) => { updateWeatherUI(await fetchWeather(p.coords.latitude, p.coords.longitude)); syncTimeTheme(); },
-                async (e) => { updateWeatherUI(await fetchWeather(39.1243, -88.5525)); syncTimeTheme(); },
+                async (e) => { updateWeatherUI(await fetchWeather(38.6687, -88.4853)); syncTimeTheme(); },
                 { timeout: 5000 }
             );
         } else {
-            fetchWeather(39.1243, -88.5525).then(w => { updateWeatherUI(w); syncTimeTheme(); });
+            fetchWeather(38.6687, -88.4853).then(w => { updateWeatherUI(w); syncTimeTheme(); });
         }
         
         // 3. Local Time Clock (1 sec)
@@ -656,16 +663,16 @@
         // 4. Slide Rotator (12 sec)
         setInterval(rotateAds, displayInterval);
         
-        // 5. Day/Night Theme Sync (5 min)
+        // 5. Day/Night Solar Sync (5 min)
         setInterval(syncTimeTheme, 300000); 
         
         // 6. LIVE GOOGLE SHEET AUTO-SYNC (Every 30 seconds in background)
         setInterval(() => fetchAdImages(true), syncInterval);
 
-        // 7. KIOSK HARD MEMORY REFRESH (Every 30 minutes)
+        // 7. TB40 KIOSK HARD MEMORY REFRESH (Every 30 minutes)
         setInterval(() => {
             window.location.reload();
-        }, hardRefreshCycle);
+        }, memoryRefreshCycle);
     }
 
     if (document.readyState === "complete" || document.readyState === "interactive") startBillboard();
