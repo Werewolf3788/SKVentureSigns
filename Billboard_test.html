@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <!-- 
-    PROJECT: S & K Ventures Billboard - Strict Image Bypass Engine
+    PROJECT: S & K Ventures Billboard - Auto-Refreshing Live Engine
     ADMIN: Werewolf (Werewolf3788)
-    VERSION: 4.26 (Bypass Empty / Non-Image URLs + Play Active Images Only)
+    VERSION: 4.27 (Seamless Background Polling + Auto Cache-Busting + Kiosk Memory Cycle)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: Sat, Aug 15, 2026 | 01:16:00 AM EDT (New York Time)
+    TIMESTAMP: Sat, Aug 15, 2026 | 01:25:00 AM EDT (New York Time)
     
     SOURCE: https://docs.google.com/spreadsheets/d/e/2PACX-1vT9aXB9z9jcsaA0U-LsuV4nIHwIIw2huGB8zaalh7It4GQP_DWFFdQ4Utaw_ajkdhx5ydn87BcfS82d/pub?gid=0&single=true&output=csv
 -->
@@ -20,7 +20,7 @@
     <link href="//fonts.googleapis.com/css2?family=Great+Vibes&family=Satisfy&family=Pinyon+Script&family=Rouge+Script&family=Alex+Brush&display=swap" rel="stylesheet">
 
     <!-- Framework Assets -->
-    <script src="//cdn.tailwindcss.com?v=4.26"></script>
+    <script src="//cdn.tailwindcss.com?v=4.27"></script>
     <script src="//unpkg.com/lucide@latest"></script>
 
     <!-- Google Analytics: Dual Tracking -->
@@ -30,7 +30,7 @@
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-H6Q756MVE8', { 'page_type': 'billboard_widget_v4.26', 'layout_version': '4.26', 'retention': '14_months' });
+        gtag('config', 'G-H6Q756MVE8', { 'page_type': 'billboard_widget_v4.27', 'layout_version': '4.27', 'retention': '14_months' });
         gtag('config', 'G-L376P3NPY4');
     </script>
 </head>
@@ -357,7 +357,9 @@
 <script>
 (function() {
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9aXB9z9jcsaA0U-LsuV4nIHwIIw2huGB8zaalh7It4GQP_DWFFdQ4Utaw_ajkdhx5ydn87BcfS82d/pub?gid=0&single=true&output=csv";
-    const displayInterval = 12000; 
+    const displayInterval = 12000; // Slide rotation time (12 seconds)
+    const syncInterval = 30000;    // Background sheet check every 30 seconds
+    const hardRefreshCycle = 1800000; // 30-minute memory refresh to keep TV browser fast
     
     let currentAdIndex = 0;
     let adSlideElements = [];
@@ -437,23 +439,27 @@
             }
         }
 
-        // STRICT IMAGE EXTENSION CHECK:
-        // Must end in an image format or be a Google thumbnail/content link.
-        // Plain websites like https://www.wabash.net/ or https://www.iecc.edu/fcc are BYPASSED.
+        // Validate image file formats (rejects website homepages like https://www.wabash.net/)
         const isRealImage = /\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$/i.test(clean) || 
                             clean.includes("googleusercontent.com") || 
                             clean.includes("drive.google.com");
 
         if (!isRealImage) {
-            return null; // Bypass!
+            return null; // Bypasses plain websites & blank rows
         }
 
         return clean;
     }
 
+    // Auto-Polling Engine with No-Cache Headers
     async function fetchAdImages(isAutoSync = false) {
         try {
-            const res = await fetch(`${CSV_URL}&t=${Date.now()}`);
+            const timestamp = Date.now();
+            const res = await fetch(`${CSV_URL}&t=${timestamp}&cachebust=${Math.random()}`, {
+                cache: 'no-store',
+                headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }
+            });
+            
             const text = await res.text();
             const lines = text.split(/\r?\n/);
             let loadedUrls = [];
@@ -463,26 +469,27 @@
                 
                 const cellMatch = line.match(/(".*?"|[^,]+)/g);
                 if (cellMatch) {
-                    // Check every column from Col B onwards to find an active image URL
+                    // Automatically checks Column C / Column B for valid image URLs
                     for (let c = 1; c < cellMatch.length; c++) {
                         let candidate = cellMatch[c].replace(/^"|"$/g, '').trim();
                         if (candidate.startsWith('http') || candidate.startsWith('//')) {
                             let validImageUrl = filterAndCleanImageUrl(candidate);
                             if (validImageUrl) {
                                 loadedUrls.push(validImageUrl);
-                                break; // Found valid ad image for this row
+                                break;
                             }
                         }
                     }
                 }
             });
 
+            // If the sheet has changed, update live in the background without refreshing the page
             if (loadedUrls.length > 0 && JSON.stringify(loadedUrls) !== JSON.stringify(currentImageUrls)) {
                 currentImageUrls = loadedUrls;
                 renderSlides();
             }
         } catch (e) { 
-            console.warn("Billboard Sync Engine: fetch failed."); 
+            console.warn("Billboard Live Polling Engine:", e); 
         }
     }
 
@@ -627,8 +634,11 @@
     async function startBillboard() {
         if (typeof lucide !== 'undefined') lucide.createIcons();
         syncTimeTheme();
+        
+        // 1. Initial Load of Ad Images
         await fetchAdImages();
         
+        // 2. Initial Weather Check
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
                 async (p) => { updateWeatherUI(await fetchWeather(p.coords.latitude, p.coords.longitude)); syncTimeTheme(); },
@@ -639,12 +649,23 @@
             fetchWeather(39.1243, -88.5525).then(w => { updateWeatherUI(w); syncTimeTheme(); });
         }
         
+        // 3. Local Time Clock (1 sec)
         updateLocalTime();
-        
         setTimeout(() => { setInterval(updateLocalTime, 1000); }, 500);
+        
+        // 4. Slide Rotator (12 sec)
         setInterval(rotateAds, displayInterval);
+        
+        // 5. Day/Night Theme Sync (5 min)
         setInterval(syncTimeTheme, 300000); 
-        setInterval(() => fetchAdImages(true), 60000);
+        
+        // 6. LIVE GOOGLE SHEET AUTO-SYNC (Every 30 seconds in background)
+        setInterval(() => fetchAdImages(true), syncInterval);
+
+        // 7. KIOSK HARD MEMORY REFRESH (Every 30 minutes)
+        setInterval(() => {
+            window.location.reload();
+        }, hardRefreshCycle);
     }
 
     if (document.readyState === "complete" || document.readyState === "interactive") startBillboard();
