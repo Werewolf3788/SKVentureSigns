@@ -2,9 +2,9 @@
 <!-- ==========================================================================
      PROJECT: S&K Venture Signs - Universal Single-URL Programmatic Billboard Engine
      ADMIN / LEAD DEV: Werewolf (Werewolf3788)
-     VERSION: 50.0 (Direct WhatsApp Dispatcher + Kiosk Guard + GAS v25.0 Matched)
+     VERSION: 51.0 (Seamless Cycle-End Buffer Swap + WhatsApp Alerts + GA4 Beacons)
      PROTOCOL: Dual Compatibility over HTTP & HTTPS | Full Code | No-Strip
-     TIMESTAMP: Saturday, August 15, 2026, 16:03:00 EDT (24hr New York Time)
+     TIMESTAMP: Saturday, August 15, 2026, 16:20:00 EDT (24hr New York Time)
      
      FIREBASE RTDB: https://smlc-fuel-monitor-default-rtdb.firebaseio.com
      GA4 PROPERTY CONFIGURATION:
@@ -37,7 +37,7 @@
         // Primary Site Tag: S&K Ventures (14-Month Retention & Signals Enabled)
         gtag('config', 'G-H6Q756MVE8', { 
             'page_type': 'billboard_kiosk_engine', 
-            'layout_version': '50.0', 
+            'layout_version': '51.0', 
             'retention': '14_months',
             'traffic_type': 'internal'
         });
@@ -389,7 +389,7 @@
 </style>
 
 <!-- ==========================================================================
-     Line 321: JAVASCRIPT ENGINE (CallMeBot WhatsApp Dispatcher & GA4 Tracking)
+     Line 321: JAVASCRIPT ENGINE (Staging Buffer + Seamless Rotation)
      ========================================================================== -->
 <script>
 (function() {
@@ -413,9 +413,9 @@
     /* 2. ENGINE & CALLMEBOT CONFIGURATION */
     const TOTAL_ROTATION_SLOTS = 20;
     const displayInterval = 12000;      // 12-second slide duration
-    const memoryRefreshCycle = 1800000; // 30-minute hardware GC reload
+    const memoryRefreshCycle = 1800000; // 30-minute hardware reload
 
-    // CallMeBot Gateway Dispatch Configuration
+    // CallMeBot Gateway Configuration
     const WHATSAPP_PHONE = "16185736060";
     const WHATSAPP_APIKEY = "4318232";
     let lastAlertTimestamps = {}; // 10-minute anti-spam cooldown per creative
@@ -434,6 +434,9 @@
     let currentAdIndex = 0;
     let adSlideElements = [];
     let currentAdQueue = [];
+    let pendingAdQueue = null; // Staging queue for smooth cycle-end updates
+    let isInitialRenderComplete = false;
+
     let lastWeatherData = null;
     let targetTimeZone = "America/Chicago";
     let isNightTimeSolar = null;
@@ -489,7 +492,7 @@
         const creativeIdentifier = adItem.url || adItem.name || "Programmatic_Ad";
         const currentTime = Date.now();
 
-        // 10-Minute cooldown per specific creative to prevent notification spam
+        // 10-Minute cooldown per creative to prevent spam
         if (lastAlertTimestamps[creativeIdentifier] && (currentTime - lastAlertTimestamps[creativeIdentifier] < 600000)) {
             return;
         }
@@ -503,7 +506,6 @@
 
         const gatewayUrl = `https://api.callmebot.com/whatsapp.php?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent(messageText)}&apikey=${WHATSAPP_APIKEY}`;
 
-        // Non-blocking background fetch
         fetch(gatewayUrl, { mode: 'no-cors' }).catch(() => {});
     }
 
@@ -687,7 +689,7 @@
         }
     });
 
-    /* 9. CONTENT BINDER (ZERO-INDEX AWARE + GLOBAL POOL INGESTION) */
+    /* 9. CONTENT BINDER WITH CYCLE-END BUFFERING */
     function bindBillboardContent(locations, townKey, isRemoteMasterFeed) {
         const cleanTownKey = townKey.toLowerCase().replace(/[^a-z0-9]/g, '');
         const townData = locations[cleanTownKey] || locations["flora"] || {};
@@ -711,17 +713,16 @@
             fetchWeather(activeLocation.lat, activeLocation.lon);
         }
 
-        const immediateQueue = [];
+        const freshQueue = [];
 
-        // Ingest ads stored as 0, 1, 2... from a town object
         function ingestTownSlots(tObj) {
             if (!tObj) return;
             Object.keys(tObj).forEach(k => {
                 if (!isNaN(parseInt(k)) && tObj[k] && tObj[k].imageurl) {
                     const cleanUrl = tObj[k].imageurl.trim();
-                    if (!immediateQueue.some(item => item.url === cleanUrl)) {
+                    if (!freshQueue.some(item => item.url === cleanUrl)) {
                         const isVid = cleanUrl.match(/\.(mp4|webm|ogg)$/i);
-                        immediateQueue.push({
+                        freshQueue.push({
                             type: isVid ? 'video' : 'image',
                             url: cleanUrl,
                             name: tObj[k].name || "Direct Local Ad",
@@ -732,21 +733,17 @@
             });
         }
 
-        // A. REMOTE PREVIEW MODE: Ingest ALL direct ads across all 11 tabs
         if (isRemoteMasterFeed) {
             Object.keys(locations).forEach(tKey => {
                 ingestTownSlots(locations[tKey]);
             });
-        } 
-        // B. ON-SITE HARDWARE MODE: Town Direct Ads + Global Shared Ad Pool
-        else {
+        } else {
             ingestTownSlots(townData);
             ingestTownSlots(globalData);
         }
 
-        // Fallback House Ad if database has zero ads
-        if (immediateQueue.length === 0) {
-            immediateQueue.push({
+        if (freshQueue.length === 0) {
+            freshQueue.push({
                 type: 'house',
                 headline: "ADVERTISE HERE",
                 subhead: `CALL ${activeLocation.phone}`,
@@ -755,10 +752,19 @@
             });
         }
 
-        currentAdQueue = immediateQueue;
-        renderSlides();
+        // Initial Load: Render immediately
+        if (!isInitialRenderComplete) {
+            currentAdQueue = freshQueue;
+            renderSlides();
+            isInitialRenderComplete = true;
+        } 
+        // Mid-Playback Update: Stage changes for next loop cycle
+        else {
+            if (JSON.stringify(freshQueue) !== JSON.stringify(currentAdQueue)) {
+                pendingAdQueue = freshQueue;
+            }
+        }
 
-        // Background programmatic injection for testing
         fetchLiveProgrammaticAsync();
     }
 
@@ -766,20 +772,26 @@
         if (activeLocation.blip_tag) {
             const blipCreative = await fetchProgrammaticAd(activeLocation.blip_tag, activeLocation, 'blip');
             if (blipCreative && !currentAdQueue.some(item => item.url === blipCreative.url)) {
-                currentAdQueue.push(blipCreative);
-                renderSlides();
+                if (pendingAdQueue) {
+                    pendingAdQueue.push(blipCreative);
+                } else {
+                    pendingAdQueue = [...currentAdQueue, blipCreative];
+                }
             }
         }
         if (activeLocation.vast_tag) {
             const vistarCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation, 'vistar');
             if (vistarCreative && !currentAdQueue.some(item => item.url === vistarCreative.url)) {
-                currentAdQueue.push(vistarCreative);
-                renderSlides();
+                if (pendingAdQueue) {
+                    pendingAdQueue.push(vistarCreative);
+                } else {
+                    pendingAdQueue = [...currentAdQueue, vistarCreative];
+                }
             }
         }
     }
 
-    /* 10. SLIDE DISPLAY & ROTATION */
+    /* 10. SLIDE DISPLAY & SEAMLESS ROTATION */
     function renderSlides() {
         const viewport = document.getElementById('sk-ad-viewport');
         if (!viewport) return;
@@ -825,7 +837,6 @@
             adSlideElements.push(slide);
         });
 
-        // Fire beacons, GA4 impression & WhatsApp alert for the first active slide
         if (currentAdQueue[0]) {
             if (currentAdQueue[0].isProgrammatic && currentAdQueue[0].impressions) {
                 fireImpressionBeacons(currentAdQueue[0].impressions);
@@ -839,20 +850,27 @@
 
     function rotateAds() {
         if (adSlideElements.length === 0) return;
+
+        // Check if the current loop reached the last slide
+        if (currentAdIndex === adSlideElements.length - 1 && pendingAdQueue) {
+            // Apply staged edits seamlessly at cycle end
+            currentAdQueue = pendingAdQueue;
+            pendingAdQueue = null;
+            renderSlides();
+            return;
+        }
+
         adSlideElements[currentAdIndex].classList.remove('active');
         currentAdIndex = (currentAdIndex + 1) % adSlideElements.length;
         adSlideElements[currentAdIndex].classList.add('active');
 
         const activeMedia = currentAdQueue[currentAdIndex];
         if (activeMedia) {
-            // 1. Third-party payout impression beacons
             if (activeMedia.isProgrammatic && activeMedia.impressions) {
                 fireImpressionBeacons(activeMedia.impressions);
             }
-            // 2. SMLC Custom GA4 Impression Logging
             logSmlcAdImpression(activeMedia);
 
-            // 3. Instant WhatsApp Notification on Programmatic Delivery
             if (activeMedia.isProgrammatic) {
                 sendWhatsAppNotification(activeMedia);
             }
