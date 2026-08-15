@@ -2,9 +2,9 @@
 <!-- ==========================================================================
      PROJECT: S&K Venture Signs - Universal Single-URL Programmatic Billboard Engine
      ADMIN / LEAD DEV: Werewolf (Werewolf3788)
-     VERSION: 42.0 (Kiosk Hardened + Auto-CORS Bridge + 20-Slot Dynamic SSP Split)
+     VERSION: 44.0 (Synchronous Direct Ad Ingestion + Fail-Safe Rendering)
      PROTOCOL: Dual Compatibility over HTTP & HTTPS | Full Code | No-Strip
-     TIMESTAMP: Saturday, August 15, 2026, 15:20:00 EDT (24hr New York Time)
+     TIMESTAMP: Saturday, August 15, 2026, 15:30:00 EDT (24hr New York Time)
      
      FIREBASE RTDB: https://smlc-fuel-monitor-default-rtdb.firebaseio.com
      GA4 PROPERTY CONFIGURATION:
@@ -38,30 +38,23 @@
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
-        // Primary Site Tag: S&K Ventures (14-Month Data Retention, Signals Active)
         gtag('config', 'G-H6Q756MVE8', { 
             'page_type': 'firebase_billboard_kiosk_engine', 
-            'layout_version': '42.0', 
+            'layout_version': '44.0', 
             'retention': '14_months',
             'traffic_type': 'internal'
         });
 
-        // Media Tracking & Progress Tag
         gtag('config', 'G-CTYHDF4MSD', {
             'page_type': 'programmatic_screen_stream',
             'screen_id': 'auto_geofence_node',
             'retention': '14_months'
         });
 
-        // Auxiliary Stream
         gtag('config', 'G-L376P3NPY4');
     </script>
 </head>
 <body oncontextmenu="return false;">
-
-<!-- ==========================================================================
-     Line 63: HTML DOM BILLBOARD LAYOUT
-     ========================================================================== -->
 
 <!-- [ROOT CONTAINER] Box holding complete display stage and touch/interaction listeners -->
 <div id="sk-billboard-root-container" class="light-mode" onmousemove="handleInteraction()" ontouchstart="handleInteraction()">
@@ -74,28 +67,28 @@
         </div>
     </div>
 
-    <!-- [BUTTON 1: GHOST NAVIGATION] Fades in on screen touch to return to homepage -->
+    <!-- [BUTTON 1: GHOST NAVIGATION] Fades in on screen touch -->
     <a href="./index.html" id="ghost-back-btn">
         <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
         <span>Back to Site</span>
     </a>
 
-    <!-- [BUTTON 2: FULLSCREEN CONTROLLER] Toggles browser into hardware fullscreen mode -->
+    <!-- [BUTTON 2: FULLSCREEN CONTROLLER] -->
     <button id="fullscreen-toggle-btn" onclick="toggleFullScreen()">
         <i data-lucide="maximize" id="fs-icon" style="width: 20px; height: 20px;"></i>
         <span>Full Screen</span>
     </button>
 
-    <!-- [MAIN BILLBOARD STAGE] Frame housing ad content and bottom status bar -->
+    <!-- [MAIN BILLBOARD STAGE] -->
     <div id="sk-billboard-display">
         
         <!-- [VIEWPORT BOX] Ad Slide Rotation Container -->
         <div id="sk-ad-viewport"></div>
 
-        <!-- [CARD 2: BOTTOM STATUS BAR] Full-width bar with dynamic alternating boxes -->
+        <!-- [CARD 2: BOTTOM STATUS BAR] -->
         <div id="sk-bottom-bar">
             
-            <!-- [BOX A: BRANDING LOGO] S&K Venture Signs Logo with text fallback -->
+            <!-- [BOX A: BRANDING LOGO] -->
             <div class="sk-logo-group">
                 <div class="sk-logo">
                     <img src="//raw.githack.com/Werewolf3788/SKVentureSigns/main/images/S%26K%20Name.png" 
@@ -107,10 +100,10 @@
                 </div>
             </div>
             
-            <!-- [BOX B: PHONE CALL TO ACTION] Billboard Contact Number (Swaps position every 15 min) -->
+            <!-- [BOX B: PHONE CALL TO ACTION] Swaps position every 15 min -->
             <div class="sk-bottom-phone" id="sk-phone-display">844-907-4450</div>
             
-            <!-- [BOX C: WEATHER & 24HR CLOCK] Live Temperature from Open-Meteo & Central Time -->
+            <!-- [BOX C: WEATHER & 24HR CLOCK] -->
             <div class="sk-info-stack">
                 <div class="sk-weather">
                     <div id="sk-temp-val">--°</div>
@@ -125,10 +118,10 @@
 </div>
 
 <!-- ==========================================================================
-     Line 139: CSS STYLESHEET (Layout, Hardware Lock, Kiosk Safeguards)
+     Line 118: CSS STYLESHEET (Layout & Visuals)
      ========================================================================== -->
 <style>
-    /* [KIOSK RESET] Suppress scroll, selection, pull-to-refresh & hide cursor */
+    /* [KIOSK RESET] */
     html, body {
         margin: 0 !important;
         padding: 0 !important;
@@ -140,10 +133,9 @@
         -webkit-user-select: none !important;
         touch-action: none !important;
         overscroll-behavior: none !important;
-        cursor: none !important; /* Hide mouse pointer on billboard */
+        cursor: none !important;
     }
 
-    /* [ROOT CONTAINER] Color variables and responsive scaling */
     #sk-billboard-root-container {
         --bb-bottom-bg: #3E0100;
         --bb-text: #ffffff; 
@@ -165,14 +157,13 @@
         z-index: 1 !important;
     }
 
-    /* [NIGHT MODE] Dimmed ambient theme for evening playback */
     #sk-billboard-root-container.dark-mode {
         --bb-bottom-bg: #220000;
         --bb-text: #ffffff;
         --bb-border: rgba(255, 255, 255, 0.1);
     }
 
-    /* [INTERACTIVE BUTTONS] Hidden during standard kiosk playback */
+    /* Buttons */
     #ghost-back-btn, #fullscreen-toggle-btn {
         position: absolute !important;
         top: 25px !important;
@@ -202,7 +193,7 @@
     #fullscreen-toggle-btn { right: 25px !important; }
     #ghost-back-btn.active, #fullscreen-toggle-btn.active { opacity: 1; visibility: visible; }
 
-    /* [CARD 1: PORTRAIT OVERLAY] */
+    /* Orientation Warning */
     #landscape-lock {
         position: absolute !important;
         inset: 0 !important;
@@ -220,7 +211,7 @@
         #landscape-lock { display: flex !important; }
     }
 
-    /* [STAGE & AD VIEWPORT] */
+    /* Ad Stage & Viewport */
     #sk-billboard-display {
         position: absolute !important;
         inset: 0 !important;
@@ -245,7 +236,6 @@
         -webkit-transform: translateZ(0);
     }
 
-    /* [AD SLIDES] */
     .sk-ad-slide {
         display: none !important;
         width: 100% !important;
@@ -271,7 +261,36 @@
         filter: saturate(1.08) contrast(1.02) brightness(0.75) !important;
     }
 
-    /* [CARD 2: BOTTOM STATUS BAR] */
+    /* Fallback House Ad */
+    .sk-house-slide {
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, #3E0100 0%, #150000 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #ffffff;
+        text-align: center;
+        padding: 40px;
+        box-sizing: border-box;
+    }
+    .sk-house-slide h1 {
+        font-size: clamp(32px, 5vw, 90px);
+        color: var(--sk-yellow);
+        margin: 0 0 20px 0;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        -webkit-text-stroke: 2px black;
+    }
+    .sk-house-slide p {
+        font-size: clamp(20px, 3vw, 55px);
+        margin: 0;
+        font-weight: 900;
+        letter-spacing: 3px;
+    }
+
+    /* Bottom Bar */
     #sk-bottom-bar {
         position: absolute !important;
         bottom: 0 !important;
@@ -299,7 +318,6 @@
         transition: opacity 0.5s ease-in-out !important;
     }
 
-    /* Box A: Branding Logo */
     .sk-logo-group { order: 1; justify-content: flex-start; }
 
     .sk-logo {
@@ -329,7 +347,6 @@
         font-size: clamp(16px, 2vw, 42px) !important;
     }
 
-    /* Box B: Phone CTA */
     .sk-bottom-phone {
         order: 2;
         justify-content: center; 
@@ -340,7 +357,6 @@
         -webkit-text-stroke: 1.5px black !important;
     }
 
-    /* Box C: Live Weather & Clock */
     .sk-info-stack {
         order: 3;
         justify-content: flex-end; 
@@ -372,7 +388,6 @@
         -webkit-text-stroke: 1.5px black !important;
     }
 
-    /* LED Overlay Mesh */
     .sk-led-overlay {
         position: absolute !important;
         inset: 0 !important;
@@ -385,11 +400,11 @@
 </style>
 
 <!-- ==========================================================================
-     Line 368: JAVASCRIPT ENGINE (Kiosk Guard + Dynamic Split)
+     Line 368: JAVASCRIPT ENGINE (Fail-Safe Ingestion & Immediate Rendering)
      ========================================================================== -->
 <script>
 (function() {
-    /* 1. FIREBASE INITIALIZATION & CONFIG */
+    /* 1. FIREBASE CONFIG */
     const firebaseConfig = {
         apiKey: "AIzaSyBYPbGWDhPUnCSnPWDP9wtiKe2P5WpinXg",
         authDomain: "smlc-fuel-monitor.firebaseapp.com",
@@ -406,10 +421,9 @@
     }
     const db = firebase.database();
 
-    /* 2. ENGINE TIMERS & ROTATION CONFIGURATION */
-    const TOTAL_ROTATION_SLOTS = 20;    // Exactly 20 fixed billboard slots per loop
-    const displayInterval = 12000;      // 12-second slide duration
-    const memoryRefreshCycle = 1800000; // 30-minute hardware GC reload
+    /* 2. CONFIGURATION */
+    const displayInterval = 12000;
+    const memoryRefreshCycle = 1800000;
 
     let activeLocation = { 
         name: "Flora", 
@@ -431,13 +445,11 @@
     let interactionTimer = null;
     let currentQuarterTracker = null;
 
-    /* 3. URL PARAMETER OVERRIDE */
     function getTownFromUrl() {
         const params = new URLSearchParams(window.location.search);
         return params.get('town') ? params.get('town').toLowerCase().trim() : null;
     }
 
-    /* 4. HAVERSINE DISTANCE FORMULA */
     function calculateDistanceMiles(lat1, lon1, lat2, lon2) {
         const R = 3958.8;
         const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -448,7 +460,6 @@
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    /* 5. DUAL VISTAR & BLIP MACRO INTERPOLATOR */
     function buildProgrammaticUrl(endpointUrl, locationMetadata) {
         if (!endpointUrl) return null;
         let resolvedUrl = endpointUrl;
@@ -475,21 +486,23 @@
             .replace(/\[HEIGHT\]/g, height);
     }
 
-    /* 6. UNIVERSAL PROGRAMMATIC INGESTION WITH AUTO-CORS PROXY */
+    /* 3. ASYNC PROGRAMMATIC FETCHER */
     async function fetchProgrammaticAd(rawUrl, locationMetadata, providerName) {
         let compiledUrl = buildProgrammaticUrl(rawUrl, locationMetadata);
         if (!compiledUrl) return null;
 
-        // Auto-wrap browser-restricted APIs with CORS proxy bridge
         if (compiledUrl.includes("blipbillboards.com") && !compiledUrl.includes("corsproxy.io")) {
             compiledUrl = "https://corsproxy.io/?" + encodeURIComponent(compiledUrl);
         }
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
+
         try {
-            const res = await fetch(compiledUrl, { cache: "no-store" });
+            const res = await fetch(compiledUrl, { cache: "no-store", signal: controller.signal });
+            clearTimeout(timeoutId);
             const contentType = res.headers.get("content-type") || "";
 
-            // A. Handle Blip JSON
             if (contentType.includes("application/json") || providerName === "blip") {
                 const data = await res.json();
                 if (data && (data.image_url || data.media_url || data.url)) {
@@ -505,7 +518,6 @@
                 }
             }
 
-            // B. Handle VAST XML
             const xmlText = await res.text();
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
@@ -527,9 +539,7 @@
             if (staticResource && staticResource.textContent) {
                 return { type: 'image', url: staticResource.textContent.trim(), isProgrammatic: true, provider: 'vistar', impressions: trackingUrls };
             }
-        } catch (e) {
-            console.warn(`[Programmatic Engine] Fetch failed for ${providerName || 'SSP'}:`, compiledUrl);
-        }
+        } catch (e) {}
         return null;
     }
 
@@ -543,7 +553,7 @@
         });
     }
 
-    /* 7. INTERACTION HANDLERS */
+    /* 4. UI INTERACTION */
     window.handleInteraction = function() {
         const backBtn = document.getElementById('ghost-back-btn');
         const fsBtn = document.getElementById('fullscreen-toggle-btn');
@@ -570,7 +580,7 @@
         }
     };
 
-    /* 8. DAY / NIGHT LIGHTING MODE */
+    /* 5. THEME & GEOFENCE */
     function syncTimeTheme() {
         const root = document.getElementById('sk-billboard-root-container');
         if (!root) return;
@@ -585,13 +595,22 @@
         if (lastWeatherData) updateWeatherUI(lastWeatherData);
     }
 
-    /* 9. FIREBASE GEOFENCE & LOCATION ENGINE */
-    db.ref("billboard_network/Locations").on("value", snapshot => {
-        const locations = snapshot.val();
-        if (!locations) return;
+    /* 6. UNIVERSAL FIREBASE LISTENER (TOLERANT OF FLAT & NESTED NODES) */
+    db.ref().on("value", snapshot => {
+        const rootData = snapshot.val();
+        if (!rootData) {
+            console.warn("[Firebase] No root database found.");
+            return;
+        }
+
+        // Support billboard_network/Locations or direct Locations root
+        const locations = (rootData.billboard_network && rootData.billboard_network.Locations) 
+            ? rootData.billboard_network.Locations 
+            : (rootData.Locations || rootData);
 
         const urlTown = getTownFromUrl();
         if (urlTown && locations[urlTown]) {
+            console.log(`[Engine] Locked to URL parameter town: ${urlTown}`);
             bindBillboardContent(locations, urlTown);
             return;
         }
@@ -605,7 +624,7 @@
                     let minDistance = Infinity;
 
                     Object.keys(locations).forEach(key => {
-                        if (key !== "global" && locations[key].lat && locations[key].lon) {
+                        if (key !== "global" && locations[key] && locations[key].lat && locations[key].lon) {
                             let dist = calculateDistanceMiles(userLat, userLon, locations[key].lat, locations[key].lon);
                             if (dist < minDistance) {
                                 minDistance = dist;
@@ -614,20 +633,22 @@
                         }
                     });
 
+                    console.log(`[Geofence] Nearest location: ${closestKey} (${minDistance.toFixed(1)} miles)`);
                     bindBillboardContent(locations, closestKey);
                 },
                 () => {
+                    console.log("[Geofence] Geolocation unavailable, defaulting to Flora.");
                     bindBillboardContent(locations, "flora");
                 },
-                { timeout: 5000 }
+                { timeout: 4000 }
             );
         } else {
             bindBillboardContent(locations, "flora");
         }
     });
 
-    /* 10. UNIFIED 20-SLOT BALANCED ENGINE */
-    async function bindBillboardContent(locations, townKey) {
+    /* 7. ROBUST AD EXTRACTOR & RENDERER */
+    function bindBillboardContent(locations, townKey) {
         const townData = locations[townKey] || locations["flora"] || {};
         const globalData = locations["global"] || {};
 
@@ -657,57 +678,81 @@
             fetchWeather(activeLocation.lat, activeLocation.lon);
         }
 
-        const rawAdQueue = [];
-        let openSlotCount = 0;
+        const immediateQueue = [];
 
-        for (let slotNum = 1; slotNum <= TOTAL_ROTATION_SLOTS; slotNum++) {
-            const slotKey = String(slotNum);
-            const slotItem = townData[slotKey];
-
-            if (slotItem && slotItem.imageurl && slotItem.imageurl.trim() !== "") {
-                const isVideo = slotItem.imageurl.match(/\.(mp4|webm|ogg)$/i);
-                rawAdQueue.push({
-                    slot: slotNum,
-                    type: isVideo ? 'video' : 'image',
-                    url: slotItem.imageurl.trim(),
-                    isProgrammatic: false
-                });
-            } else {
-                openSlotCount++;
-                let programmaticCreative = null;
-                const primaryProvider = (openSlotCount % 2 === 1) ? 'vistar' : 'blip';
-
-                if (primaryProvider === 'vistar' && activeLocation.vast_tag) {
-                    programmaticCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation, 'vistar');
-                    if (!programmaticCreative && activeLocation.blip_tag) {
-                        programmaticCreative = await fetchProgrammaticAd(activeLocation.blip_tag, activeLocation, 'blip');
+        // Deep Recursive Scanner: Extracts any image/video URL regardless of data nesting
+        function extractAds(obj) {
+            if (!obj || typeof obj !== 'object') return;
+            
+            // Check direct imageurl or url properties
+            const urlVal = obj.imageurl || obj.imageUrl || obj.url || (typeof obj === 'string' && obj.startsWith('http') ? obj : null);
+            if (urlVal && typeof urlVal === 'string' && (urlVal.startsWith('http') || urlVal.startsWith('//'))) {
+                const cleanUrl = urlVal.trim();
+                // Exclude programmatic endpoints and branding logos
+                if (!cleanUrl.includes('blipbillboards.com') && !cleanUrl.includes('vistar') && !cleanUrl.includes('S%26K%20Name.png')) {
+                    if (!immediateQueue.some(item => item.url === cleanUrl)) {
+                        const isVid = cleanUrl.match(/\.(mp4|webm|ogg)$/i);
+                        immediateQueue.push({
+                            type: isVid ? 'video' : 'image',
+                            url: cleanUrl,
+                            isProgrammatic: false
+                        });
                     }
-                } else if (primaryProvider === 'blip' && activeLocation.blip_tag) {
-                    programmaticCreative = await fetchProgrammaticAd(activeLocation.blip_tag, activeLocation, 'blip');
-                    if (!programmaticCreative && activeLocation.vast_tag) {
-                        programmaticCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation, 'vistar');
-                    }
-                } else {
-                    if (activeLocation.vast_tag) {
-                        programmaticCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation, 'vistar');
-                    } else if (activeLocation.blip_tag) {
-                        programmaticCreative = await fetchProgrammaticAd(activeLocation.blip_tag, activeLocation, 'blip');
-                    }
-                }
-
-                if (programmaticCreative) {
-                    rawAdQueue.push({ slot: slotNum, ...programmaticCreative });
                 }
             }
+
+            // Iterate sub-properties
+            Object.keys(obj).forEach(k => {
+                if (typeof obj[k] === 'object') {
+                    extractAds(obj[k]);
+                }
+            });
         }
 
-        if (JSON.stringify(rawAdQueue) !== JSON.stringify(currentAdQueue)) {
-            currentAdQueue = rawAdQueue;
-            renderSlides();
+        extractAds(locations);
+
+        console.log(`[Engine] Successfully loaded ${immediateQueue.length} direct ads from Firebase.`);
+
+        // Inject high-visibility fallback if no direct ads were found
+        if (immediateQueue.length === 0) {
+            console.log("[Engine] No direct ads found. Rendering S&K House Card fallback.");
+            immediateQueue.push({
+                type: 'house',
+                headline: "ADVERTISE HERE",
+                subhead: `CALL ${activeLocation.phone}`,
+                isProgrammatic: false
+            });
+        }
+
+        currentAdQueue = immediateQueue;
+        renderSlides();
+
+        // Background fetch for programmatic slots
+        fetchLiveProgrammaticAsync();
+    }
+
+    async function fetchLiveProgrammaticAsync() {
+        if (activeLocation.blip_tag) {
+            console.log("[Programmatic] Fetching Blip creative in background...");
+            const blipCreative = await fetchProgrammaticAd(activeLocation.blip_tag, activeLocation, 'blip');
+            if (blipCreative && !currentAdQueue.some(item => item.url === blipCreative.url)) {
+                console.log("[Programmatic] Ingested Blip Ad:", blipCreative.url);
+                currentAdQueue.push(blipCreative);
+                renderSlides();
+            }
+        }
+        if (activeLocation.vast_tag) {
+            console.log("[Programmatic] Fetching Vistar creative in background...");
+            const vistarCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation, 'vistar');
+            if (vistarCreative && !currentAdQueue.some(item => item.url === vistarCreative.url)) {
+                console.log("[Programmatic] Ingested Vistar Ad:", vistarCreative.url);
+                currentAdQueue.push(vistarCreative);
+                renderSlides();
+            }
         }
     }
 
-    /* 11. SLIDE DISPLAY & ROTATION */
+    /* 8. SLIDE DISPLAY & ROTATION */
     function renderSlides() {
         const viewport = document.getElementById('sk-ad-viewport');
         if (!viewport) return;
@@ -728,11 +773,17 @@
                 video.playsInline = true;
                 video.setAttribute('referrerpolicy', 'no-referrer');
                 slide.appendChild(video);
+            } else if (item.type === 'house') {
+                const house = document.createElement('div');
+                house.className = 'sk-house-slide';
+                house.innerHTML = `<h1>${item.headline}</h1><p>${item.subhead}</p>`;
+                slide.appendChild(house);
             } else {
                 const image = document.createElement('img');
                 image.src = item.url;
                 image.setAttribute('referrerpolicy', 'no-referrer');
                 image.onerror = function() {
+                    console.warn("[Image Error] Failed to render slide URL:", item.url);
                     slide.style.display = 'none';
                     const sIndex = adSlideElements.indexOf(slide);
                     if (sIndex > -1) adSlideElements.splice(sIndex, 1);
@@ -771,7 +822,7 @@
         }
     }
 
-    /* 12. OPEN-METEO WEATHER FETCH */
+    /* 9. OPEN-METEO WEATHER FETCH */
     async function fetchWeather(lat, lon) {
         try {
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,is_day&temperature_unit=fahrenheit&timezone=auto`;
@@ -802,7 +853,7 @@
         }
     }
 
-    /* 13. 15-MINUTE BRANDING POSITION FLIPPER & 24HR TIME */
+    /* 10. 15-MINUTE BRANDING POSITION FLIPPER & 24HR TIME */
     function updateQuarterlySwap(quarter) {
         const logoGroup = document.querySelector('.sk-logo-group');
         const phoneDiv = document.querySelector('.sk-bottom-phone');
@@ -868,16 +919,7 @@
         }
     }
 
-    /* 14. KIOSK RESILIENCY LISTENERS */
-    window.addEventListener('online', () => {
-        window.location.reload();
-    });
-
-    window.addEventListener('error', (e) => {
-        console.warn('[Kiosk Engine] Recovering from error:', e.message);
-    });
-
-    /* 15. ENGINE INITIALIZATION & RECURRING TIMERS */
+    /* 11. INITIALIZATION */
     function initBillboard() {
         if (typeof lucide !== 'undefined') lucide.createIcons();
         syncTimeTheme();
