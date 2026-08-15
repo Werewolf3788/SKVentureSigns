@@ -2,9 +2,9 @@
 <!-- ==========================================================================
      PROJECT: S&K Venture Signs - Universal Single-URL Programmatic Billboard Engine
      ADMIN / LEAD DEV: Werewolf (Werewolf3788)
-     VERSION: 40.0 (Universal Remote Hybrid Preview + Dual SSP Live Ingestion)
+     VERSION: 42.0 (Kiosk Hardened + Auto-CORS Bridge + 20-Slot Dynamic SSP Split)
      PROTOCOL: Dual Compatibility over HTTP & HTTPS | Full Code | No-Strip
-     TIMESTAMP: Saturday, August 15, 2026, 15:05:00 EDT (24hr New York Time)
+     TIMESTAMP: Saturday, August 15, 2026, 15:20:00 EDT (24hr New York Time)
      
      FIREBASE RTDB: https://smlc-fuel-monitor-default-rtdb.firebaseio.com
      GA4 PROPERTY CONFIGURATION:
@@ -16,7 +16,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>S&K Venture Signs Billboard - Hybrid Preview Engine</title>
+    <title>S&K Venture Signs Billboard - Kiosk Engine</title>
 
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐺</text></svg>">
@@ -40,8 +40,8 @@
 
         // Primary Site Tag: S&K Ventures (14-Month Data Retention, Signals Active)
         gtag('config', 'G-H6Q756MVE8', { 
-            'page_type': 'firebase_billboard_hybrid_preview_engine', 
-            'layout_version': '40.0', 
+            'page_type': 'firebase_billboard_kiosk_engine', 
+            'layout_version': '42.0', 
             'retention': '14_months',
             'traffic_type': 'internal'
         });
@@ -57,13 +57,13 @@
         gtag('config', 'G-L376P3NPY4');
     </script>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
 <!-- ==========================================================================
      Line 63: HTML DOM BILLBOARD LAYOUT
      ========================================================================== -->
 
-<!-- [ROOT CONTAINER] Holds complete stage and monitors interaction -->
+<!-- [ROOT CONTAINER] Box holding complete display stage and touch/interaction listeners -->
 <div id="sk-billboard-root-container" class="light-mode" onmousemove="handleInteraction()" ontouchstart="handleInteraction()">
 
     <!-- [CARD 1: PORTRAIT ORIENTATION LOCK] -->
@@ -74,28 +74,28 @@
         </div>
     </div>
 
-    <!-- [BUTTON 1: GHOST NAVIGATION] Return to Homepage -->
+    <!-- [BUTTON 1: GHOST NAVIGATION] Fades in on screen touch to return to homepage -->
     <a href="./index.html" id="ghost-back-btn">
         <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
         <span>Back to Site</span>
     </a>
 
-    <!-- [BUTTON 2: FULLSCREEN CONTROLLER] -->
+    <!-- [BUTTON 2: FULLSCREEN CONTROLLER] Toggles browser into hardware fullscreen mode -->
     <button id="fullscreen-toggle-btn" onclick="toggleFullScreen()">
         <i data-lucide="maximize" id="fs-icon" style="width: 20px; height: 20px;"></i>
         <span>Full Screen</span>
     </button>
 
-    <!-- [MAIN BILLBOARD STAGE] -->
+    <!-- [MAIN BILLBOARD STAGE] Frame housing ad content and bottom status bar -->
     <div id="sk-billboard-display">
         
-        <!-- [AD VIEWPORT BOX] Dynamic rotation container -->
+        <!-- [VIEWPORT BOX] Ad Slide Rotation Container -->
         <div id="sk-ad-viewport"></div>
 
-        <!-- [CARD 2: BOTTOM STATUS BAR] Full-width branding and status info -->
+        <!-- [CARD 2: BOTTOM STATUS BAR] Full-width bar with dynamic alternating boxes -->
         <div id="sk-bottom-bar">
             
-            <!-- [BOX A: BRANDING LOGO] -->
+            <!-- [BOX A: BRANDING LOGO] S&K Venture Signs Logo with text fallback -->
             <div class="sk-logo-group">
                 <div class="sk-logo">
                     <img src="//raw.githack.com/Werewolf3788/SKVentureSigns/main/images/S%26K%20Name.png" 
@@ -125,10 +125,10 @@
 </div>
 
 <!-- ==========================================================================
-     Line 117: CSS STYLESHEET (Layout, Visual Hierarchy, Transitions)
+     Line 139: CSS STYLESHEET (Layout, Hardware Lock, Kiosk Safeguards)
      ========================================================================== -->
 <style>
-    /* [RESET] Hardware screen fill & lock scrolling */
+    /* [KIOSK RESET] Suppress scroll, selection, pull-to-refresh & hide cursor */
     html, body {
         margin: 0 !important;
         padding: 0 !important;
@@ -138,6 +138,9 @@
         background: #000000 !important;
         user-select: none !important;
         -webkit-user-select: none !important;
+        touch-action: none !important;
+        overscroll-behavior: none !important;
+        cursor: none !important; /* Hide mouse pointer on billboard */
     }
 
     /* [ROOT CONTAINER] Color variables and responsive scaling */
@@ -169,7 +172,7 @@
         --bb-border: rgba(255, 255, 255, 0.1);
     }
 
-    /* [INTERACTIVE BUTTONS] 44px minimum touch targets */
+    /* [INTERACTIVE BUTTONS] Hidden during standard kiosk playback */
     #ghost-back-btn, #fullscreen-toggle-btn {
         position: absolute !important;
         top: 25px !important;
@@ -242,6 +245,7 @@
         -webkit-transform: translateZ(0);
     }
 
+    /* [AD SLIDES] */
     .sk-ad-slide {
         display: none !important;
         width: 100% !important;
@@ -381,7 +385,7 @@
 </style>
 
 <!-- ==========================================================================
-     Line 287: JAVASCRIPT ENGINE (Universal Hybrid Preview + CORS Bridge)
+     Line 368: JAVASCRIPT ENGINE (Kiosk Guard + Dynamic Split)
      ========================================================================== -->
 <script>
 (function() {
@@ -422,12 +426,12 @@
     let adSlideElements = [];
     let currentAdQueue = [];
     let lastWeatherData = null;
-    let targetTimeZone = "America/Chicago"; // Central Time default
+    let targetTimeZone = "America/Chicago";
     let isNightTimeSolar = null;
     let interactionTimer = null;
     let currentQuarterTracker = null;
 
-    /* 3. URL PARAMETER OVERRIDE (e.g., ?town=flora or ?town=clay_city) */
+    /* 3. URL PARAMETER OVERRIDE */
     function getTownFromUrl() {
         const params = new URLSearchParams(window.location.search);
         return params.get('town') ? params.get('town').toLowerCase().trim() : null;
@@ -485,7 +489,7 @@
             const res = await fetch(compiledUrl, { cache: "no-store" });
             const contentType = res.headers.get("content-type") || "";
 
-            // A. Handle Blip JSON Response
+            // A. Handle Blip JSON
             if (contentType.includes("application/json") || providerName === "blip") {
                 const data = await res.json();
                 if (data && (data.image_url || data.media_url || data.url)) {
@@ -501,7 +505,7 @@
                 }
             }
 
-            // B. Handle Standard VAST XML (Vistar Media)
+            // B. Handle VAST XML
             const xmlText = await res.text();
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
@@ -566,25 +570,6 @@
         }
     };
 
-    function updateFsIcon() {
-        const fsIcon = document.getElementById('fs-icon');
-        const fsText = document.querySelector('#fullscreen-toggle-btn span');
-        const isFS = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-        
-        if (isFS) {
-            if (fsIcon) fsIcon.setAttribute('data-lucide', 'minimize');
-            if (fsText) fsText.innerText = "Exit Full Screen";
-        } else {
-            if (fsIcon) fsIcon.setAttribute('data-lucide', 'maximize');
-            if (fsText) fsText.innerText = "Full Screen";
-        }
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
-
-    ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(
-        evt => document.addEventListener(evt, updateFsIcon)
-    );
-
     /* 8. DAY / NIGHT LIGHTING MODE */
     function syncTimeTheme() {
         const root = document.getElementById('sk-billboard-root-container');
@@ -605,14 +590,12 @@
         const locations = snapshot.val();
         if (!locations) return;
 
-        // Check for manual URL town override (e.g. ?town=flora)
         const urlTown = getTownFromUrl();
         if (urlTown && locations[urlTown]) {
-            bindBillboardContent(locations, urlTown, false);
+            bindBillboardContent(locations, urlTown);
             return;
         }
 
-        // GPS Geofence Detection
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 pos => {
@@ -631,25 +614,20 @@
                         }
                     });
 
-                    // 40-mile radius hardware geofence lock
-                    if (minDistance <= 40) {
-                        bindBillboardContent(locations, closestKey, false);
-                    } else {
-                        bindBillboardContent(locations, "flora", true);
-                    }
+                    bindBillboardContent(locations, closestKey);
                 },
                 () => {
-                    bindBillboardContent(locations, "flora", true);
+                    bindBillboardContent(locations, "flora");
                 },
                 { timeout: 5000 }
             );
         } else {
-            bindBillboardContent(locations, "flora", true);
+            bindBillboardContent(locations, "flora");
         }
     });
 
-    /* 10. HYBRID CONTENT BINDER (ALL DIRECT ADS + VISTAR & BLIP TEST SLOTS) */
-    async function bindBillboardContent(locations, townKey, isRemotePreview) {
+    /* 10. UNIFIED 20-SLOT BALANCED ENGINE */
+    async function bindBillboardContent(locations, townKey) {
         const townData = locations[townKey] || locations["flora"] || {};
         const globalData = locations["global"] || {};
 
@@ -680,75 +658,45 @@
         }
 
         const rawAdQueue = [];
+        let openSlotCount = 0;
 
-        // A. REMOTE PREVIEW: Load direct ads across all towns + append live programmatic test slots
-        if (isRemotePreview) {
-            // 1. Gather all direct business ads from every town
-            Object.keys(locations).forEach(tKey => {
-                const tObj = locations[tKey];
-                Object.keys(tObj).forEach(k => {
-                    if (!isNaN(parseInt(k)) && tObj[k] && tObj[k].imageurl) {
-                        if (!rawAdQueue.some(item => item.url === tObj[k].imageurl)) {
-                            const isVid = tObj[k].imageurl.match(/\.(mp4|webm|ogg)$/i);
-                            rawAdQueue.push({ type: isVid ? 'video' : 'image', url: tObj[k].imageurl, isProgrammatic: false });
-                        }
-                    }
+        for (let slotNum = 1; slotNum <= TOTAL_ROTATION_SLOTS; slotNum++) {
+            const slotKey = String(slotNum);
+            const slotItem = townData[slotKey];
+
+            if (slotItem && slotItem.imageurl && slotItem.imageurl.trim() !== "") {
+                const isVideo = slotItem.imageurl.match(/\.(mp4|webm|ogg)$/i);
+                rawAdQueue.push({
+                    slot: slotNum,
+                    type: isVideo ? 'video' : 'image',
+                    url: slotItem.imageurl.trim(),
+                    isProgrammatic: false
                 });
-            });
+            } else {
+                openSlotCount++;
+                let programmaticCreative = null;
+                const primaryProvider = (openSlotCount % 2 === 1) ? 'vistar' : 'blip';
 
-            // 2. Fetch live test ad from Vistar Media
-            if (activeLocation.vast_tag) {
-                const vistarAd = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation, 'vistar');
-                if (vistarAd) rawAdQueue.push(vistarAd);
-            }
-
-            // 3. Fetch live test ad from Blip Billboards
-            if (activeLocation.blip_tag) {
-                const blipAd = await fetchProgrammaticAd(activeLocation.blip_tag, activeLocation, 'blip');
-                if (blipAd) rawAdQueue.push(blipAd);
-            }
-        } 
-        // B. HARDWARE SCREEN (ON-SITE): Strict 20-slot rotation with 50/50 fill
-        else {
-            let openSlotCount = 0;
-            for (let slotNum = 1; slotNum <= TOTAL_ROTATION_SLOTS; slotNum++) {
-                const slotKey = String(slotNum);
-                const slotItem = townData[slotKey];
-
-                if (slotItem && slotItem.imageurl && slotItem.imageurl.trim() !== "") {
-                    const isVideo = slotItem.imageurl.match(/\.(mp4|webm|ogg)$/i);
-                    rawAdQueue.push({
-                        slot: slotNum,
-                        type: isVideo ? 'video' : 'image',
-                        url: slotItem.imageurl.trim(),
-                        isProgrammatic: false
-                    });
-                } else {
-                    openSlotCount++;
-                    let programmaticCreative = null;
-                    const primaryProvider = (openSlotCount % 2 === 1) ? 'vistar' : 'blip';
-
-                    if (primaryProvider === 'vistar' && activeLocation.vast_tag) {
-                        programmaticCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation, 'vistar');
-                        if (!programmaticCreative && activeLocation.blip_tag) {
-                            programmaticCreative = await fetchProgrammaticAd(activeLocation.blip_tag, activeLocation, 'blip');
-                        }
-                    } else if (primaryProvider === 'blip' && activeLocation.blip_tag) {
+                if (primaryProvider === 'vistar' && activeLocation.vast_tag) {
+                    programmaticCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation, 'vistar');
+                    if (!programmaticCreative && activeLocation.blip_tag) {
                         programmaticCreative = await fetchProgrammaticAd(activeLocation.blip_tag, activeLocation, 'blip');
-                        if (!programmaticCreative && activeLocation.vast_tag) {
-                            programmaticCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation, 'vistar');
-                        }
-                    } else {
-                        if (activeLocation.vast_tag) {
-                            programmaticCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation, 'vistar');
-                        } else if (activeLocation.blip_tag) {
-                            programmaticCreative = await fetchProgrammaticAd(activeLocation.blip_tag, activeLocation, 'blip');
-                        }
                     }
+                } else if (primaryProvider === 'blip' && activeLocation.blip_tag) {
+                    programmaticCreative = await fetchProgrammaticAd(activeLocation.blip_tag, activeLocation, 'blip');
+                    if (!programmaticCreative && activeLocation.vast_tag) {
+                        programmaticCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation, 'vistar');
+                    }
+                } else {
+                    if (activeLocation.vast_tag) {
+                        programmaticCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation, 'vistar');
+                    } else if (activeLocation.blip_tag) {
+                        programmaticCreative = await fetchProgrammaticAd(activeLocation.blip_tag, activeLocation, 'blip');
+                    }
+                }
 
-                    if (programmaticCreative) {
-                        rawAdQueue.push({ slot: slotNum, ...programmaticCreative });
-                    }
+                if (programmaticCreative) {
+                    rawAdQueue.push({ slot: slotNum, ...programmaticCreative });
                 }
             }
         }
@@ -920,7 +868,16 @@
         }
     }
 
-    /* 14. ENGINE INITIALIZATION & RECURRING TIMERS */
+    /* 14. KIOSK RESILIENCY LISTENERS */
+    window.addEventListener('online', () => {
+        window.location.reload();
+    });
+
+    window.addEventListener('error', (e) => {
+        console.warn('[Kiosk Engine] Recovering from error:', e.message);
+    });
+
+    /* 15. ENGINE INITIALIZATION & RECURRING TIMERS */
     function initBillboard() {
         if (typeof lucide !== 'undefined') lucide.createIcons();
         syncTimeTheme();
