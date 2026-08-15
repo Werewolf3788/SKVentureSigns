@@ -2,9 +2,9 @@
 <!-- ==========================================================================
      PROJECT: S&K Venture Signs - Universal Single-URL Programmatic Billboard Engine
      ADMIN / LEAD DEV: Werewolf (Werewolf3788)
-     VERSION: 47.0 (GAS v25.0 Matched Tree + 0-Index Scanner + SMLC GA4 Beacons)
+     VERSION: 50.0 (Direct WhatsApp Dispatcher + Kiosk Guard + GAS v25.0 Matched)
      PROTOCOL: Dual Compatibility over HTTP & HTTPS | Full Code | No-Strip
-     TIMESTAMP: Saturday, August 15, 2026, 15:35:36 EDT (24hr New York Time)
+     TIMESTAMP: Saturday, August 15, 2026, 16:03:00 EDT (24hr New York Time)
      
      FIREBASE RTDB: https://smlc-fuel-monitor-default-rtdb.firebaseio.com
      GA4 PROPERTY CONFIGURATION:
@@ -37,13 +37,17 @@
         // Primary Site Tag: S&K Ventures (14-Month Retention & Signals Enabled)
         gtag('config', 'G-H6Q756MVE8', { 
             'page_type': 'billboard_kiosk_engine', 
-            'layout_version': '47.0', 
+            'layout_version': '50.0', 
             'retention': '14_months',
             'traffic_type': 'internal'
         });
     </script>
 </head>
 <body oncontextmenu="return false;">
+
+<!-- ==========================================================================
+     Line 49: HTML DOM BILLBOARD LAYOUT
+     ========================================================================== -->
 
 <!-- [ROOT CONTAINER] Holds complete display stage and touch/interaction listeners -->
 <div id="sk-billboard-root-container" class="light-mode" onmousemove="handleInteraction()" ontouchstart="handleInteraction()">
@@ -107,7 +111,7 @@
 </div>
 
 <!-- ==========================================================================
-     Line 105: CSS STYLESHEET (Layout, Visual Hierarchy, Kiosk Protection)
+     Line 115: CSS STYLESHEET (Layout, Visual Hierarchy, Kiosk Protection)
      ========================================================================== -->
 <style>
     /* [RESET] Hardware screen fill, lock scrolling & hide cursor */
@@ -385,7 +389,7 @@
 </style>
 
 <!-- ==========================================================================
-     Line 311: JAVASCRIPT ENGINE (GAS v25.0 Matched Data Engine)
+     Line 321: JAVASCRIPT ENGINE (CallMeBot WhatsApp Dispatcher & GA4 Tracking)
      ========================================================================== -->
 <script>
 (function() {
@@ -406,10 +410,15 @@
     }
     const db = firebase.database();
 
-    /* 2. ENGINE CONFIGURATION */
+    /* 2. ENGINE & CALLMEBOT CONFIGURATION */
     const TOTAL_ROTATION_SLOTS = 20;
-    const displayInterval = 12000;      // 12-second ad duration
-    const memoryRefreshCycle = 1800000; // 30-minute reload
+    const displayInterval = 12000;      // 12-second slide duration
+    const memoryRefreshCycle = 1800000; // 30-minute hardware GC reload
+
+    // CallMeBot Gateway Dispatch Configuration
+    const WHATSAPP_PHONE = "16185736060";
+    const WHATSAPP_APIKEY = "4318232";
+    let lastAlertTimestamps = {}; // 10-minute anti-spam cooldown per creative
 
     let activeLocation = { 
         name: "Flora", 
@@ -473,7 +482,32 @@
             .replace(/\[HEIGHT\]/g, height);
     }
 
-    /* 3. GA4 SMLC BILLBOARD IMPRESSION LOGGER */
+    /* 3. CALLMEBOT WHATSAPP INSTANT ALERT DISPATCHER */
+    function sendWhatsAppNotification(adItem) {
+        if (!adItem || !adItem.isProgrammatic) return;
+
+        const creativeIdentifier = adItem.url || adItem.name || "Programmatic_Ad";
+        const currentTime = Date.now();
+
+        // 10-Minute cooldown per specific creative to prevent notification spam
+        if (lastAlertTimestamps[creativeIdentifier] && (currentTime - lastAlertTimestamps[creativeIdentifier] < 600000)) {
+            return;
+        }
+        lastAlertTimestamps[creativeIdentifier] = currentTime;
+
+        const provider = (adItem.provider === "blip") ? "Blip Billboards" : "Vistar Media";
+        const town = activeLocation.name || "Flora";
+        const timeString = new Date().toLocaleTimeString('en-US', { timeZone: targetTimeZone, hour: '2-digit', minute:'2-digit', hour12: true });
+
+        const messageText = `🚨 *Programmatic Ad Live on Billboard!*\n\n• *Network:* ${provider}\n• *Sign / Location:* ${town}\n• *Time:* ${timeString} Central\n• *Type:* ${adItem.type.toUpperCase()}\n• *Asset:* ${adItem.name || 'External Creative'}`;
+
+        const gatewayUrl = `https://api.callmebot.com/whatsapp.php?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent(messageText)}&apikey=${WHATSAPP_APIKEY}`;
+
+        // Non-blocking background fetch
+        fetch(gatewayUrl, { mode: 'no-cors' }).catch(() => {});
+    }
+
+    /* 4. GA4 SMLC BILLBOARD IMPRESSION LOGGER */
     function logSmlcAdImpression(adItem) {
         if (typeof gtag !== 'function' || !adItem) return;
 
@@ -497,7 +531,7 @@
         });
     }
 
-    /* 4. PROGRAMMATIC FETCHER WITH TIMEOUT & CORS PROXY */
+    /* 5. PROGRAMMATIC FETCHER WITH TIMEOUT & CORS PROXY */
     async function fetchProgrammaticAd(rawUrl, locationMetadata, providerName) {
         let compiledUrl = buildProgrammaticUrl(rawUrl, locationMetadata);
         if (!compiledUrl) return null;
@@ -565,7 +599,7 @@
         });
     }
 
-    /* 5. UI INTERACTION */
+    /* 6. UI INTERACTION */
     window.handleInteraction = function() {
         const backBtn = document.getElementById('ghost-back-btn');
         const fsBtn = document.getElementById('fullscreen-toggle-btn');
@@ -592,7 +626,7 @@
         }
     };
 
-    /* 6. THEME & GEOFENCE */
+    /* 7. THEME & GEOFENCE */
     function syncTimeTheme() {
         const root = document.getElementById('sk-billboard-root-container');
         if (!root) return;
@@ -607,7 +641,7 @@
         if (lastWeatherData) updateWeatherUI(lastWeatherData);
     }
 
-    /* 7. FIREBASE REALTIME LISTENER (MATCHED TO GAS v25.0 TREE) */
+    /* 8. FIREBASE REALTIME LISTENER */
     db.ref("billboard_network/Locations").on("value", snapshot => {
         const locations = snapshot.val();
         if (!locations) return;
@@ -653,7 +687,7 @@
         }
     });
 
-    /* 8. CONTENT BINDER (ZERO-INDEX AWARE + GLOBAL POOL INGESTION) */
+    /* 9. CONTENT BINDER (ZERO-INDEX AWARE + GLOBAL POOL INGESTION) */
     function bindBillboardContent(locations, townKey, isRemoteMasterFeed) {
         const cleanTownKey = townKey.toLowerCase().replace(/[^a-z0-9]/g, '');
         const townData = locations[cleanTownKey] || locations["flora"] || {};
@@ -679,7 +713,7 @@
 
         const immediateQueue = [];
 
-        // Helper to extract ads stored as 0, 1, 2... from a town object
+        // Ingest ads stored as 0, 1, 2... from a town object
         function ingestTownSlots(tObj) {
             if (!tObj) return;
             Object.keys(tObj).forEach(k => {
@@ -745,7 +779,7 @@
         }
     }
 
-    /* 9. SLIDE DISPLAY & ROTATION */
+    /* 10. SLIDE DISPLAY & ROTATION */
     function renderSlides() {
         const viewport = document.getElementById('sk-ad-viewport');
         if (!viewport) return;
@@ -791,12 +825,15 @@
             adSlideElements.push(slide);
         });
 
-        // Fire beacons & GA4 impression for the first active slide
+        // Fire beacons, GA4 impression & WhatsApp alert for the first active slide
         if (currentAdQueue[0]) {
             if (currentAdQueue[0].isProgrammatic && currentAdQueue[0].impressions) {
                 fireImpressionBeacons(currentAdQueue[0].impressions);
             }
             logSmlcAdImpression(currentAdQueue[0]);
+            if (currentAdQueue[0].isProgrammatic) {
+                sendWhatsAppNotification(currentAdQueue[0]);
+            }
         }
     }
 
@@ -814,6 +851,11 @@
             }
             // 2. SMLC Custom GA4 Impression Logging
             logSmlcAdImpression(activeMedia);
+
+            // 3. Instant WhatsApp Notification on Programmatic Delivery
+            if (activeMedia.isProgrammatic) {
+                sendWhatsAppNotification(activeMedia);
+            }
         }
 
         const video = adSlideElements[currentAdIndex].querySelector('video');
@@ -823,7 +865,7 @@
         }
     }
 
-    /* 10. OPEN-METEO WEATHER FETCH */
+    /* 11. OPEN-METEO WEATHER FETCH */
     async function fetchWeather(lat, lon) {
         try {
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,is_day&temperature_unit=fahrenheit&timezone=auto`;
@@ -854,7 +896,7 @@
         }
     }
 
-    /* 11. 15-MINUTE BRANDING POSITION FLIPPER & 24HR TIME */
+    /* 12. 15-MINUTE BRANDING POSITION FLIPPER & 24HR TIME */
     function updateQuarterlySwap(quarter) {
         const logoGroup = document.querySelector('.sk-logo-group');
         const phoneDiv = document.querySelector('.sk-bottom-phone');
@@ -920,7 +962,7 @@
         }
     }
 
-    /* 12. INITIALIZATION */
+    /* 13. INITIALIZATION */
     function initBillboard() {
         if (typeof lucide !== 'undefined') lucide.createIcons();
         syncTimeTheme();
