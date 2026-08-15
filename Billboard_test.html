@@ -1,21 +1,17 @@
 <!DOCTYPE html>
 <!-- 
-    PROJECT: S & K Ventures Billboard - Resilient Image Engine
+    PROJECT: S & K Ventures Billboard - Multi-Town Target Engine
     ADMIN: Kevin (Werewolf3788)
-    VERSION: 5.8 (Multi-CDN Google Drive Fallback + Auto-Prune Broken Images + A-Z Shuffle)
+    VERSION: 6.0 (High-Visibility Active Town Location Marker + Notes)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: 2026-08-14 23:55:00 EDT (New York Time)
+    TIMESTAMP: 2026-08-14 23:59:48 EDT (New York Time)
     
     GOOGLE SHEET CSV SCHEMA:
-      - Column A (Index 0): Business / Ad Name
+      - Column A (Index 0): Business / Ad Name (Used for A-Z sorting)
       - Column B (Index 1): Category / Tag
       - Column C (Index 2): Ad Image Link (PNG, JPG, JPEG, GIF, WEBP, SVG, Google Drive)
-      - Column D (Index 3): Target Town (Altamont, Flora, Xenia, etc. or Blank/Global)
+      - Column D (Index 3): Target Town(s) (e.g. "Altamont, Flora, Xenia" or Blank/Global)
       - Column E (Index 4): Frequency Multiplier (1, 2, 3, 4, etc. Defaults to 1)
-
-    HOW TO CHANGE THE BILLBOARD TOWN:
-    In line 48 below, change data-billboard-location to any of:
-    "Altamont", "Brownstown", "ClayCity", "DeSoto", "Flora", "Marshall", "Oliver", "Xenia", or "All"
 -->
 <html lang="en">
 <head>
@@ -27,10 +23,10 @@
     <link href="//fonts.googleapis.com/css2?family=Great+Vibes&family=Satisfy&family=Pinyon+Script&family=Rouge+Script&family=Alex+Brush&display=swap" rel="stylesheet">
 
     <!-- Framework Assets scoped for the Widget -->
-    <script src="//cdn.tailwindcss.com?v=5.8"></script>
+    <script src="//cdn.tailwindcss.com?v=6.0"></script>
     <script src="//unpkg.com/lucide@latest"></script>
 
-    <!-- Google Analytics Dual Tracking -->
+    <!-- Google Analytics Dual Tracking: S&K Ventures (G-H6Q756MVE8) & Kevin (G-L376P3NPY4) -->
     <script async src="//www.googletagmanager.com/gtag/js?id=G-H6Q756MVE8"></script>
     <script async src="//www.googletagmanager.com/gtag/js?id=G-L376P3NPY4"></script>
     <script>
@@ -39,8 +35,8 @@
         gtag('js', new Date());
         
         gtag('config', 'G-H6Q756MVE8', { 
-            'page_type': 'billboard_widget_v5.8', 
-            'layout_version': '5.8',
+            'page_type': 'billboard_widget_v6.0', 
+            'layout_version': '6.0',
             'retention': '14_months'
         });
         gtag('config', 'G-L376P3NPY4');
@@ -48,7 +44,13 @@
 </head>
 <body>
 
-<!-- Line 48: ACTIVE BILLBOARD LOCATION ATTRIBUTE -->
+<!-- ================================================================= -->
+<!-- ★ ACTIVE BILLBOARD TOWN CONFIGURATION ★                           -->
+<!-- LOCATION: LINE 56 BELOW                                           -->
+<!-- Change data-billboard-location to one of the following towns:     -->
+<!-- "Altamont", "Brownstown", "ClayCity", "DeSoto", "Flora",          -->
+<!-- "Marshall", "Oliver", "Xenia", or "All" (for Global view)         -->
+<!-- ================================================================= -->
 <div id="sk-billboard-root-container" class="light-mode" data-billboard-location="Altamont" onmousemove="handleInteraction()" ontouchstart="handleInteraction()">
 
     <!-- Mobile Landscape Lock Overlay -->
@@ -101,6 +103,9 @@
     </div>
 </div>
 
+<!-- ================================================================= -->
+<!-- ★ CSS STYLES (LINE 110 TO LINE 300) ★                             -->
+<!-- ================================================================= -->
 <style>
     /* PAGE RESET */
     html, body {
@@ -369,12 +374,15 @@
     }
 </style>
 
+<!-- ================================================================= -->
+<!-- ★ JAVASCRIPT ENGINE (LINE 305 TO LINE 570) ★                      -->
+<!-- ================================================================= -->
 <script>
 (function() {
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9aXB9z9jcsaA0U-LsuV4nIHwIIw2huGB8zaalh7It4GQP_DWFFdQ4Utaw_ajkdhx5ydn87BcfS82d/pub?gid=0&single=true&output=csv";
     const displayInterval = 12000; 
     
-    // Master Coordinates Matrix for Weather & Solar Daylight
+    // Master Coordinates Matrix for Live Weather & Daylight Theme
     const BILLBOARD_LOCATIONS = {
         'altamont':   { name: 'Altamont, IL',   lat: 38.989268, lon: -88.959890 },
         'brownstown': { name: 'Brownstown, IL', lat: 38.677100, lon: -88.391531 },
@@ -505,7 +513,6 @@
         
         const driveId = extractGoogleDriveId(clean);
         if (driveId) {
-            // Direct Google Drive High-Speed Thumbnail Stream
             return `https://drive.google.com/thumbnail?id=${driveId}&sz=w1920`;
         }
         
@@ -520,6 +527,19 @@
         const cleaned = String(val).replace(/[^0-9]/g, '');
         const num = parseInt(cleaned, 10);
         return (!isNaN(num) && num > 0) ? num : 1;
+    }
+
+    // Checks if the active town is listed in a comma-separated list
+    function isTownMatchingLocation(rowLocationString, currentTownKey) {
+        if (!rowLocationString || rowLocationString === '' || rowLocationString === 'global' || rowLocationString === 'all' || rowLocationString === 'none') {
+            return true; // Global display
+        }
+        if (currentTownKey === 'default' || currentTownKey === 'all' || currentTownKey === 'global') {
+            return true; // View all mode
+        }
+
+        const targetTowns = rowLocationString.split(',').map(t => t.toLowerCase().replace(/[^a-z0-9]/g, '').trim());
+        return targetTowns.includes(currentTownKey);
     }
 
     // Even-Spread Round-Robin Shuffle Engine
@@ -581,22 +601,13 @@
                     }
                 }
                 
+                // Column D: Target Location(s) e.g., "Altamont, Flora, Xenia"
                 let rawLocation = (cols[3] !== undefined && !cols[3].startsWith('http') ? cols[3] : (cols[1] || "")).toLowerCase().trim();
                 let multiplier = parseMultiplier(cols[4]);
                 let url = formatBillboardImage(rawUrl);
                 
                 if (url && url.startsWith('http')) {
-                    const isGlobalAd = (rawLocation === '') || 
-                                       (rawLocation === 'global') || 
-                                       (rawLocation === 'all') || 
-                                       (rawLocation === 'none');
-                                       
-                    const isLocationMatch = (requestedLocKey === 'default') || 
-                                           (requestedLocKey === 'all') || 
-                                           (requestedLocKey === 'global') || 
-                                           (rawLocation.includes(requestedLocKey));
-                    
-                    if (isGlobalAd || isLocationMatch) {
+                    if (isTownMatchingLocation(rawLocation, requestedLocKey)) {
                         parsedItems.push({ name: name, url: url, multiplier: multiplier });
                     }
                 }
@@ -659,15 +670,12 @@
             image.onerror = function() {
                 const driveId = extractGoogleDriveId(this.src);
                 if (driveId && !this.dataset.fallbackTried) {
-                    // Try Secondary Google Drive Embed Format
                     this.dataset.fallbackTried = "1";
                     this.src = `https://lh3.googleusercontent.com/d/${driveId}`;
                 } else if (driveId && this.dataset.fallbackTried === "1") {
-                    // Try Tertiary Google Drive Stream Format
                     this.dataset.fallbackTried = "2";
                     this.src = `https://drive.google.com/uc?export=view&id=${driveId}`;
                 } else {
-                    // Permanently Broken Image: Hide & Prune slide cleanly
                     console.warn("Permanently broken ad image pruned from deck:", url);
                     slide.style.display = 'none';
                     const sIndex = adSlideElements.indexOf(slide);
