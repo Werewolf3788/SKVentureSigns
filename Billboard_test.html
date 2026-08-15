@@ -1,33 +1,55 @@
 <!DOCTYPE html>
 <!-- 
-    PROJECT: S & K Ventures Billboard - Consolidated Divi Version
+    PROJECT: S & K Ventures Billboard - Resilient Image Engine
     ADMIN: Kevin (Werewolf3788)
-    VERSION: 4.24 (Asset Integration - Removed Watermark, Kept G-Tags)
+    VERSION: 5.8 (Multi-CDN Google Drive Fallback + Auto-Prune Broken Images + A-Z Shuffle)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: May 7, 2026 - 8:37 PM EDT (New York Time)
+    TIMESTAMP: 2026-08-14 23:55:00 EDT (New York Time)
     
-    NO STRIPPING, NO COMPRESSING, DON'T CHANGE WHAT I DIDN'T SAY TO CHANGE.
+    GOOGLE SHEET CSV SCHEMA:
+      - Column A (Index 0): Business / Ad Name
+      - Column B (Index 1): Category / Tag
+      - Column C (Index 2): Ad Image Link (PNG, JPG, JPEG, GIF, WEBP, SVG, Google Drive)
+      - Column D (Index 3): Target Town (Altamont, Flora, Xenia, etc. or Blank/Global)
+      - Column E (Index 4): Frequency Multiplier (1, 2, 3, 4, etc. Defaults to 1)
+
+    HOW TO CHANGE THE BILLBOARD TOWN:
+    In line 48 below, change data-billboard-location to any of:
+    "Altamont", "Brownstown", "ClayCity", "DeSoto", "Flora", "Marshall", "Oliver", "Xenia", or "All"
 -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S & K Ventures Billboard</title>
 
-<!-- Font Imports -->
-<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Satisfy&family=Pinyon+Script&family=Rouge+Script&family=Alex+Brush&display=swap" rel="stylesheet">
+    <!-- Font Imports (Protocol-relative for http & https) -->
+    <link href="//fonts.googleapis.com/css2?family=Great+Vibes&family=Satisfy&family=Pinyon+Script&family=Rouge+Script&family=Alex+Brush&display=swap" rel="stylesheet">
 
-<!-- Framework Assets scoped for the Widget -->
-<script src="https://cdn.tailwindcss.com?v=4.24"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Framework Assets scoped for the Widget -->
+    <script src="//cdn.tailwindcss.com?v=5.8"></script>
+    <script src="//unpkg.com/lucide@latest"></script>
 
-<!-- Google Analytics: Boss Tracking + Watermark Tracking -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-H6Q756MVE8"></script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-L376P3NPY4"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-H6Q756MVE8', { 'page_type': 'billboard_widget_v4.24', 'layout_version': '4.24' });
-    gtag('config', 'G-L376P3NPY4');
-</script>
+    <!-- Google Analytics Dual Tracking -->
+    <script async src="//www.googletagmanager.com/gtag/js?id=G-H6Q756MVE8"></script>
+    <script async src="//www.googletagmanager.com/gtag/js?id=G-L376P3NPY4"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        
+        gtag('config', 'G-H6Q756MVE8', { 
+            'page_type': 'billboard_widget_v5.8', 
+            'layout_version': '5.8',
+            'retention': '14_months'
+        });
+        gtag('config', 'G-L376P3NPY4');
+    </script>
+</head>
+<body>
 
-<div id="sk-billboard-root-container" class="light-mode" onmousemove="handleInteraction()" ontouchstart="handleInteraction()">
+<!-- Line 48: ACTIVE BILLBOARD LOCATION ATTRIBUTE -->
+<div id="sk-billboard-root-container" class="light-mode" data-billboard-location="Altamont" onmousemove="handleInteraction()" ontouchstart="handleInteraction()">
 
     <!-- Mobile Landscape Lock Overlay -->
     <div id="landscape-lock">
@@ -37,32 +59,27 @@
         </div>
     </div>
 
-    <!-- Interactive Ghost Back Button (Fades in on tap/move) -->
+    <!-- Interactive Ghost Back Button -->
     <a href="./index.html" id="ghost-back-btn">
         <i data-lucide="arrow-left" class="w-5 h-5"></i>
         <span>Back to Site</span>
     </a>
 
-    <!-- Interactive Full Screen Button (Fades in on tap/move) -->
+    <!-- Interactive Full Screen Button -->
     <button id="fullscreen-toggle-btn" onclick="toggleFullScreen()">
         <i data-lucide="maximize" class="w-5 h-5" id="fs-icon"></i>
         <span>Full Screen</span>
     </button>
 
     <div id="sk-billboard-display">
-        
-        <!-- Ad Stage: The Main Part (Edge-to-Edge Mapping) -->
-        <div id="sk-ad-viewport">
-            <!-- Images injected via JavaScript & CSV -->
-        </div>
+        <!-- Ad Stage: Viewport -->
+        <div id="sk-ad-viewport"></div>
 
         <!-- Full-Width Bottom Bar: Branding, Weather, & Time -->
         <div id="sk-bottom-bar">
-            <!-- Brand Logo Group (Fluid Flex Item) -->
             <div class="sk-logo-group">
                 <div class="sk-logo">
-                    <!-- Brand Image Integration v4.23 -->
-                    <img src="https://raw.githack.com/Werewolf3788/SKVentureSigns/main/images/S%26K%20Name.png" 
+                    <img src="//raw.githack.com/Werewolf3788/SKVentureSigns/main/images/S%26K%20Name.png" 
                          alt="S&K Venture Signs" 
                          class="sk-brand-img"
                          onerror="this.style.display='none'; document.getElementById('sk-fallback-text').style.display='block';">
@@ -70,10 +87,8 @@
                 </div>
             </div>
             
-            <!-- Phone Number (Fluid Flex Item) -->
             <div class="sk-bottom-phone">844-907-4450</div>
             
-            <!-- Info Stack (Fluid Flex Item) -->
             <div class="sk-info-stack">
                 <div class="sk-weather">
                     <div id="sk-temp-val">--°</div>
@@ -82,13 +97,12 @@
             </div>
         </div>
 
-        <!-- LED Texture Overlay & Hardware Vignette -->
         <div class="sk-led-overlay"></div>
     </div>
 </div>
 
 <style>
-    /* PAGE RESET FOR UNIVERSAL EMBEDDING */
+    /* PAGE RESET */
     html, body {
         margin: 0 !important;
         padding: 0 !important;
@@ -98,15 +112,11 @@
         background: #000;
     }
 
-    /* THEME VARIABLES & CONTAINER QUERIES */
     #sk-billboard-root-container {
-        --bb-bottom-bg: #3E0100; /* Scott's Maroon Color */
+        --bb-bottom-bg: #3E0100;
         --bb-text: #ffffff; 
         --bb-border: rgba(255, 255, 255, 0.2);
-        
-        /* V4.23 FLUID HEIGHT: Auto-scales based on the TV/Billboard Screen Height (vh) */
         --bar-height: clamp(75px, 11vh, 140px);
-        
         --sk-yellow: #FAC429;
         
         all: initial !important;
@@ -134,7 +144,6 @@
         --bb-border: rgba(255, 255, 255, 0.1);
     }
 
-    /* GHOST BACK BUTTON */
     #ghost-back-btn {
         position: absolute !important;
         top: 30px !important;
@@ -159,7 +168,6 @@
     }
     #ghost-back-btn.active { opacity: 1; visibility: visible; }
 
-    /* FULL SCREEN BUTTON */
     #fullscreen-toggle-btn {
         position: absolute !important;
         top: 30px !important;
@@ -185,7 +193,6 @@
     }
     #fullscreen-toggle-btn.active { opacity: 1; visibility: visible; }
 
-    /* LANDSCAPE LOCK */
     #landscape-lock {
         position: absolute !important;
         inset: 0 !important;
@@ -203,7 +210,6 @@
         #landscape-lock { display: flex !important; }
     }
 
-    /* MAIN DISPLAY BOX */
     #sk-billboard-display {
         position: absolute !important;
         inset: 0 !important;
@@ -215,7 +221,6 @@
         overflow: hidden !important;
     }
 
-    /* AD VIEWPORT */
     #sk-ad-viewport {
         position: absolute !important;
         top: 0 !important;
@@ -233,6 +238,7 @@
         height: 100% !important;
         justify-content: center;
         align-items: center;
+        background: #000;
     }
 
     .sk-ad-slide.active { display: flex !important; }
@@ -249,9 +255,6 @@
         filter: saturate(1.1) contrast(1.05) brightness(0.75) !important;
     }
 
-    /* =========================================
-       UNIVERSAL FLUID FLEXBOX BOTTOM BAR (V4.23)
-       ========================================= */
     #sk-bottom-bar {
         position: absolute !important;
         bottom: 0 !important;
@@ -262,40 +265,39 @@
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
-        padding: 0 clamp(15px, 3vw, 60px) !important; /* Viewport based padding */
-        gap: clamp(10px, 2vw, 30px) !important; /* Dynamic gap prevents overlapping entirely */
+        padding: 0 clamp(15px, 3vw, 60px) !important;
+        gap: clamp(10px, 2vw, 30px) !important;
         z-index: 10 !important;
-        flex-wrap: nowrap !important; /* CRITICAL: Never drop to a new line */
+        flex-wrap: nowrap !important;
         white-space: nowrap !important;
     }
 
-    /* FLUID SLOTS */
     .sk-logo-group, .sk-bottom-phone, .sk-info-stack {
-        flex: 1 1 auto !important; /* Allow shrinking */
-        min-width: 0 !important; /* CRITICAL: Allows flex items to shrink below content size */
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
         height: 100% !important;
         display: flex !important;
         align-items: center !important;
-        transition: opacity 0.5s ease-in-out !important; /* Smooth fade during swap */
+        transition: opacity 0.5s ease-in-out !important;
     }
 
     .sk-logo-group {
-        order: 1; /* Default Left */
+        order: 1;
         justify-content: flex-start; 
     }
 
     .sk-bottom-phone {
-        order: 2; /* Default Center */
+        order: 2;
         justify-content: center; 
         color: var(--bb-text) !important;
         font-weight: 900 !important;
-        font-size: clamp(20px, 2.5vw, 55px) !important; /* Fluidly scales down on smaller screens */
+        font-size: clamp(20px, 2.5vw, 55px) !important;
         letter-spacing: 5px !important; 
         -webkit-text-stroke: 1.5px black !important;
     }
 
     .sk-info-stack {
-        order: 3; /* Always Right */
+        order: 3;
         justify-content: flex-end; 
         gap: clamp(10px, 2vw, 40px) !important;
         color: var(--bb-text) !important;
@@ -310,20 +312,18 @@
         text-shadow: 2px 2px 4px rgba(0,0,0,0.5) !important;
     }
 
-    /* BRAND IMAGE STYLING v4.23 - Fluid height mapping, prevents horizontal bleed */
     .sk-brand-img {
-        height: 160% !important; /* Visually stretches over the bounds to crop transparent padding */
+        height: 160% !important;
         max-height: none !important;
-        max-width: 100% !important; /* Prevents blowing out container on small screens */
+        max-width: 100% !important;
         width: auto !important;
-        object-fit: contain !important; /* Shrinks proportionally if container gets narrow */
+        object-fit: contain !important;
         display: block !important;
         filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5)) !important;
         margin: 0 !important;
         padding: 0 !important;
     }
 
-    /* Fallback Font Styling if image fails */
     #sk-fallback-text {
         font-family: 'Arial Black', Gadget, sans-serif !important;
         font-weight: 900 !important;
@@ -371,16 +371,47 @@
 
 <script>
 (function() {
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9aXB9z9jcsaA0U-LsuV4nIHwIIw2huGB8zaalh7It4GQP_DWFFdQ4Utaw_ajkdhx5ydn87BcfS82d/pub?output=csv";
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9aXB9z9jcsaA0U-LsuV4nIHwIIw2huGB8zaalh7It4GQP_DWFFdQ4Utaw_ajkdhx5ydn87BcfS82d/pub?gid=0&single=true&output=csv";
     const displayInterval = 12000; 
+    
+    // Master Coordinates Matrix for Weather & Solar Daylight
+    const BILLBOARD_LOCATIONS = {
+        'altamont':   { name: 'Altamont, IL',   lat: 38.989268, lon: -88.959890 },
+        'brownstown': { name: 'Brownstown, IL', lat: 38.677100, lon: -88.391531 },
+        'claycity':   { name: 'Clay City, IL',  lat: 37.802706, lon: -89.226319 },
+        'desoto':     { name: 'De Soto, IL',    lat: 37.802706, lon: -89.226319 },
+        'flora':      { name: 'Flora, IL',      lat: 38.668700, lon: -88.485300 },
+        'marshall':   { name: 'Marshall, IL',   lat: 39.383585, lon: -87.721159 },
+        'oliver':     { name: 'Oliver, IL',     lat: 39.490667, lon: -87.682008 },
+        'xenia':      { name: 'Xenia, IL',      lat: 38.518540, lon: -88.649680 },
+        'default':    { name: 'S&K Ventures',   lat: 39.124300, lon: -88.552500 }
+    };
+
+    function getActiveLocation() {
+        const rootEl = document.getElementById('sk-billboard-root-container');
+        const htmlAttrLocation = rootEl ? rootEl.getAttribute('data-billboard-location') : null;
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlLocation = urlParams.get('loc') || urlParams.get('location') || urlParams.get('billboard');
+        
+        const chosen = (htmlAttrLocation || urlLocation || 'default').toLowerCase().replace(/[^a-z0-9]/g, '');
+        return {
+            key: chosen,
+            data: BILLBOARD_LOCATIONS[chosen] || BILLBOARD_LOCATIONS['default']
+        };
+    }
+
+    const activeLocConfig = getActiveLocation();
+    const requestedLocKey = activeLocConfig.key;
+    const activeLocation = activeLocConfig.data;
+
     let currentAdIndex = 0;
     let adSlideElements = [];
     let lastWeatherData = null; 
-    let targetTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; 
+    let targetTimeZone = "America/Chicago";
     let isNightTimeSolar = null; 
     let interactionTimer;
     let currentImageUrls = [];
-    let currentQuarterTracker = null; // Used to track 15-min intervals
+    let currentQuarterTracker = null;
 
     window.handleInteraction = function() {
         const backBtn = document.getElementById('ghost-back-btn');
@@ -438,38 +469,215 @@
         if(lastWeatherData) updateWeatherUI(lastWeatherData);
     }
 
+    // Robust CSV parser supporting quotes & embedded commas
+    function parseCsvRow(row) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+        for (let i = 0; i < row.length; i++) {
+            const char = row[i];
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                result.push(current.trim().replace(/^"|"$/g, ''));
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        result.push(current.trim().replace(/^"|"$/g, ''));
+        return result;
+    }
+
+    // Extract Google Drive ID safely
+    function extractGoogleDriveId(url) {
+        if (!url) return null;
+        const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || 
+                      url.match(/id=([a-zA-Z0-9_-]+)/) || 
+                      url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        return (match && match[1]) ? match[1] : null;
+    }
+
+    // Formats any image link with multi-tier Google Drive fallback
+    function formatBillboardImage(url) {
+        if (!url) return "";
+        let clean = url.trim().replace(/^"|"$/g, '').replace(/&amp;/g, '&');
+        
+        const driveId = extractGoogleDriveId(clean);
+        if (driveId) {
+            // Direct Google Drive High-Speed Thumbnail Stream
+            return `https://drive.google.com/thumbnail?id=${driveId}&sz=w1920`;
+        }
+        
+        if (clean.startsWith('//')) {
+            clean = window.location.protocol + clean;
+        }
+        return clean;
+    }
+
+    function parseMultiplier(val) {
+        if (!val) return 1;
+        const cleaned = String(val).replace(/[^0-9]/g, '');
+        const num = parseInt(cleaned, 10);
+        return (!isNaN(num) && num > 0) ? num : 1;
+    }
+
+    // Even-Spread Round-Robin Shuffle Engine
+    function distributeSpreadAds(items) {
+        if (!items || items.length === 0) return [];
+        if (items.length === 1) {
+            const res = [];
+            for (let i = 0; i < items[0].multiplier; i++) res.push(items[0].url);
+            return res;
+        }
+
+        const pool = items.map(item => ({
+            name: item.name,
+            url: item.url,
+            remaining: item.multiplier
+        }));
+
+        const result = [];
+        let previousUrl = null;
+
+        while (pool.some(item => item.remaining > 0)) {
+            const activePool = pool.filter(item => item.remaining > 0)
+                                   .sort((a, b) => b.remaining - a.remaining);
+
+            let candidate = activePool.find(item => item.url !== previousUrl);
+            if (!candidate) {
+                candidate = activePool[0];
+            }
+
+            result.push(candidate.url);
+            candidate.remaining--;
+            previousUrl = candidate.url;
+        }
+
+        return result;
+    }
+
+    // Fetch and Process Ad Images
     async function fetchAdImages(isAutoSync = false) {
         try {
             const res = await fetch(`${CSV_URL}&t=${Date.now()}`);
             const text = await res.text();
             const lines = text.split(/\r?\n/);
-            let loadedUrls = [];
+            let parsedItems = [];
+            
             lines.forEach((line, idx) => {
-                if (idx === 0) return; 
-                const cellMatch = line.match(/(".*?"|[^,]+)/g);
-                if (cellMatch && cellMatch[2]) {
-                    let url = cellMatch[2].replace(/^"|"$|&amp;/g, '').trim();
-                    if (url.startsWith('http')) loadedUrls.push(url);
+                if (idx === 0 || !line.trim()) return; // Skip Header
+                
+                const cols = parseCsvRow(line);
+                let name = cols[0] ? cols[0].trim() : `Ad_${idx}`;
+                
+                // Find column containing http link or Google Drive link
+                let rawUrl = "";
+                for (let c = 0; c < cols.length; c++) {
+                    const colVal = (cols[c] || '').trim();
+                    if (colVal.startsWith("http://") || colVal.startsWith("https://") || colVal.includes("drive.google.com") || colVal.startsWith("//")) {
+                        rawUrl = colVal;
+                        break;
+                    }
+                }
+                
+                let rawLocation = (cols[3] !== undefined && !cols[3].startsWith('http') ? cols[3] : (cols[1] || "")).toLowerCase().trim();
+                let multiplier = parseMultiplier(cols[4]);
+                let url = formatBillboardImage(rawUrl);
+                
+                if (url && url.startsWith('http')) {
+                    const isGlobalAd = (rawLocation === '') || 
+                                       (rawLocation === 'global') || 
+                                       (rawLocation === 'all') || 
+                                       (rawLocation === 'none');
+                                       
+                    const isLocationMatch = (requestedLocKey === 'default') || 
+                                           (requestedLocKey === 'all') || 
+                                           (requestedLocKey === 'global') || 
+                                           (rawLocation.includes(requestedLocKey));
+                    
+                    if (isGlobalAd || isLocationMatch) {
+                        parsedItems.push({ name: name, url: url, multiplier: multiplier });
+                    }
                 }
             });
-            if (loadedUrls.length > 0 && JSON.stringify(loadedUrls) !== JSON.stringify(currentImageUrls)) {
-                currentImageUrls = loadedUrls;
+
+            // Fallback: If no location-filtered ads found, parse all rows
+            if (parsedItems.length === 0) {
+                lines.forEach((line, idx) => {
+                    if (idx === 0 || !line.trim()) return;
+                    const cols = parseCsvRow(line);
+                    let name = cols[0] ? cols[0].trim() : `Ad_${idx}`;
+                    let rawUrl = "";
+                    for (let c = 0; c < cols.length; c++) {
+                        const colVal = (cols[c] || '').trim();
+                        if (colVal.startsWith("http://") || colVal.startsWith("https://") || colVal.includes("drive.google.com") || colVal.startsWith("//")) {
+                            rawUrl = colVal;
+                            break;
+                        }
+                    }
+                    let url = formatBillboardImage(rawUrl);
+                    let multiplier = parseMultiplier(cols[4]);
+                    if (url && url.startsWith('http')) {
+                        parsedItems.push({ name: name, url: url, multiplier: multiplier });
+                    }
+                });
+            }
+
+            // Sort Alphabetically A-Z by Business / Ad Name
+            parsedItems.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+
+            // Distribute through Spread Multiplier
+            const finalUrls = distributeSpreadAds(parsedItems);
+
+            if (finalUrls.length > 0 && JSON.stringify(finalUrls) !== JSON.stringify(currentImageUrls)) {
+                currentImageUrls = finalUrls;
                 renderSlides();
             }
-        } catch (e) { console.warn("Billboard Sync Engine: fetch failed."); }
+        } catch (e) { 
+            console.warn("Billboard Sync Engine Error:", e); 
+        }
     }
 
+    // Render Slides with Live Auto-Fallback & Broken Image Pruning
     function renderSlides() {
         const viewport = document.getElementById('sk-ad-viewport');
         if(!viewport) return;
         viewport.innerHTML = '';
         adSlideElements = [];
         currentAdIndex = 0;
+        
         currentImageUrls.forEach((url, idx) => {
             const slide = document.createElement('div');
             slide.className = `sk-ad-slide ${idx === 0 ? 'active' : ''}`;
             const image = document.createElement('img');
             image.src = url;
+            image.setAttribute('referrerpolicy', 'no-referrer');
+            image.setAttribute('crossorigin', 'anonymous');
+            
+            // Image Error Multi-Tier Handler
+            image.onerror = function() {
+                const driveId = extractGoogleDriveId(this.src);
+                if (driveId && !this.dataset.fallbackTried) {
+                    // Try Secondary Google Drive Embed Format
+                    this.dataset.fallbackTried = "1";
+                    this.src = `https://lh3.googleusercontent.com/d/${driveId}`;
+                } else if (driveId && this.dataset.fallbackTried === "1") {
+                    // Try Tertiary Google Drive Stream Format
+                    this.dataset.fallbackTried = "2";
+                    this.src = `https://drive.google.com/uc?export=view&id=${driveId}`;
+                } else {
+                    // Permanently Broken Image: Hide & Prune slide cleanly
+                    console.warn("Permanently broken ad image pruned from deck:", url);
+                    slide.style.display = 'none';
+                    const sIndex = adSlideElements.indexOf(slide);
+                    if (sIndex > -1) adSlideElements.splice(sIndex, 1);
+                    if (adSlideElements.length > 0 && slide.classList.contains('active')) {
+                        rotateAds();
+                    }
+                }
+            };
+            
             slide.appendChild(image);
             viewport.appendChild(slide);
             adSlideElements.push(slide);
@@ -512,38 +720,29 @@
         adSlideElements[currentAdIndex].classList.add('active');
     }
 
-    // V4.23: Elegant Fade-Out / Fade-In Swap Logic
     function updateQuarterlySwap(quarter) {
         const logoGroup = document.querySelector('.sk-logo-group');
         const phoneDiv = document.querySelector('.sk-bottom-phone');
         if (!logoGroup || !phoneDiv) return;
 
-        // 1. Fade Elements Out
         logoGroup.style.opacity = '0';
         phoneDiv.style.opacity = '0';
         
-        // 2. Wait for fade, then physically swap DOM layout order
         setTimeout(() => {
             if (quarter % 2 === 0) {
-                // Even Quarter (0-14 mins, 30-44 mins) -> Image Left, Phone Center
                 logoGroup.style.order = '1';
-                logoGroup.style.justifyContent = 'flex-start'; // Align back to left edge
-                
+                logoGroup.style.justifyContent = 'flex-start';
                 phoneDiv.style.order = '2';
-                phoneDiv.style.justifyContent = 'center'; // Align to center
+                phoneDiv.style.justifyContent = 'center';
             } else {
-                // Odd Quarter (15-29 mins, 45-59 mins) -> Phone Left, Image Center
                 phoneDiv.style.order = '1';
-                phoneDiv.style.justifyContent = 'flex-start'; // Align back to left edge
-                
+                phoneDiv.style.justifyContent = 'flex-start';
                 logoGroup.style.order = '2';
-                logoGroup.style.justifyContent = 'center'; // Align to center
+                logoGroup.style.justifyContent = 'center';
             }
-            
-            // 3. Fade Elements Back In
             logoGroup.style.opacity = '1';
             phoneDiv.style.opacity = '1';
-        }, 500); // Matches the CSS transition duration
+        }, 500);
     }
 
     function updateLocalTime() {
@@ -555,25 +754,19 @@
         try {
             const timeString = new Date().toLocaleTimeString('en-US', { timeZone: targetTimeZone, hour: '2-digit', minute:'2-digit', hour12: true });
             timeEl.innerText = timeString;
-            
-            // Derive accurately adjusted minute based on targetTimeZone
             const tzDate = new Date(new Date().toLocaleString('en-US', { timeZone: targetTimeZone }));
             currentMin = tzDate.getMinutes();
         } catch (e) {
             timeEl.innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true});
         }
 
-        // Calculate current 15-minute chunk (0, 1, 2, or 3)
         let currentQuarter = Math.floor(currentMin / 15);
 
-        // Trigger 15-minute fade-swap
         if (currentQuarterTracker !== currentQuarter) {
-            // Check if it's the very first load to avoid a random fade in on boot
             const isInitialLoad = (currentQuarterTracker === null);
             currentQuarterTracker = currentQuarter;
             
             if(isInitialLoad) {
-                // Instantly apply layout without animation delay on boot
                 const logoGroup = document.querySelector('.sk-logo-group');
                 const phoneDiv = document.querySelector('.sk-bottom-phone');
                 if (logoGroup && phoneDiv) {
@@ -593,24 +786,23 @@
 
     async function startBillboard() {
         if (typeof lucide !== 'undefined') lucide.createIcons();
+
         syncTimeTheme();
         await fetchAdImages();
         
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                async (p) => { updateWeatherUI(await fetchWeather(p.coords.latitude, p.coords.longitude)); syncTimeTheme(); },
-                async (e) => { updateWeatherUI(await fetchWeather(39.1243, -88.5525)); syncTimeTheme(); },
-                { timeout: 5000 }
-            );
-        } else {
-            fetchWeather(39.1243, -88.5525).then(w => { updateWeatherUI(w); syncTimeTheme(); });
-        }
+        fetchWeather(activeLocation.lat, activeLocation.lon).then(w => {
+            updateWeatherUI(w);
+            syncTimeTheme();
+        });
         
-        updateLocalTime(); // Run immediately so things get placed properly before interval fires
+        updateLocalTime();
         
         setTimeout(() => { setInterval(updateLocalTime, 1000); }, 500);
         setInterval(rotateAds, displayInterval);
-        setInterval(syncTimeTheme, 300000); 
+        setInterval(() => {
+            fetchWeather(activeLocation.lat, activeLocation.lon).then(w => updateWeatherUI(w));
+            syncTimeTheme();
+        }, 300000); 
         setInterval(() => fetchAdImages(true), 60000);
     }
 
@@ -618,3 +810,5 @@
     else document.addEventListener("DOMContentLoaded", startBillboard);
 })();
 </script>
+</body>
+</html>
