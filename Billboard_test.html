@@ -2,12 +2,12 @@
 <!-- ==========================================================================
      PROJECT: S&K Venture Signs - Universal Single-URL Programmatic Billboard Engine
      ADMIN / LEAD DEV: Werewolf (Werewolf3788)
-     VERSION: 30.0 (All-In-One Unified Production Engine - Fully Commented)
+     VERSION: 34.0 (Option A: 20-Slot Dynamic Checker + Vistar Auto-Fill via Firebase)
      PROTOCOL: Dual Compatibility over HTTP & HTTPS | Full Code | No-Strip
-     TIMESTAMP: Saturday, August 15, 2026, 14:25:00 EDT (24hr New York Time)
+     TIMESTAMP: Saturday, August 15, 2026, 14:24:28 EDT (24hr New York Time)
      
      FIREBASE RTDB: https://smlc-fuel-monitor-default-rtdb.firebaseio.com
-     GA4 CONFIGURATION:
+     GA4 PROPERTY CONFIGURATION:
        - G-H6Q756MVE8 (S&K Ventures / Support My Local Community)
        - G-CTYHDF4MSD (PSN / Entertainment / Billboard Media Tracking)
        - G-L376P3NPY4 (Secondary Stream Analytics)
@@ -16,12 +16,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>S&K Venture Signs Billboard</title>
+    <title>S&K Venture Signs Billboard - 20 Slot Engine</title>
 
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐺</text></svg>">
 
-    <!-- Fonts & Icons (Protocol-relative for both HTTP and HTTPS) -->
+    <!-- Fonts & Icons (Protocol-relative for HTTP & HTTPS) -->
     <link href="//fonts.googleapis.com/css2?family=Great+Vibes&family=Satisfy&family=Pinyon+Script&family=Rouge+Script&family=Alex+Brush&display=swap" rel="stylesheet">
     <script src="//unpkg.com/lucide@latest"></script>
 
@@ -38,10 +38,10 @@
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
-        // Primary Site Tag: S&K Ventures (14-Month Retention, Enhanced Measurement)
+        // Primary Site Tag: S&K Ventures (14-Month Data Retention, Signals Active)
         gtag('config', 'G-H6Q756MVE8', { 
-            'page_type': 'firebase_billboard_single_url', 
-            'layout_version': '30.0', 
+            'page_type': 'firebase_billboard_20_slot_engine', 
+            'layout_version': '34.0', 
             'retention': '14_months',
             'traffic_type': 'internal'
         });
@@ -63,10 +63,10 @@
      Line 63: HTML DOM BILLBOARD LAYOUT
      ========================================================================== -->
 
-<!-- [ROOT CONTAINER] Box holding complete display stage and touch/interaction listeners -->
+<!-- [ROOT CONTAINER] Holds complete stage and monitors interaction -->
 <div id="sk-billboard-root-container" class="light-mode" onmousemove="handleInteraction()" ontouchstart="handleInteraction()">
 
-    <!-- [CARD 1: PORTRAIT ORIENTATION LOCK] Prompts user to rotate handheld screens -->
+    <!-- [CARD 1: PORTRAIT ORIENTATION LOCK] -->
     <div id="landscape-lock">
         <div class="lock-content">
             <i data-lucide="rotate-cw" style="width: 64px; height: 64px; margin-bottom: 16px;"></i>
@@ -74,13 +74,13 @@
         </div>
     </div>
 
-    <!-- [BUTTON 1: GHOST NAVIGATION] Fades in on screen touch to return to homepage -->
+    <!-- [BUTTON 1: GHOST NAVIGATION] Return to Homepage -->
     <a href="./index.html" id="ghost-back-btn">
         <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
         <span>Back to Site</span>
     </a>
 
-    <!-- [BUTTON 2: FULLSCREEN TOGGLE] Toggles hardware fullscreen -->
+    <!-- [BUTTON 2: FULLSCREEN CONTROLLER] -->
     <button id="fullscreen-toggle-btn" onclick="toggleFullScreen()">
         <i data-lucide="maximize" id="fs-icon" style="width: 20px; height: 20px;"></i>
         <span>Full Screen</span>
@@ -89,13 +89,13 @@
     <!-- [MAIN BILLBOARD STAGE] -->
     <div id="sk-billboard-display">
         
-        <!-- [AD VIEWPORT BOX] Dynamic ad slide rotation container -->
+        <!-- [AD VIEWPORT BOX] Dynamic 20-slot rotation container -->
         <div id="sk-ad-viewport"></div>
 
         <!-- [CARD 2: BOTTOM STATUS BAR] Full-width branding and status info -->
         <div id="sk-bottom-bar">
             
-            <!-- [BOX A: BRANDING LOGO] S&K Venture Signs Logo with text fallback -->
+            <!-- [BOX A: BRANDING LOGO] -->
             <div class="sk-logo-group">
                 <div class="sk-logo">
                     <img src="//raw.githack.com/Werewolf3788/SKVentureSigns/main/images/S%26K%20Name.png" 
@@ -169,7 +169,7 @@
         --bb-border: rgba(255, 255, 255, 0.1);
     }
 
-    /* [INTERACTIVE BUTTONS] Line 165: 44px touch targets */
+    /* [INTERACTIVE BUTTONS] Line 165: 44px minimum touch targets */
     #ghost-back-btn, #fullscreen-toggle-btn {
         position: absolute !important;
         top: 25px !important;
@@ -381,7 +381,7 @@
 </style>
 
 <!-- ==========================================================================
-     Line 287: JAVASCRIPT ENGINE (Firebase RTDB, Geofence, VAST, Weather, 24hr Clock)
+     Line 287: JAVASCRIPT ENGINE (20-Slot Dynamic Checker + VAST Injection)
      ========================================================================== -->
 <script>
 (function() {
@@ -402,8 +402,9 @@
     }
     const db = firebase.database();
 
-    /* 2. STATE & ENGINE TIMERS */
-    const displayInterval = 12000;      // 12-second slide rotation
+    /* 2. ENGINE TIMERS & ROTATION CONFIGURATION */
+    const TOTAL_ROTATION_SLOTS = 20;    // Exactly 20 fixed billboard slots per loop
+    const displayInterval = 12000;      // 12-second slide duration
     const memoryRefreshCycle = 1800000; // 30-minute hardware GC reload
 
     let activeLocation = { 
@@ -412,7 +413,8 @@
         lon: -88.485300, 
         phone: "844-907-4450",
         screen_id: "SK-FLORA-01",
-        venue_id: "SK-VENUE-IL-01"
+        venue_id: "SK-VENUE-IL-01",
+        vast_tag: "" 
     };
 
     let currentAdIndex = 0;
@@ -424,7 +426,7 @@
     let interactionTimer = null;
     let currentQuarterTracker = null;
 
-    /* 3. HAVERSINE FORMULA (Distance to sign boards) */
+    /* 3. HAVERSINE DISTANCE FORMULA */
     function calculateDistanceMiles(lat1, lon1, lat2, lon2) {
         const R = 3958.8;
         const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -435,7 +437,7 @@
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    /* 4. PROGRAMMATIC VAST PARSER & MACRO INJECTOR */
+    /* 4. PROGRAMMATIC VAST PARSER WITH DYNAMIC MACROS */
     function buildProgrammaticUrl(endpointUrl, locationMetadata) {
         if (!endpointUrl) return null;
         let resolvedUrl = endpointUrl;
@@ -490,7 +492,7 @@
                 return { type: 'image', url: staticResource.textContent.trim(), isProgrammatic: true, impressions: trackingUrls };
             }
         } catch (e) {
-            console.warn("[SSP Engine] Programmatic fetch failed:", compiledUrl);
+            console.warn("[SSP Engine] Programmatic fetch warning:", compiledUrl);
         }
         return null;
     }
@@ -505,7 +507,7 @@
         });
     }
 
-    /* 5. INTERACTIVE CONTROLLERS (Exposed globally for HTML tags) */
+    /* 5. INTERACTION HANDLERS */
     window.handleInteraction = function() {
         const backBtn = document.getElementById('ghost-back-btn');
         const fsBtn = document.getElementById('fullscreen-toggle-btn');
@@ -566,7 +568,7 @@
         if (lastWeatherData) updateWeatherUI(lastWeatherData);
     }
 
-    /* 7. FIREBASE GEOFENCE & LOCATION SYNC */
+    /* 7. FIREBASE GEOFENCE & LOCATION ENGINE */
     db.ref("billboard_network/Locations").on("value", snapshot => {
         const locations = snapshot.val();
         if (!locations) return;
@@ -589,7 +591,7 @@
                         }
                     });
 
-                    // 40-mile radius hardware lock
+                    // 40-mile radius hardware geofence lock
                     if (minDistance <= 40) {
                         bindBillboardContent(locations, closestKey, false);
                     } else {
@@ -606,71 +608,77 @@
         }
     });
 
-    /* 8. AD QUEUE BUILDER */
+    /* 8. 20-SLOT DYNAMIC CHECKER & VAST INGESTION ENGINE */
     async function bindBillboardContent(locations, townKey, isRemotePreview) {
-        const townData = locations[townKey] || locations["flora"];
+        const townData = locations[townKey] || locations["flora"] || {};
         const globalData = locations["global"] || {};
 
-        if (townData) {
-            activeLocation = {
-                name: townData.name || townKey,
-                lat: townData.lat || 38.668700,
-                lon: townData.lon || -88.485300,
-                phone: townData.phone || "844-907-4450",
-                screen_id: townData.screen_id || `SK-${townKey.toUpperCase()}-01`,
-                venue_id: townData.venue_id || `SK-VENUE-${townKey.toUpperCase()}`,
-                vast_tag: townData.vast_tag || globalData.vast_tag || ""
-            };
+        // Town VAST tag -> Global Network VAST tag -> Code Fallback
+        const resolvedVastTag = (townData.vast_tag && townData.vast_tag.trim() !== "") 
+            ? townData.vast_tag 
+            : ((globalData.vast_tag && globalData.vast_tag.trim() !== "") ? globalData.vast_tag : activeLocation.vast_tag);
 
-            const phoneDisplay = document.getElementById('sk-phone-display');
-            if (phoneDisplay) phoneDisplay.innerText = activeLocation.phone;
-            
-            if (activeLocation.lat && activeLocation.lon) {
-                fetchWeather(activeLocation.lat, activeLocation.lon);
-            }
+        activeLocation = {
+            name: townData.name || townKey,
+            lat: townData.lat || 38.668700,
+            lon: townData.lon || -88.485300,
+            phone: townData.phone || "844-907-4450",
+            screen_id: townData.screen_id || `SK-${townKey.toUpperCase()}-01`,
+            venue_id: townData.venue_id || `SK-VENUE-${townKey.toUpperCase()}`,
+            vast_tag: resolvedVastTag
+        };
 
-            const rawAdQueue = [];
+        const phoneDisplay = document.getElementById('sk-phone-display');
+        if (phoneDisplay) phoneDisplay.innerText = activeLocation.phone;
+        
+        if (activeLocation.lat && activeLocation.lon) {
+            fetchWeather(activeLocation.lat, activeLocation.lon);
+        }
 
-            // Direct Advertisers
-            if (isRemotePreview) {
-                Object.keys(locations).forEach(tKey => {
-                    const tObj = locations[tKey];
-                    Object.keys(tObj).forEach(k => {
-                        if (!isNaN(parseInt(k)) && tObj[k] && tObj[k].imageurl) {
-                            if (!rawAdQueue.some(item => item.url === tObj[k].imageurl)) {
-                                rawAdQueue.push({ type: 'image', url: tObj[k].imageurl, isProgrammatic: false });
-                            }
-                        }
-                    });
+        const rawAdQueue = [];
+
+        // Loop through all 20 fixed slots
+        for (let slotNum = 1; slotNum <= TOTAL_ROTATION_SLOTS; slotNum++) {
+            const slotKey = String(slotNum);
+            const slotItem = townData[slotKey];
+
+            // 1. If slot has direct client image/video from Firebase, use it
+            if (slotItem && slotItem.imageurl && slotItem.imageurl.trim() !== "") {
+                const isVideo = slotItem.imageurl.match(/\.(mp4|webm|ogg)$/i);
+                rawAdQueue.push({
+                    slot: slotNum,
+                    type: isVideo ? 'video' : 'image',
+                    url: slotItem.imageurl.trim(),
+                    isProgrammatic: false
                 });
-            } else {
-                Object.keys(townData).forEach(key => {
-                    if (!isNaN(parseInt(key)) && townData[key] && townData[key].imageurl) {
-                        rawAdQueue.push({ type: 'image', url: townData[key].imageurl, isProgrammatic: false });
-                    }
-                });
-
-                Object.keys(globalData).forEach(key => {
-                    if (!isNaN(parseInt(key)) && globalData[key] && globalData[key].imageurl) {
-                        if (!rawAdQueue.some(item => item.url === globalData[key].imageurl)) {
-                            rawAdQueue.push({ type: 'image', url: globalData[key].imageurl, isProgrammatic: false });
-                        }
-                    }
-                });
-            }
-
-            // Programmatic VAST Ingestion
-            if (activeLocation.vast_tag) {
+            } 
+            // 2. If slot is blank or missing, automatically fetch Vistar Media programmatic creative
+            else if (activeLocation.vast_tag) {
                 const programmaticCreative = await fetchProgrammaticAd(activeLocation.vast_tag, activeLocation);
                 if (programmaticCreative) {
-                    rawAdQueue.push(programmaticCreative);
+                    rawAdQueue.push({
+                        slot: slotNum,
+                        ...programmaticCreative
+                    });
                 }
             }
+        }
 
-            if (JSON.stringify(rawAdQueue) !== JSON.stringify(currentAdQueue)) {
-                currentAdQueue = rawAdQueue;
-                renderSlides();
-            }
+        // Remote preview fallback: if viewing remotely and no local ads, load all town ads
+        if (isRemotePreview && rawAdQueue.length === 0) {
+            Object.keys(locations).forEach(tKey => {
+                const tObj = locations[tKey];
+                Object.keys(tObj).forEach(k => {
+                    if (!isNaN(parseInt(k)) && tObj[k] && tObj[k].imageurl) {
+                        rawAdQueue.push({ slot: k, type: 'image', url: tObj[k].imageurl, isProgrammatic: false });
+                    }
+                });
+            });
+        }
+
+        if (JSON.stringify(rawAdQueue) !== JSON.stringify(currentAdQueue)) {
+            currentAdQueue = rawAdQueue;
+            renderSlides();
         }
     }
 
