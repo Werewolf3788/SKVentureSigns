@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <!-- 
-    PROJECT: S & K Ventures Billboard - Multi-Town Target Engine
+    PROJECT: S & K Ventures Billboard - Resilient Multi-Town & Weather Engine
     ADMIN: Kevin (Werewolf3788)
-    VERSION: 6.0 (High-Visibility Active Town Location Marker + Notes)
+    VERSION: 6.1 (Decoupled Weather Engine + Bulletproof Timing Sanitizer + Comma Multi-Town + Multi-CDN)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: 2026-08-14 23:59:48 EDT (New York Time)
+    TIMESTAMP: Sat, Aug 15, 2026 | 00:01 AM EDT (New York Time)
     
     GOOGLE SHEET CSV SCHEMA:
       - Column A (Index 0): Business / Ad Name (Used for A-Z sorting)
@@ -12,6 +12,10 @@
       - Column C (Index 2): Ad Image Link (PNG, JPG, JPEG, GIF, WEBP, SVG, Google Drive)
       - Column D (Index 3): Target Town(s) (e.g. "Altamont, Flora, Xenia" or Blank/Global)
       - Column E (Index 4): Frequency Multiplier (1, 2, 3, 4, etc. Defaults to 1)
+
+    HOW TO CONFIGURE:
+      - Active Town: Set in LINE 57 via data-billboard-location
+      - Slide Seconds: Set in LINE 309 via DISPLAY_SECONDS
 -->
 <html lang="en">
 <head>
@@ -23,7 +27,7 @@
     <link href="//fonts.googleapis.com/css2?family=Great+Vibes&family=Satisfy&family=Pinyon+Script&family=Rouge+Script&family=Alex+Brush&display=swap" rel="stylesheet">
 
     <!-- Framework Assets scoped for the Widget -->
-    <script src="//cdn.tailwindcss.com?v=6.0"></script>
+    <script src="//cdn.tailwindcss.com?v=6.1"></script>
     <script src="//unpkg.com/lucide@latest"></script>
 
     <!-- Google Analytics Dual Tracking: S&K Ventures (G-H6Q756MVE8) & Kevin (G-L376P3NPY4) -->
@@ -35,8 +39,8 @@
         gtag('js', new Date());
         
         gtag('config', 'G-H6Q756MVE8', { 
-            'page_type': 'billboard_widget_v6.0', 
-            'layout_version': '6.0',
+            'page_type': 'billboard_widget_v6.1', 
+            'layout_version': '6.1',
             'retention': '14_months'
         });
         gtag('config', 'G-L376P3NPY4');
@@ -46,7 +50,7 @@
 
 <!-- ================================================================= -->
 <!-- ★ ACTIVE BILLBOARD TOWN CONFIGURATION ★                           -->
-<!-- LOCATION: LINE 56 BELOW                                           -->
+<!-- LOCATION: LINE 57 BELOW                                           -->
 <!-- Change data-billboard-location to one of the following towns:     -->
 <!-- "Altamont", "Brownstown", "ClayCity", "DeSoto", "Flora",          -->
 <!-- "Marshall", "Oliver", "Xenia", or "All" (for Global view)         -->
@@ -375,12 +379,30 @@
 </style>
 
 <!-- ================================================================= -->
-<!-- ★ JAVASCRIPT ENGINE (LINE 305 TO LINE 570) ★                      -->
+<!-- ★ JAVASCRIPT ENGINE (LINE 305 TO LINE 600) ★                      -->
 <!-- ================================================================= -->
 <script>
 (function() {
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9aXB9z9jcsaA0U-LsuV4nIHwIIw2huGB8zaalh7It4GQP_DWFFdQ4Utaw_ajkdhx5ydn87BcfS82d/pub?gid=0&single=true&output=csv";
-    const displayInterval = 12000; 
+    
+    // =================================================================
+    // ★ ROTATION TIMING CONFIGURATION ★
+    // Enter seconds (e.g., 12, 15, "15s") or milliseconds (12000).
+    // =================================================================
+    const DISPLAY_SECONDS = 12; 
+
+    // Bulletproof Timing Sanitizer
+    function sanitizeInterval(val) {
+        if (!val) return 12000;
+        const cleaned = String(val).replace(/[^0-9.]/g, '');
+        let num = parseFloat(cleaned);
+        if (isNaN(num) || num <= 0) return 12000;
+        // If owner put seconds (e.g. 10 or 15 instead of 10000 or 15000)
+        if (num < 1000) num = num * 1000;
+        return Math.max(num, 3000); // Enforce minimum 3 second rotation guard
+    }
+
+    const displayInterval = sanitizeInterval(DISPLAY_SECONDS);
     
     // Master Coordinates Matrix for Live Weather & Daylight Theme
     const BILLBOARD_LOCATIONS = {
@@ -474,10 +496,9 @@
             root.classList.add('light-mode');
             root.classList.remove('dark-mode');
         }
-        if(lastWeatherData) updateWeatherUI(lastWeatherData);
+        if (lastWeatherData) updateWeatherUI(lastWeatherData);
     }
 
-    // Robust CSV parser supporting quotes & embedded commas
     function parseCsvRow(row) {
         const result = [];
         let current = '';
@@ -497,7 +518,6 @@
         return result;
     }
 
-    // Extract Google Drive ID safely
     function extractGoogleDriveId(url) {
         if (!url) return null;
         const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || 
@@ -506,16 +526,13 @@
         return (match && match[1]) ? match[1] : null;
     }
 
-    // Formats any image link with multi-tier Google Drive fallback
     function formatBillboardImage(url) {
         if (!url) return "";
         let clean = url.trim().replace(/^"|"$/g, '').replace(/&amp;/g, '&');
-        
         const driveId = extractGoogleDriveId(clean);
         if (driveId) {
             return `https://drive.google.com/thumbnail?id=${driveId}&sz=w1920`;
         }
-        
         if (clean.startsWith('//')) {
             clean = window.location.protocol + clean;
         }
@@ -529,20 +546,17 @@
         return (!isNaN(num) && num > 0) ? num : 1;
     }
 
-    // Checks if the active town is listed in a comma-separated list
     function isTownMatchingLocation(rowLocationString, currentTownKey) {
         if (!rowLocationString || rowLocationString === '' || rowLocationString === 'global' || rowLocationString === 'all' || rowLocationString === 'none') {
-            return true; // Global display
+            return true;
         }
         if (currentTownKey === 'default' || currentTownKey === 'all' || currentTownKey === 'global') {
-            return true; // View all mode
+            return true;
         }
-
         const targetTowns = rowLocationString.split(',').map(t => t.toLowerCase().replace(/[^a-z0-9]/g, '').trim());
         return targetTowns.includes(currentTownKey);
     }
 
-    // Even-Spread Round-Robin Shuffle Engine
     function distributeSpreadAds(items) {
         if (!items || items.length === 0) return [];
         if (items.length === 1) {
@@ -577,7 +591,6 @@
         return result;
     }
 
-    // Fetch and Process Ad Images
     async function fetchAdImages(isAutoSync = false) {
         try {
             const res = await fetch(`${CSV_URL}&t=${Date.now()}`);
@@ -586,12 +599,11 @@
             let parsedItems = [];
             
             lines.forEach((line, idx) => {
-                if (idx === 0 || !line.trim()) return; // Skip Header
+                if (idx === 0 || !line.trim()) return;
                 
                 const cols = parseCsvRow(line);
                 let name = cols[0] ? cols[0].trim() : `Ad_${idx}`;
                 
-                // Find column containing http link or Google Drive link
                 let rawUrl = "";
                 for (let c = 0; c < cols.length; c++) {
                     const colVal = (cols[c] || '').trim();
@@ -601,7 +613,6 @@
                     }
                 }
                 
-                // Column D: Target Location(s) e.g., "Altamont, Flora, Xenia"
                 let rawLocation = (cols[3] !== undefined && !cols[3].startsWith('http') ? cols[3] : (cols[1] || "")).toLowerCase().trim();
                 let multiplier = parseMultiplier(cols[4]);
                 let url = formatBillboardImage(rawUrl);
@@ -613,7 +624,6 @@
                 }
             });
 
-            // Fallback: If no location-filtered ads found, parse all rows
             if (parsedItems.length === 0) {
                 lines.forEach((line, idx) => {
                     if (idx === 0 || !line.trim()) return;
@@ -635,10 +645,8 @@
                 });
             }
 
-            // Sort Alphabetically A-Z by Business / Ad Name
             parsedItems.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
 
-            // Distribute through Spread Multiplier
             const finalUrls = distributeSpreadAds(parsedItems);
 
             if (finalUrls.length > 0 && JSON.stringify(finalUrls) !== JSON.stringify(currentImageUrls)) {
@@ -646,14 +654,13 @@
                 renderSlides();
             }
         } catch (e) { 
-            console.warn("Billboard Sync Engine Error:", e); 
+            console.warn("Billboard Ad Fetch Warning:", e); 
         }
     }
 
-    // Render Slides with Live Auto-Fallback & Broken Image Pruning
     function renderSlides() {
         const viewport = document.getElementById('sk-ad-viewport');
-        if(!viewport) return;
+        if (!viewport) return;
         viewport.innerHTML = '';
         adSlideElements = [];
         currentAdIndex = 0;
@@ -666,7 +673,6 @@
             image.setAttribute('referrerpolicy', 'no-referrer');
             image.setAttribute('crossorigin', 'anonymous');
             
-            // Image Error Multi-Tier Handler
             image.onerror = function() {
                 const driveId = extractGoogleDriveId(this.src);
                 if (driveId && !this.dataset.fallbackTried) {
@@ -676,7 +682,7 @@
                     this.dataset.fallbackTried = "2";
                     this.src = `https://drive.google.com/uc?export=view&id=${driveId}`;
                 } else {
-                    console.warn("Permanently broken ad image pruned from deck:", url);
+                    console.warn("Pruned unresolvable ad link:", url);
                     slide.style.display = 'none';
                     const sIndex = adSlideElements.indexOf(slide);
                     if (sIndex > -1) adSlideElements.splice(sIndex, 1);
@@ -692,23 +698,35 @@
         });
     }
 
+    // Direct isolated Weather Engine
     async function fetchWeather(lat, lon) {
         try {
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,is_day&temperature_unit=fahrenheit&timezone=auto`;
             const res = await fetch(url);
+            if (!res.ok) return null;
             const data = await res.json();
             if (data.timezone) targetTimeZone = data.timezone;
-            if (data.current.is_day !== undefined) isNightTimeSolar = (data.current.is_day === 0);
-            const weatherData = { temp: Math.round(data.current.temperature_2m), realfeel: Math.round(data.current.apparent_temperature) };
-            lastWeatherData = weatherData; 
-            return weatherData;
-        } catch(e) { return null; }
+            if (data.current && data.current.is_day !== undefined) isNightTimeSolar = (data.current.is_day === 0);
+            
+            if (data.current && data.current.temperature_2m !== undefined) {
+                const weatherData = { 
+                    temp: Math.round(data.current.temperature_2m), 
+                    realfeel: Math.round(data.current.apparent_temperature || data.current.temperature_2m) 
+                };
+                lastWeatherData = weatherData; 
+                return weatherData;
+            }
+            return null;
+        } catch(e) { 
+            console.warn("Open-Meteo Weather Fetch Warning:", e);
+            return null; 
+        }
     }
 
     function updateWeatherUI(weather) {
-        if(!weather) return;
+        if (!weather || weather.temp === undefined) return;
         const tempDisplay = document.getElementById('sk-temp-val');
-        if(tempDisplay) {
+        if (tempDisplay) {
             tempDisplay.innerText = `${weather.temp}°`;
             let tempColor = "#ffffff";
             const t = weather.temp;
@@ -722,7 +740,7 @@
     }
 
     function rotateAds() {
-        if(adSlideElements.length === 0) return;
+        if (adSlideElements.length === 0) return;
         adSlideElements[currentAdIndex].classList.remove('active');
         currentAdIndex = (currentAdIndex + 1) % adSlideElements.length;
         adSlideElements[currentAdIndex].classList.add('active');
@@ -755,7 +773,7 @@
 
     function updateLocalTime() {
         const timeEl = document.getElementById('sk-time-val');
-        if(!timeEl) return;
+        if (!timeEl) return;
         
         let currentMin = new Date().getMinutes();
 
@@ -774,7 +792,7 @@
             const isInitialLoad = (currentQuarterTracker === null);
             currentQuarterTracker = currentQuarter;
             
-            if(isInitialLoad) {
+            if (isInitialLoad) {
                 const logoGroup = document.querySelector('.sk-logo-group');
                 const phoneDiv = document.querySelector('.sk-bottom-phone');
                 if (logoGroup && phoneDiv) {
@@ -795,22 +813,26 @@
     async function startBillboard() {
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
-        syncTimeTheme();
-        await fetchAdImages();
-        
+        // 1. Launch Isolated Weather Sync
         fetchWeather(activeLocation.lat, activeLocation.lon).then(w => {
             updateWeatherUI(w);
             syncTimeTheme();
         });
-        
+
+        // 2. Launch Local Clock
         updateLocalTime();
-        
-        setTimeout(() => { setInterval(updateLocalTime, 1000); }, 500);
+        setInterval(updateLocalTime, 1000);
+
+        // 3. Fetch Initial Ad Stream & Start Rotation
+        await fetchAdImages();
         setInterval(rotateAds, displayInterval);
+
+        // 4. Background Sync Intervals
         setInterval(() => {
             fetchWeather(activeLocation.lat, activeLocation.lon).then(w => updateWeatherUI(w));
             syncTimeTheme();
         }, 300000); 
+
         setInterval(() => fetchAdImages(true), 60000);
     }
 
