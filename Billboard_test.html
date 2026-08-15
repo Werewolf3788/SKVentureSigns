@@ -2,9 +2,9 @@
 <!-- ==========================================================================
      PROJECT: S&K Venture Signs - Universal Single-URL Programmatic Billboard Engine
      ADMIN / LEAD DEV: Werewolf (Werewolf3788)
-     VERSION: 51.0 (Seamless Cycle-End Buffer Swap + WhatsApp Alerts + GA4 Beacons)
+     VERSION: 52.0 (Zero-Blackout Cycle Swap + WhatsApp Alerts + GA4 Beacons)
      PROTOCOL: Dual Compatibility over HTTP & HTTPS | Full Code | No-Strip
-     TIMESTAMP: Saturday, August 15, 2026, 16:20:00 EDT (24hr New York Time)
+     TIMESTAMP: Saturday, August 15, 2026, 16:25:00 EDT (24hr New York Time)
      
      FIREBASE RTDB: https://smlc-fuel-monitor-default-rtdb.firebaseio.com
      GA4 PROPERTY CONFIGURATION:
@@ -37,7 +37,7 @@
         // Primary Site Tag: S&K Ventures (14-Month Retention & Signals Enabled)
         gtag('config', 'G-H6Q756MVE8', { 
             'page_type': 'billboard_kiosk_engine', 
-            'layout_version': '51.0', 
+            'layout_version': '52.0', 
             'retention': '14_months',
             'traffic_type': 'internal'
         });
@@ -389,7 +389,7 @@
 </style>
 
 <!-- ==========================================================================
-     Line 321: JAVASCRIPT ENGINE (Staging Buffer + Seamless Rotation)
+     Line 321: JAVASCRIPT ENGINE (Zero-Blackout Cycle-End Ingestion)
      ========================================================================== -->
 <script>
 (function() {
@@ -689,7 +689,7 @@
         }
     });
 
-    /* 9. CONTENT BINDER WITH CYCLE-END BUFFERING */
+    /* 9. CONTENT BINDER WITH SEAMLESS BUFFERING */
     function bindBillboardContent(locations, townKey, isRemoteMasterFeed) {
         const cleanTownKey = townKey.toLowerCase().replace(/[^a-z0-9]/g, '');
         const townData = locations[cleanTownKey] || locations["flora"] || {};
@@ -752,13 +752,13 @@
             });
         }
 
-        // Initial Load: Render immediately
+        // Initial Cold Start: Render immediately
         if (!isInitialRenderComplete) {
             currentAdQueue = freshQueue;
-            renderSlides();
+            renderSlides(0);
             isInitialRenderComplete = true;
         } 
-        // Mid-Playback Update: Stage changes for next loop cycle
+        // Mid-Playback Update: Stage updates for clean cycle-end transition
         else {
             if (JSON.stringify(freshQueue) !== JSON.stringify(currentAdQueue)) {
                 pendingAdQueue = freshQueue;
@@ -791,17 +791,18 @@
         }
     }
 
-    /* 10. SLIDE DISPLAY & SEAMLESS ROTATION */
-    function renderSlides() {
+    /* 10. ZERO-BLACKOUT SLIDE DISPLAY & ROTATION */
+    function renderSlides(startIndex = 0) {
         const viewport = document.getElementById('sk-ad-viewport');
-        if (!viewport) return;
+        if (!viewport || currentAdQueue.length === 0) return;
+        
         viewport.innerHTML = '';
         adSlideElements = [];
-        currentAdIndex = 0;
+        currentAdIndex = (startIndex < currentAdQueue.length) ? startIndex : 0;
 
         currentAdQueue.forEach((item, idx) => {
             const slide = document.createElement('div');
-            slide.className = `sk-ad-slide ${idx === 0 ? 'active' : ''}`;
+            slide.className = `sk-ad-slide ${idx === currentAdIndex ? 'active' : ''}`;
 
             if (item.type === 'video') {
                 const video = document.createElement('video');
@@ -837,13 +838,21 @@
             adSlideElements.push(slide);
         });
 
-        if (currentAdQueue[0]) {
-            if (currentAdQueue[0].isProgrammatic && currentAdQueue[0].impressions) {
-                fireImpressionBeacons(currentAdQueue[0].impressions);
+        // Trigger impression beacon and WhatsApp alerts for active slide
+        const activeMedia = currentAdQueue[currentAdIndex];
+        if (activeMedia) {
+            if (activeMedia.isProgrammatic && activeMedia.impressions) {
+                fireImpressionBeacons(activeMedia.impressions);
             }
-            logSmlcAdImpression(currentAdQueue[0]);
-            if (currentAdQueue[0].isProgrammatic) {
-                sendWhatsAppNotification(currentAdQueue[0]);
+            logSmlcAdImpression(activeMedia);
+            if (activeMedia.isProgrammatic) {
+                sendWhatsAppNotification(activeMedia);
+            }
+
+            const video = adSlideElements[currentAdIndex] ? adSlideElements[currentAdIndex].querySelector('video') : null;
+            if (video) {
+                video.currentTime = 0;
+                video.play().catch(()=>{});
             }
         }
     }
@@ -851,18 +860,28 @@
     function rotateAds() {
         if (adSlideElements.length === 0) return;
 
-        // Check if the current loop reached the last slide
-        if (currentAdIndex === adSlideElements.length - 1 && pendingAdQueue) {
-            // Apply staged edits seamlessly at cycle end
-            currentAdQueue = pendingAdQueue;
-            pendingAdQueue = null;
-            renderSlides();
-            return;
+        // Check if loop finished its last slide
+        if (currentAdIndex >= adSlideElements.length - 1) {
+            if (pendingAdQueue) {
+                // Seamlessly swap in staged queue and instantly render slide 0
+                currentAdQueue = pendingAdQueue;
+                pendingAdQueue = null;
+                renderSlides(0);
+                return;
+            }
+            currentAdIndex = -1; // Reset index to loop back to 0 below
         }
 
-        adSlideElements[currentAdIndex].classList.remove('active');
+        // Standard Advance
+        if (adSlideElements[currentAdIndex]) {
+            adSlideElements[currentAdIndex].classList.remove('active');
+        }
+
         currentAdIndex = (currentAdIndex + 1) % adSlideElements.length;
-        adSlideElements[currentAdIndex].classList.add('active');
+
+        if (adSlideElements[currentAdIndex]) {
+            adSlideElements[currentAdIndex].classList.add('active');
+        }
 
         const activeMedia = currentAdQueue[currentAdIndex];
         if (activeMedia) {
@@ -876,7 +895,7 @@
             }
         }
 
-        const video = adSlideElements[currentAdIndex].querySelector('video');
+        const video = adSlideElements[currentAdIndex] ? adSlideElements[currentAdIndex].querySelector('video') : null;
         if (video) {
             video.currentTime = 0;
             video.play().catch(()=>{});
