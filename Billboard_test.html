@@ -2,9 +2,9 @@
 <!-- ==========================================================================
      PROJECT: S&K Venture Signs - Universal Single-URL Programmatic Billboard Engine
      ADMIN / LEAD DEV: Werewolf (Werewolf3788)
-     VERSION: 52.0 (Zero-Blackout Cycle Swap + WhatsApp Alerts + GA4 Beacons)
+     VERSION: 53.0 (Anti-Burn-In 3-Way 10min Carousel + Zero-Blackout Swap)
      PROTOCOL: Dual Compatibility over HTTP & HTTPS | Full Code | No-Strip
-     TIMESTAMP: Saturday, August 15, 2026, 16:25:00 EDT (24hr New York Time)
+     TIMESTAMP: Saturday, August 15, 2026, 16:30:00 EDT (24hr New York Time)
      
      FIREBASE RTDB: https://smlc-fuel-monitor-default-rtdb.firebaseio.com
      GA4 PROPERTY CONFIGURATION:
@@ -34,10 +34,9 @@
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
-        // Primary Site Tag: S&K Ventures (14-Month Retention & Signals Enabled)
         gtag('config', 'G-H6Q756MVE8', { 
             'page_type': 'billboard_kiosk_engine', 
-            'layout_version': '52.0', 
+            'layout_version': '53.0', 
             'retention': '14_months',
             'traffic_type': 'internal'
         });
@@ -46,13 +45,11 @@
 <body oncontextmenu="return false;">
 
 <!-- ==========================================================================
-     Line 49: HTML DOM BILLBOARD LAYOUT
+     Line 46: HTML DOM BILLBOARD LAYOUT
      ========================================================================== -->
 
-<!-- [ROOT CONTAINER] Holds complete display stage and touch/interaction listeners -->
 <div id="sk-billboard-root-container" class="light-mode" onmousemove="handleInteraction()" ontouchstart="handleInteraction()">
 
-    <!-- [CARD 1: PORTRAIT ORIENTATION LOCK] -->
     <div id="landscape-lock">
         <div class="lock-content">
             <i data-lucide="rotate-cw" style="width: 64px; height: 64px; margin-bottom: 16px;"></i>
@@ -60,28 +57,23 @@
         </div>
     </div>
 
-    <!-- [BUTTON 1: GHOST NAVIGATION] Fades in on screen touch to return to homepage -->
     <a href="./index.html" id="ghost-back-btn">
         <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
         <span>Back to Site</span>
     </a>
 
-    <!-- [BUTTON 2: FULLSCREEN CONTROLLER] -->
     <button id="fullscreen-toggle-btn" onclick="toggleFullScreen()">
         <i data-lucide="maximize" id="fs-icon" style="width: 20px; height: 20px;"></i>
         <span>Full Screen</span>
     </button>
 
-    <!-- [MAIN BILLBOARD STAGE] -->
     <div id="sk-billboard-display">
         
-        <!-- [VIEWPORT BOX] Ad Slide Rotation Container -->
         <div id="sk-ad-viewport"></div>
 
-        <!-- [CARD 2: BOTTOM STATUS BAR] -->
+        <!-- [CARD 2: BOTTOM STATUS BAR] 3-Way Anti-Burn-In Layout -->
         <div id="sk-bottom-bar">
             
-            <!-- [BOX A: BRANDING LOGO] S&K Venture Signs Logo with text fallback -->
             <div class="sk-logo-group">
                 <div class="sk-logo">
                     <img src="//raw.githack.com/Werewolf3788/SKVentureSigns/main/images/S%26K%20Name.png" 
@@ -93,10 +85,8 @@
                 </div>
             </div>
             
-            <!-- [BOX B: PHONE CALL TO ACTION] Billboard Contact Number (Swaps position every 15 min) -->
             <div class="sk-bottom-phone" id="sk-phone-display">844-907-4450</div>
             
-            <!-- [BOX C: WEATHER & 24HR CLOCK] Live Temperature from Open-Meteo & Central Time -->
             <div class="sk-info-stack">
                 <div class="sk-weather">
                     <div id="sk-temp-val">--°</div>
@@ -105,16 +95,14 @@
             </div>
         </div>
 
-        <!-- [LED OVERLAY] Digital LED Mesh Pattern Overlay -->
         <div class="sk-led-overlay"></div>
     </div>
 </div>
 
 <!-- ==========================================================================
-     Line 115: CSS STYLESHEET (Layout, Visual Hierarchy, Kiosk Protection)
+     Line 95: CSS STYLESHEET (Layout & Visuals)
      ========================================================================== -->
 <style>
-    /* [RESET] Hardware screen fill, lock scrolling & hide cursor */
     html, body {
         margin: 0 !important;
         padding: 0 !important;
@@ -251,7 +239,6 @@
         filter: saturate(1.08) contrast(1.02) brightness(0.75) !important;
     }
 
-    /* Fallback House Ad Template */
     .sk-house-slide {
         width: 100%;
         height: 100%;
@@ -389,7 +376,7 @@
 </style>
 
 <!-- ==========================================================================
-     Line 321: JAVASCRIPT ENGINE (Zero-Blackout Cycle-End Ingestion)
+     Line 307: JAVASCRIPT ENGINE (Staging Buffer + WhatsApp + Anti-Burn-In)
      ========================================================================== -->
 <script>
 (function() {
@@ -418,7 +405,7 @@
     // CallMeBot Gateway Configuration
     const WHATSAPP_PHONE = "16185736060";
     const WHATSAPP_APIKEY = "4318232";
-    let lastAlertTimestamps = {}; // 10-minute anti-spam cooldown per creative
+    let lastAlertTimestamps = {};
 
     let activeLocation = { 
         name: "Flora", 
@@ -434,14 +421,16 @@
     let currentAdIndex = 0;
     let adSlideElements = [];
     let currentAdQueue = [];
-    let pendingAdQueue = null; // Staging queue for smooth cycle-end updates
+    let pendingAdQueue = null; 
     let isInitialRenderComplete = false;
 
     let lastWeatherData = null;
     let targetTimeZone = "America/Chicago";
     let isNightTimeSolar = null;
     let interactionTimer = null;
-    let currentQuarterTracker = null;
+    
+    // Anti-Burn-In Tracker
+    let currentTenMinTracker = null;
 
     function getTownFromUrl() {
         const params = new URLSearchParams(window.location.search);
@@ -492,7 +481,6 @@
         const creativeIdentifier = adItem.url || adItem.name || "Programmatic_Ad";
         const currentTime = Date.now();
 
-        // 10-Minute cooldown per creative to prevent spam
         if (lastAlertTimestamps[creativeIdentifier] && (currentTime - lastAlertTimestamps[creativeIdentifier] < 600000)) {
             return;
         }
@@ -503,7 +491,6 @@
         const timeString = new Date().toLocaleTimeString('en-US', { timeZone: targetTimeZone, hour: '2-digit', minute:'2-digit', hour12: true });
 
         const messageText = `🚨 *Programmatic Ad Live on Billboard!*\n\n• *Network:* ${provider}\n• *Sign / Location:* ${town}\n• *Time:* ${timeString} Central\n• *Type:* ${adItem.type.toUpperCase()}\n• *Asset:* ${adItem.name || 'External Creative'}`;
-
         const gatewayUrl = `https://api.callmebot.com/whatsapp.php?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent(messageText)}&apikey=${WHATSAPP_APIKEY}`;
 
         fetch(gatewayUrl, { mode: 'no-cors' }).catch(() => {});
@@ -752,14 +739,11 @@
             });
         }
 
-        // Initial Cold Start: Render immediately
         if (!isInitialRenderComplete) {
             currentAdQueue = freshQueue;
             renderSlides(0);
             isInitialRenderComplete = true;
-        } 
-        // Mid-Playback Update: Stage updates for clean cycle-end transition
-        else {
+        } else {
             if (JSON.stringify(freshQueue) !== JSON.stringify(currentAdQueue)) {
                 pendingAdQueue = freshQueue;
             }
@@ -838,7 +822,6 @@
             adSlideElements.push(slide);
         });
 
-        // Trigger impression beacon and WhatsApp alerts for active slide
         const activeMedia = currentAdQueue[currentAdIndex];
         if (activeMedia) {
             if (activeMedia.isProgrammatic && activeMedia.impressions) {
@@ -860,19 +843,16 @@
     function rotateAds() {
         if (adSlideElements.length === 0) return;
 
-        // Check if loop finished its last slide
         if (currentAdIndex >= adSlideElements.length - 1) {
             if (pendingAdQueue) {
-                // Seamlessly swap in staged queue and instantly render slide 0
                 currentAdQueue = pendingAdQueue;
                 pendingAdQueue = null;
                 renderSlides(0);
                 return;
             }
-            currentAdIndex = -1; // Reset index to loop back to 0 below
+            currentAdIndex = -1; 
         }
 
-        // Standard Advance
         if (adSlideElements[currentAdIndex]) {
             adSlideElements[currentAdIndex].classList.remove('active');
         }
@@ -933,29 +913,45 @@
         }
     }
 
-    /* 12. 15-MINUTE BRANDING POSITION FLIPPER & 24HR TIME */
-    function updateQuarterlySwap(quarter) {
+    /* 12. ANTI-BURN-IN 10-MINUTE 3-WAY CAROUSEL & 24HR TIME */
+    function updateTenMinSwap(tenMinBlock) {
         const logoGroup = document.querySelector('.sk-logo-group');
         const phoneDiv = document.querySelector('.sk-bottom-phone');
-        if (!logoGroup || !phoneDiv) return;
+        const infoStack = document.querySelector('.sk-info-stack');
+        
+        if (!logoGroup || !phoneDiv || !infoStack) return;
 
         logoGroup.style.opacity = '0';
         phoneDiv.style.opacity = '0';
+        infoStack.style.opacity = '0';
         
         setTimeout(() => {
-            if (quarter % 2 === 0) {
-                logoGroup.style.order = '1';
-                logoGroup.style.justifyContent = 'flex-start';
-                phoneDiv.style.order = '2';
-                phoneDiv.style.justifyContent = 'center';
-            } else {
-                phoneDiv.style.order = '1';
-                phoneDiv.style.justifyContent = 'flex-start';
-                logoGroup.style.order = '2';
-                logoGroup.style.justifyContent = 'center';
+            // 6 Layout permutations rotating every 10 mins within an hour
+            const layouts = [
+                { logo: 1, phone: 2, info: 3 }, // 00-09 mins
+                { logo: 2, phone: 3, info: 1 }, // 10-19 mins
+                { logo: 3, phone: 1, info: 2 }, // 20-29 mins
+                { logo: 3, phone: 2, info: 1 }, // 30-39 mins
+                { logo: 2, phone: 1, info: 3 }, // 40-49 mins
+                { logo: 1, phone: 3, info: 2 }  // 50-59 mins
+            ];
+            
+            const currentLayout = layouts[tenMinBlock % 6];
+            
+            function applyLayout(el, order) {
+                el.style.order = order;
+                if (order === 1) el.style.justifyContent = 'flex-start';
+                else if (order === 2) el.style.justifyContent = 'center';
+                else if (order === 3) el.style.justifyContent = 'flex-end';
             }
+
+            applyLayout(logoGroup, currentLayout.logo);
+            applyLayout(phoneDiv, currentLayout.phone);
+            applyLayout(infoStack, currentLayout.info);
+
             logoGroup.style.opacity = '1';
             phoneDiv.style.opacity = '1';
+            infoStack.style.opacity = '1';
         }, 500);
     }
 
@@ -975,26 +971,40 @@
             timeEl.innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true});
         }
 
-        let currentQuarter = Math.floor(currentMin / 15);
+        let currentTenMin = Math.floor(currentMin / 10);
 
-        if (currentQuarterTracker !== currentQuarter) {
-            const isInitialLoad = (currentQuarterTracker === null);
-            currentQuarterTracker = currentQuarter;
+        if (currentTenMinTracker !== currentTenMin) {
+            const isInitialLoad = (currentTenMinTracker === null);
+            currentTenMinTracker = currentTenMin;
             
             if (isInitialLoad) {
                 const logoGroup = document.querySelector('.sk-logo-group');
                 const phoneDiv = document.querySelector('.sk-bottom-phone');
-                if (logoGroup && phoneDiv) {
-                    if (currentQuarter % 2 === 0) {
-                        logoGroup.style.order = '1'; logoGroup.style.justifyContent = 'flex-start';
-                        phoneDiv.style.order = '2'; phoneDiv.style.justifyContent = 'center';
-                    } else {
-                        phoneDiv.style.order = '1'; phoneDiv.style.justifyContent = 'flex-start';
-                        logoGroup.style.order = '2'; logoGroup.style.justifyContent = 'center';
+                const infoStack = document.querySelector('.sk-info-stack');
+                
+                if (logoGroup && phoneDiv && infoStack) {
+                    const layouts = [
+                        { logo: 1, phone: 2, info: 3 },
+                        { logo: 2, phone: 3, info: 1 },
+                        { logo: 3, phone: 1, info: 2 },
+                        { logo: 3, phone: 2, info: 1 },
+                        { logo: 2, phone: 1, info: 3 },
+                        { logo: 1, phone: 3, info: 2 } 
+                    ];
+                    const currentLayout = layouts[currentTenMin % 6];
+                    
+                    function applyLayout(el, order) {
+                        el.style.order = order;
+                        if (order === 1) el.style.justifyContent = 'flex-start';
+                        else if (order === 2) el.style.justifyContent = 'center';
+                        else if (order === 3) el.style.justifyContent = 'flex-end';
                     }
+                    applyLayout(logoGroup, currentLayout.logo);
+                    applyLayout(phoneDiv, currentLayout.phone);
+                    applyLayout(infoStack, currentLayout.info);
                 }
             } else {
-                updateQuarterlySwap(currentQuarter);
+                updateTenMinSwap(currentTenMin);
             }
         }
     }
