@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <!-- 
-    PROJECT: S & K Ventures Billboard - Strict Pre-Validation Lockdown Engine
+    PROJECT: S & K Ventures Billboard - Silent Skip Engine
     ADMIN: Kevin (Werewolf3788)
-    VERSION: 8.0 (Strict Fail-Stop If Any Single Image URL Is Broken + Tab Sync)
+    VERSION: 8.2 (Silent Skip on Broken Images + Tab & Global Merging + Row-Order Indexing)
     STANDARDS: GitHack Compatible, Master Dev Protocol, No-Strip
-    TIMESTAMP: Sat, Aug 15, 2026 | 00:45:00 AM EDT (New York Time)
+    TIMESTAMP: Sat, Aug 15, 2026 | 00:46:37 AM EDT (New York Time)
     
     GOOGLE SHEET TAB SCHEMA (Per Tab):
       - Column A (Index 0): Name (Display/Reference)
       - Column B (Index 1): Image URL (PNG, JPG, JPEG, GIF, WEBP, SVG, Google Drive)
       - Column C (Index 2): Rotation Count (1, 2, 3, etc. Defaults to 1)
 
-    BEHAVIOR:
-      - If ALL image URLs are valid: Slideshow plays sequentially in exact row order.
-      - If ANY single image URL is broken: Entire slideshow halts and shows the exact error diagnostic.
+    HOW IT OPERATES:
+      - Automatically pulls Town Tab configured in LINE 57 + mixes with 'Global' Tab
+      - If ANY image fails to load, it is SILENTLY SKIPPED with zero interruptions
 -->
 <html lang="en">
 <head>
@@ -25,7 +25,7 @@
     <link href="//fonts.googleapis.com/css2?family=Great+Vibes&family=Satisfy&family=Pinyon+Script&family=Rouge+Script&family=Alex+Brush&display=swap" rel="stylesheet">
 
     <!-- Framework Assets scoped for the Widget -->
-    <script src="//cdn.tailwindcss.com?v=8.0"></script>
+    <script src="//cdn.tailwindcss.com?v=8.2"></script>
     <script src="//unpkg.com/lucide@latest"></script>
 
     <!-- Google Analytics Dual Tracking: S&K Ventures (G-H6Q756MVE8) & Kevin (G-L376P3NPY4) -->
@@ -37,8 +37,8 @@
         gtag('js', new Date());
         
         gtag('config', 'G-H6Q756MVE8', { 
-            'page_type': 'billboard_widget_v8.0', 
-            'layout_version': '8.0',
+            'page_type': 'billboard_widget_v8.2', 
+            'layout_version': '8.2',
             'retention': '14_months'
         });
         gtag('config', 'G-L376P3NPY4');
@@ -48,7 +48,7 @@
 
 <!-- ================================================================= -->
 <!-- ★ ACTIVE BILLBOARD TOWN CONFIGURATION ★                           -->
-<!-- LOCATION: LINE 55 BELOW                                           -->
+<!-- LOCATION: LINE 57 BELOW                                           -->
 <!-- Change data-billboard-location to match your Google Sheet Tab:    -->
 <!-- "Altamont", "Brownstown", "Clay City", "De Soto", "Flora",        -->
 <!-- "Marshall", "Oliver", "Xenia Billboard", "Xenia TV", "Flora Tv"   -->
@@ -106,7 +106,7 @@
 </div>
 
 <!-- ================================================================= -->
-<!-- ★ CSS STYLES (LINE 110 TO LINE 340) ★                             -->
+<!-- ★ CSS STYLES (LINE 110 TO LINE 320) ★                             -->
 <!-- ================================================================= -->
 <style>
     /* PAGE RESET */
@@ -373,24 +373,6 @@
         z-index: 5 !important;
     }
 
-    /* HARDWARE ERROR ALERT BOX */
-    .sk-error-screen {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        background: #180000;
-        color: #ff4444;
-        font-family: monospace;
-        padding: 40px;
-        box-sizing: border-box;
-        text-align: center;
-        border: 4px solid #ff0000;
-        z-index: 100;
-    }
-
     @media (max-width: 1024px) {
         #fullscreen-toggle-btn { right: 15px !important; padding: 10px 18px !important; font-size: 12px !important; }
     }
@@ -402,15 +384,13 @@
 </style>
 
 <!-- ================================================================= -->
-<!-- ★ JAVASCRIPT ENGINE (LINE 345 TO LINE 710) ★                      -->
+<!-- ★ JAVASCRIPT ENGINE (LINE 325 TO LINE 670) ★                      -->
 <!-- ================================================================= -->
 <script>
 (function() {
     const SPREADSHEET_ID = "1iEt3DWDcDtOCfwixzPZWVWbvr64emJSQNN54SmUayXQ";
     const PUB_BASE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9aXB9z9jcsaA0U-LsuV4nIHwIIw2huGB8zaalh7It4GQP_DWFFdQ4Utaw_ajkdhx5ydn87BcfS82d/pub";
     const DISPLAY_SECONDS = 12; 
-
-    let rotationIntervalId = null;
 
     function sanitizeInterval(val) {
         if (!val) return 12000;
@@ -579,6 +559,7 @@
         return (!isNaN(num) && num > 0) ? num : 1;
     }
 
+    // Spread Multiplexer Shuffle (Preserves Row-Order while spreading multipliers without duplicate back-to-backs)
     function distributeSpreadAds(items) {
         if (!items || items.length === 0) return [];
         if (items.length === 1) {
@@ -638,11 +619,21 @@
                 let name = cols[0] ? cols[0].trim() : `Ad_Row_${idx + 1}`;
                 let rawUrl = cols[1] || "";
                 
+                if (!rawUrl || (!rawUrl.includes("http") && !rawUrl.includes("drive.google"))) {
+                    for (let c = 0; c < cols.length; c++) {
+                        const val = (cols[c] || '').trim();
+                        if (val.startsWith("http://") || val.startsWith("https://") || val.includes("drive.google.com") || val.startsWith("//")) {
+                            rawUrl = val;
+                            break;
+                        }
+                    }
+                }
+
                 let multiplier = parseMultiplier(cols[2]);
                 let url = formatBillboardImage(rawUrl);
 
-                if (url) {
-                    items.push({ name: name, url: url, multiplier: multiplier, originalRow: idx + 1, tab: tabName });
+                if (url && (url.startsWith('http') || url.startsWith('//'))) {
+                    items.push({ name: name, url: url, multiplier: multiplier, originalRow: idx + 1 });
                 }
             });
 
@@ -670,8 +661,8 @@
                         let rawUrl = cols[1] || cols[2] || "";
                         let url = formatBillboardImage(rawUrl);
                         let multiplier = parseMultiplier(cols[2]);
-                        if (url) {
-                            items.push({ name: name, url: url, multiplier: multiplier, originalRow: idx + 1, tab: 'Global' });
+                        if (url && (url.startsWith('http') || url.startsWith('//'))) {
+                            items.push({ name: name, url: url, multiplier: multiplier, originalRow: idx + 1 });
                         }
                     });
                     if (items.length > 0) return items;
@@ -680,62 +671,6 @@
         } catch (e) {}
 
         return [];
-    }
-
-    // Line 515: Pre-validates every image. If even 1 fails -> Breaks the slideshow and throws Diagnostic Alert
-    function preTestSingleImage(url) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.referrerPolicy = "no-referrer";
-            img.crossOrigin = "anonymous";
-            img.onload = () => resolve({ ok: true, url });
-            img.onerror = () => resolve({ ok: false, url });
-            img.src = url;
-        });
-    }
-
-    async function validateAllImages(items) {
-        const uniqueUrls = [...new Set(items.map(item => item.url))];
-        const results = await Promise.all(uniqueUrls.map(url => preTestSingleImage(url)));
-        const brokenUrls = results.filter(r => !r.ok).map(r => r.url);
-        return brokenUrls;
-    }
-
-    function showLockdownScreen(brokenList, combinedAds) {
-        if (rotationIntervalId) {
-            clearInterval(rotationIntervalId);
-            rotationIntervalId = null;
-        }
-        const viewport = document.getElementById('sk-ad-viewport');
-        if (!viewport) return;
-
-        let errorDetailsHtml = brokenList.map(badUrl => {
-            const match = combinedAds.find(a => a.url === badUrl);
-            const tabName = match ? match.tab : 'Unknown';
-            const rowNum = match ? match.originalRow : '?';
-            const adName = match ? match.name : 'Unknown Ad';
-            return `<div style="margin-bottom: 12px; background: rgba(255,0,0,0.15); padding: 10px; border-radius: 6px; border-left: 4px solid #ff4444;">
-                <div style="font-weight: 900; color: #FAC429;">TAB: [${tabName}] | ROW: ${rowNum} | NAME: "${adName}"</div>
-                <div style="font-size: 13px; color: #fff; word-break: break-all; margin-top: 4px;">URL: ${badUrl}</div>
-            </div>`;
-        }).join('');
-
-        viewport.innerHTML = `
-            <div class="sk-error-screen">
-                <div style="font-size: clamp(24px, 3.5vw, 45px); font-weight: 900; color: #ff3333; margin-bottom: 10px;">
-                    ⚠️ BILLBOARD ROTATION HALTED
-                </div>
-                <div style="font-size: clamp(14px, 1.8vw, 20px); color: #fff; margin-bottom: 25px; max-width: 85%;">
-                    Slideshow was stopped because <span style="color: #ff5555; font-weight:bold;">${brokenList.length}</span> invalid/broken image URL(s) were found in your Google Sheet.
-                </div>
-                <div style="max-height: 45vh; overflow-y: auto; width: 90%; text-align: left; background: #000; padding: 20px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;">
-                    ${errorDetailsHtml}
-                </div>
-                <div style="font-size: 13px; color: #aaa; margin-top: 20px;">
-                    Correct the URL in Google Sheets. The billboard will automatically re-verify in 60 seconds.
-                </div>
-            </div>
-        `;
     }
 
     async function fetchAdImages(isAutoSync = false) {
@@ -751,16 +686,20 @@
             let combinedAds = [...townAds, ...globalAds];
 
             if (combinedAds.length === 0) {
-                showLockdownScreen(["No ad rows found in Google Sheets."], []);
-                return;
-            }
-
-            // Line 575: STRICT PRE-VALIDATION CHECK
-            const brokenUrls = await validateAllImages(combinedAds);
-            if (brokenUrls.length > 0) {
-                // If even ONE image URL is wrong -> BREAK AND HALT ENTIRE SLIDESHOW
-                showLockdownScreen(brokenUrls, combinedAds);
-                return;
+                const fallbackRes = await fetch(`${PUB_BASE_URL}?output=csv&t=${Date.now()}`);
+                const fallbackText = await fallbackRes.text();
+                const fallbackLines = fallbackText.split(/\r?\n/);
+                fallbackLines.forEach((line, idx) => {
+                    if (idx === 0 || !line.trim()) return;
+                    const cols = parseCsvRow(line);
+                    let name = cols[0] ? cols[0].trim() : `Ad_Row_${idx + 1}`;
+                    let rawUrl = cols[1] || cols[2] || "";
+                    let url = formatBillboardImage(rawUrl);
+                    let multiplier = parseMultiplier(cols[2]);
+                    if (url && (url.startsWith('http') || url.startsWith('//'))) {
+                        combinedAds.push({ name, url, multiplier, originalRow: idx + 1 });
+                    }
+                });
             }
 
             const finalUrls = distributeSpreadAds(combinedAds);
@@ -770,10 +709,11 @@
                 renderSlides();
             }
         } catch (e) { 
-            console.warn("Billboard Pre-Validation Engine Warning:", e); 
+            console.warn("Billboard Sync Engine Warning:", e); 
         }
     }
 
+    // Line 570: Silent Skip Image Renderer - Automatically removes broken slides and advances rotation smoothly
     function renderSlides() {
         const viewport = document.getElementById('sk-ad-viewport');
         if (!viewport) return;
@@ -789,15 +729,27 @@
             image.setAttribute('referrerpolicy', 'no-referrer');
             image.setAttribute('crossorigin', 'anonymous');
             
+            // Silent Skip: On broken image or load failure, remove slide and advance cleanly
+            image.onerror = function() {
+                slide.style.display = 'none';
+                const sIndex = adSlideElements.indexOf(slide);
+                if (sIndex > -1) {
+                    adSlideElements.splice(sIndex, 1);
+                }
+                if (adSlideElements.length > 0 && slide.classList.contains('active')) {
+                    if (currentAdIndex >= adSlideElements.length) {
+                        currentAdIndex = 0;
+                    }
+                    if (adSlideElements[currentAdIndex]) {
+                        adSlideElements[currentAdIndex].classList.add('active');
+                    }
+                }
+            };
+            
             slide.appendChild(image);
             viewport.appendChild(slide);
             adSlideElements.push(slide);
         });
-
-        // Restart clean rotation interval if valid
-        if (!rotationIntervalId) {
-            rotationIntervalId = setInterval(rotateAds, displayInterval);
-        }
     }
 
     async function fetchWeather(lat, lon) {
@@ -932,6 +884,7 @@
         setInterval(updateLocalTime, 1000);
 
         await fetchAdImages();
+        setInterval(rotateAds, displayInterval);
 
         setInterval(() => {
             fetchWeather(activeConfig.coords.lat, activeConfig.coords.lon).then(w => {
