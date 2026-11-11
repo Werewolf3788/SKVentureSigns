@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0f1b2d">
+<title>Advertise on Our Digital Billboards | S&amp;K Ventures</title>
+<style>
+  :root{
+    --bg:#f4f6fa; --card:#ffffff; --text:#14202f; --muted:#5b6b7e; --line:#d9e0ea;
+    --accent:#c8962d; --accent-text:#1a1203; --ok:#1f8a4c; --err:#c0392b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0b1320; --card:#142033; --text:#eaf0f8; --muted:#9bacc2; --line:#27374f; --accent:#e0ad3f; --accent-text:#1a1203; }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  header{background:#0f1b2d;color:#fff;padding:22px 16px;text-align:center}
+  header h1{margin:0 0 4px;font-size:1.4rem}
+  header p{margin:0;color:#c9d6e8;font-size:.95rem}
+  main{width:min(80%,820px);margin:20px auto 40px}
+  @media (max-width:700px){ main{width:calc(100% - 24px);margin:12px auto 32px} }
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}
+  .greeting{border-left:4px solid var(--accent)}
+  h2{font-size:1.05rem;margin:0 0 10px}
+  label{display:block;font-weight:600;margin:14px 0 6px;font-size:.92rem}
+  .hint{font-weight:400;color:var(--muted)}
+  input[type=text],input[type=email],input[type=tel],input[type=date],select,textarea{
+    width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);font:inherit}
+  textarea{min-height:90px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .towns{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+  .town{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);font-weight:500;cursor:pointer}
+  .town input{width:18px;height:18px;accent-color:var(--accent)}
+  button.primary{width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-text);font-size:1.05rem;font-weight:700;cursor:pointer}
+  button.primary:disabled{opacity:.6}
+  .msg{margin-top:14px;padding:12px;border-radius:10px;display:none}
+  .msg.ok{display:block;background:rgba(31,138,76,.15);color:var(--ok)}
+  .msg.err{display:block;background:rgba(192,57,43,.15);color:var(--err)}
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:0;padding:0;list-style:none}
+  .steps li{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:.92rem}
+  .steps b{display:block;color:var(--accent);margin-bottom:2px}
+  .hp{position:absolute;left:-9999px;height:0;overflow:hidden}
+  #install{display:none;width:100%;margin-top:10px;padding:10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--text);font:inherit}
+  footer{text-align:center;color:var(--muted);font-size:.85rem;padding:0 16px 24px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Advertise on Our Digital Billboards</h1>
+  <p>Put your business in front of local traffic, every day.</p>
+</header>
+
+<main>
+  <div class="card greeting" id="greeting" hidden>
+    <h2 id="greetTitle"></h2>
+    <div id="greetBody" class="hint"></div>
+  </div>
+
+  <div class="card">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li><b>1. Tell us about you</b>Fill out the short form below.</li>
+      <li><b>2. We follow up</b>We confirm boards, pricing and artwork needs.</li>
+      <li><b>3. You go live</b>Your ad joins the rotation on the date you pick.</li>
+    </ol>
+  </div>
+
+  <form class="card" id="form" novalidate>
+    <h2>Request a spot</h2>
+
+    <label for="business">Business name</label>
+    <input type="text" id="business" name="business" autocomplete="organization" required>
+
+    <label for="contact">Your name</label>
+    <input type="text" id="contact" name="contact" autocomplete="name" required>
+
+    <label for="phone">Phone</label>
+    <input type="tel" id="phone" name="phone" autocomplete="tel" required>
+
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" autocomplete="email" required>
+
+    <label>Which boards interest you? <span class="hint">(pick any)</span></label>
+    <div class="towns" id="towns"></div>
+
+    <label for="start">Preferred start date <span class="hint">(optional)</span></label>
+    <input type="date" id="start" name="start">
+
+    <label for="length">How long?</label>
+    <select id="length" name="length">
+      <option value="">Not sure yet</option>
+      <option>1 month</option>
+      <option>3 months</option>
+      <option>6 months</option>
+      <option>12 months</option>
+      <option>Special event / limited dates</option>
+    </select>
+
+    <label for="creative">Ad artwork <span class="hint">(optional &mdash; we can design it for you)</span></label>
+    <input type="file" id="creative" accept="image/*,video/*,audio/*">
+    <div class="hint" style="margin-top:6px">Requirements: any image or video format (PNG, JPG, GIF, WebP, MP4, WebM, MOV, ...). Pictures and video need a <b>2:1 ratio</b> (twice as wide as tall), such as 500 &times; 250 or 1000 &times; 500. Audio files (WAV, MP3, ...) are welcome too. Up to 25 MB.</div>
+
+    <label for="notes">Anything else we should know?</label>
+    <textarea id="notes" name="notes"></textarea>
+
+    <div class="hp"><label>Leave blank<input type="text" id="website" tabindex="-1" autocomplete="off"></label></div>
+
+    <button class="primary" id="submit" type="submit">Send my request</button>
+    <div class="msg" id="msg" role="status"></div>
+    <button type="button" id="install">Add this page to my home screen</button>
+  </form>
+</main>
+<footer>S&amp;K Ventures &middot; Digital Billboards</footer>
+
+<script>
+/* ===== SETUP: paste the Apps Script Web App URL here after deploying Code.gs ===== */
+const ENDPOINT = "PASTE_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+/* Boards offered. Edit this list to match Scott's actual locations. */
+const BOARDS = ["Xenia","Oliver","Clay City","Altamont","Brownstown","DeSoto","Flora"];
+
+const params = new URLSearchParams(location.search);
+const $ = id => document.getElementById(id);
+
+// Build board checkboxes, pre-checking any passed in ?town=Xenia,Flora
+const preTowns = (params.get("town") || "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+BOARDS.forEach(t => {
+  const l = document.createElement("label");
+  l.className = "town";
+  l.innerHTML = '<input type="checkbox" value="' + t + '"> ' + t;
+  if (preTowns.includes(t.toLowerCase())) l.querySelector("input").checked = true;
+  $("towns").appendChild(l);
+});
+
+// Personalized link: ?co=Wesselman%20Roofing
+const co = params.get("co");
+if (co) {
+  $("business").value = co;
+  $("greeting").hidden = false;
+  $("greetTitle").textContent = "Hi " + co + "!";
+  $("greetBody").textContent = "You were invited to see advertising options on our digital billboards. Pick the boards you like and send the form; we'll take it from there.";
+}
+
+function fileToBase64(file){
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result).split(",")[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+// Pictures and video must be 2:1 (width = 2 x height), small tolerance. Audio has no shape to check.
+function checkRatio(w, h){
+  if (Math.abs(w / h - 2) > 0.04) {
+    show("err", "Your file is " + w + " x " + h + ". It needs a 2:1 ratio, like 500 x 250 or 1000 x 500.");
+    $("creative").value = ""; return false;
+  }
+  show("ok", "Looks good (" + w + " x " + h + ")."); return true;
+}
+$("creative").addEventListener("change", () => {
+  const f = $("creative").files[0];
+  if (!f) return;
+  const url = URL.createObjectURL(f);
+  const done = () => URL.revokeObjectURL(url);
+  if (f.type.startsWith("audio/")) { show("ok", "Audio file added."); done(); return; }
+  if (f.type.startsWith("video/")) {
+    const v = document.createElement("video");
+    v.preload = "metadata";
+    v.onloadedmetadata = () => { done(); checkRatio(v.videoWidth, v.videoHeight); };
+    // Some formats can't be previewed in the browser; let those through and we'll check them by hand.
+    v.onerror = () => { done(); show("ok", "Video added. We'll check its shape when we review your request."); };
+    v.src = url; return;
+  }
+  const img = new Image();
+  img.onload = () => { done(); checkRatio(img.naturalWidth, img.naturalHeight); };
+  img.onerror = () => { done(); show("ok", "File added. We'll check it when we review your request."); };
+  img.src = url;
+});
+
+function show(type, text){ const m = $("msg"); m.className = "msg " + type; m.textContent = text; }
+
+$("form").addEventListener("submit", async e => {
+  e.preventDefault();
+  if ($("website").value) return; // honeypot
+  const need = ["business","contact","phone","email"];
+  for (const id of need) if (!$(id).value.trim()) { show("err","Please fill in all required fields."); $(id).focus(); return; }
+  if (!/^\S+@\S+\.\S+$/.test($("email").value)) { show("err","Please enter a valid email."); return; }
+
+  const file = $("creative").files[0];
+  if (file && file.size > 25 * 1024 * 1024) { show("err","Files must be under 25 MB. For bigger videos, send us a link in the notes."); return; }
+  if (ENDPOINT.startsWith("PASTE_")) { show("err","Form isn't connected yet (missing endpoint URL)."); return; }
+
+  const btn = $("submit"); btn.disabled = true; btn.textContent = "Sending...";
+  try {
+    const payload = {
+      business: $("business").value.trim(),
+      contact: $("contact").value.trim(),
+      phone: $("phone").value.trim(),
+      email: $("email").value.trim(),
+      boards: [...document.querySelectorAll("#towns input:checked")].map(i => i.value).join(", "),
+      start: $("start").value,
+      length: $("length").value,
+      notes: $("notes").value.trim(),
+      ref: co || params.get("ref") || "",
+      source: location.href,
+      lang: navigator.language || ""
+    };
+    if (file) {
+      payload.fileName = file.name;
+      payload.fileType = file.type;
+      payload.fileData = await fileToBase64(file);
+    }
+    // text/plain avoids a CORS preflight; Apps Script reads the raw body.
+    await fetch(ENDPOINT, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+    $("form").reset();
+    if (co) $("business").value = co;
+    show("ok","Thanks! Your request was sent. We'll be in touch soon.");
+  } catch (err) {
+    show("err","Something went wrong. Please try again or call us.");
+  } finally {
+    btn.disabled = false; btn.textContent = "Send my request";
+  }
+});
+
+// Install / add-to-home-screen option (mobile app feel)
+let deferred;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferred = e; $("install").style.display = "block"; });
+$("install").addEventListener("click", async () => { if (deferred) { deferred.prompt(); deferred = null; $("install").style.display = "none"; } });
+if (/iphone|ipad/i.test(navigator.userAgent) && !navigator.standalone) {
+  $("install").style.display = "block";
+  $("install").textContent = "To install: tap Share, then Add to Home Screen";
+  $("install").disabled = true;
+}
+</script>
+</body>
+</html>

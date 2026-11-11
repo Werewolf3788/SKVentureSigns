@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>S&amp;K Venture Signs – Billboard (Firestore)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  html, body { margin:0; height:100%; background:#000; overflow:hidden; cursor:none; }
+  #stage { position:fixed; inset:0; background:#000; }
+  .slot { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+          opacity:0; transition:opacity .6s ease; background:#000; }
+  .slot.on { opacity:1; }
+  .slot img, .slot video { width:100%; height:100%; object-fit:var(--fit,contain); background:#000; }
+  .slot .audio { color:#fff; font:700 6vmin system-ui,sans-serif; text-align:center; padding:4vmin; }
+  #msg { position:fixed; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column;
+         color:#fff; font:600 4vmin system-ui,sans-serif; text-align:center; gap:2vmin; background:#000; }
+  #msg small { font-weight:400; font-size:2.2vmin; opacity:.7; }
+  #pick a { color:#7cf; margin:1vmin 2vmin; font-size:3vmin; }
+  #dbg { position:fixed; left:0; bottom:0; right:0; background:rgba(0,0,0,.8); color:#0f0;
+         font:12px monospace; padding:6px 10px; display:none; z-index:9; cursor:default; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="msg"><div id="msgText"></div><small id="msgSub"></small><div id="pick"></div></div>
+<div id="dbg"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, query, where, onSnapshot, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ---------- settings ---------- */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCVff98TiQjhjSFrLm_0kMGZ5NlrVTPM7g",
+  authDomain: "skventuresigns-c35d5.firebaseapp.com",
+  projectId: "skventuresigns-c35d5",
+  storageBucket: "skventuresigns-c35d5.firebasestorage.app",
+  messagingSenderId: "584793210858",
+  appId: "1:584793210858:web:06f94ecf566856edffbc93"
+};
+const PREFIX = "skventure_";
+const DEFAULT_SECONDS = 8, MIN_SECONDS = 3, MAX_SECONDS = 120, MAX_AV_SECONDS = 60;
+const RELOAD_EVERY_MS = 3 * 60 * 60 * 1000;
+const FALLBACK_BASE = "https://raw.githubusercontent.com/skventuresigns-design/skventuresigns/main/";
+
+const q = new URLSearchParams(location.search);
+const TOWN  = (q.get("town") || "").trim().toLowerCase();
+const BASE  = q.get("base") || "";
+const DEBUG = q.has("debug");
+document.documentElement.style.setProperty("--fit", q.get("fit") === "cover" ? "cover" : "contain");
+
+const $ = id => document.getElementById(id);
+const stage = $("stage");
+function dbg(t){ if(!DEBUG) return; const d=$("dbg"); d.style.display="block"; d.textContent=t; }
+function showMsg(a,b){ $("msgText").textContent=a||""; $("msgSub").textContent=b||""; $("msg").style.display="flex"; }
+function hideMsg(){ $("msg").style.display="none"; }
+
+/* ---------- media (any format: guess by extension, then fall back) ---------- */
+const EXT = {
+  image:"jpg jpeg png gif webp avif bmp svg ico apng jfif heic".split(" "),
+  video:"mp4 m4v webm ogv mov mkv avi 3gp ts".split(" "),
+  audio:"mp3 wav ogg oga m4a aac flac opus weba".split(" ")
+};
+function ext(u){ const m=String(u).split(/[?#]/)[0].match(/\.([a-z0-9]+)$/i); return m?m[1].toLowerCase():""; }
+function guess(u){ const e=ext(u); for(const k in EXT) if(EXT[k].includes(e)) return k; return "image"; }
+function resolve(u, base){
+  u = String(u||"").trim();
+  if(/^(https?:)?\/\//i.test(u) || /^(data|blob):/i.test(u)) return u;
+  u = u.replace(/^\.\//,"");
+  if(base) return base.replace(/\/?$/,"/") + u.replace(/^\//,"");
+  return new URL(u, location.href).href;
+}
+// try to show `url` as kind; resolves {el, kind} or rejects
+function tryLoad(url, kind, who){
+  return new Promise((ok, bad) => {
+    let el;
+    const fail = () => bad(new Error(kind+" failed"));
+    if(kind==="image"){ el=new Image(); el.onload=()=>ok({el,kind}); el.onerror=fail; el.alt=who||""; el.src=url; }
+    else if(kind==="video"){
+      el=document.createElement("video"); el.muted=true; el.playsInline=true; el.preload="auto";
+      el.onloadeddata=()=>ok({el,kind}); el.onerror=fail; el.src=url;
+    } else {
+      el=document.createElement("audio"); el.preload="auto";
+      el.onloadeddata=()=>ok({el,kind}); el.onerror=fail; el.src=url;
+    }
+    setTimeout(fail, 15000);
+  });
+}
+async function load(ad){
+  const first = guess(ad.imageUrl);
+  const order = [first, ...["image","video","audio"].filter(k=>k!==first)];
+  const urls = [resolve(ad.imageUrl, BASE)];
+  if(!/^(https?:)?\/\//i.test(ad.imageUrl) && !BASE) urls.push(resolve(ad.imageUrl, FALLBACK_BASE));
+  for(const u of urls) for(const k of order){
+    try { const r = await tryLoad(u,k,ad.advertiser); r.url=u; return r; } catch(e){}
+  }
+  throw new Error("could not load "+ad.imageUrl);
+}
+
+/* ---------- ad filtering ---------- */
+function isActive(s){ return ["active","true","yes","1","on","enabled"].includes(String(s==null?"":s).trim().toLowerCase()); }
+function parseDate(v){
+  if(!v) return null;
+  if(v.toDate) return v.toDate();
+  const s=String(v).trim(); if(!s) return null;
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return new Date(+m[1],+m[2]-1,+m[3]);
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/); if(m){ let y=+m[3]; if(y<100)y+=2000; return new Date(y,+m[1]-1,+m[2]); }
+  const d=new Date(s); return isNaN(d)?null:new Date(d.getFullYear(),d.getMonth(),d.getDate());
+}
+function playable(a){
+  if(!a || a.removedFromSheet===true) return false;
+  if(!isActive(a.status)) return false;
+  if(!String(a.imageUrl||"").trim()) return false;
+  const e=parseDate(a.expirationDate);
+  if(e){ const t=new Date(); t.setHours(0,0,0,0); if(e < t) return false; }   // good through the end of its date
+  return true;
+}
+function seconds(a){
+  const n = parseFloat(String(a.duration||"").replace(/[^\d.]/g,""));
+  return Math.min(MAX_SECONDS, Math.max(MIN_SECONDS, isFinite(n)&&n>0 ? n : DEFAULT_SECONDS));
+}
+
+/* ---------- player ---------- */
+let ads = [], idx = -1, token = 0, current = null, timer = null, started = false;
+const CACHE_KEY = "skv_ads_" + (TOWN||"all");
+
+function setAds(list, fromCache){
+  list = list.filter(playable).sort((a,b)=>(a.row||1e9)-(b.row||1e9));
+  const was = current && current.id;
+  ads = list;
+  if(!fromCache){ try{ localStorage.setItem(CACHE_KEY, JSON.stringify(list)); }catch(e){} }
+  dbg((fromCache?"[cache] ":"[live] ")+ads.length+" playable ads for '"+TOWN+"'");
+  if(!ads.length){ stop(); showMsg("S&K Venture Signs","Advertise here – skventuresigns.com"); return; }
+  hideMsg();
+  if(!started){ started=true; next(); }
+  else if(was){ const i=ads.findIndex(a=>a.id===was); if(i>=0) idx=i; }
+}
+function stop(){ clearTimeout(timer); token++; started=false; idx=-1; current=null; stage.innerHTML=""; }
+
+async function next(){
+  if(!ads.length) return;
+  const my = ++token; clearTimeout(timer);
+  // try ads in order until one loads
+  for(let tries=0; tries<ads.length; tries++){
+    idx = (idx+1) % ads.length;
+    const ad = ads[idx];
+    let r;
+    try { r = await load(ad); } catch(e){ dbg("skip "+ad.advertiser+": "+e.message); continue; }
+    if(my!==token) return;
+    show(ad, r, my); return;
+  }
+  // nothing loaded – retry shortly
+  timer = setTimeout(next, 10000);
+}
+
+function show(ad, r, my){
+  const slot = document.createElement("div"); slot.className="slot";
+  if(r.kind==="audio"){
+    const d=document.createElement("div"); d.className="audio"; d.textContent=ad.advertiser||""; slot.appendChild(d); slot.appendChild(r.el);
+  } else slot.appendChild(r.el);
+  stage.appendChild(slot);
+  requestAnimationFrame(()=>{
+    slot.classList.add("on");
+    [...stage.children].forEach(c=>{ if(c!==slot){ c.classList.remove("on"); setTimeout(()=>c.remove(),700); } });
+  });
+  current = { id:ad.id, ad, kind:r.kind, t0:Date.now() };
+  window.dispatchEvent(new CustomEvent("ad-shown",{detail:{id:ad.id,advertiser:ad.advertiser,location:ad.location,kind:r.kind,time:new Date().toISOString()}}));
+
+  let done=false;
+  const finish = () => {
+    if(done||my!==token) return; done=true;
+    window.dispatchEvent(new CustomEvent("ad-ended",{detail:{id:ad.id,advertiser:ad.advertiser,location:ad.location,kind:r.kind,
+      playedMs:Date.now()-current.t0,time:new Date().toISOString()}}));
+    next();
+  };
+  if(r.kind==="image"){ timer = setTimeout(finish, seconds(ad)*1000); }
+  else {
+    // video/audio: play to the end, but never longer than MAX_AV_SECONDS; if it can't autoplay, fall back to the ad's duration
+    r.el.onended = finish; r.el.onerror = finish;
+    if(r.kind==="audio") r.el.loop=false;
+    const p = r.el.play(); if(p && p.catch) p.catch(()=>{ timer=setTimeout(finish, seconds(ad)*1000); });
+    timer = setTimeout(finish, MAX_AV_SECONDS*1000);
+  }
+}
+
+/* ---------- Firestore ---------- */
+const app = initializeApp(FIREBASE_CONFIG);
+const db  = getFirestore(app);
+
+async function boardPicker(){
+  showMsg("Choose a board","Add ?town=name to the address to skip this screen");
+  try {
+    const snap = await getDocs(collection(db, PREFIX+"locations"));
+    const names = snap.docs.map(d=>d.data().name || d.id).sort();
+    $("pick").innerHTML = names.map(n=>`<a href="?town=${encodeURIComponent(n.toLowerCase())}">${n}</a>`).join("");
+  } catch(e){ $("msgSub").textContent = "Could not load boards: "+e.message; }
+}
+
+if(!TOWN){ boardPicker(); }
+else {
+  // show last good copy immediately (works offline / on slow start)
+  try { const c=JSON.parse(localStorage.getItem(CACHE_KEY)||"null"); if(c&&c.length) setAds(c,true); } catch(e){}
+  const qy = query(collection(db, PREFIX+"ads"), where("location","==",TOWN));
+  // location is stored as the tab name; match case-insensitively by also trying the capitalised form
+  const variants = [...new Set([TOWN, TOWN.replace(/\b\w/g,c=>c.toUpperCase()), TOWN.toUpperCase()])];
+  const pools = {};
+  variants.forEach(v=>{
+    onSnapshot(query(collection(db, PREFIX+"ads"), where("location","==",v)), snap=>{
+      pools[v] = snap.docs.map(d=>({id:d.id, ...d.data()}));
+      setAds(Object.values(pools).flat(), false);
+    }, err=>{ dbg("Firestore error: "+err.message); if(!ads.length) showMsg("Waiting for connection…", err.code||""); });
+  });
+}
+setTimeout(()=>location.reload(), RELOAD_EVERY_MS);
+</script>
+</body>
+</html>
