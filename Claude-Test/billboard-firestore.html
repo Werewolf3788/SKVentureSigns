@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>S&amp;K Venture Signs – Billboard (Firestore)</title>
+<link rel="icon" id="fav" href="data:,">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>
   html, body { margin:0; height:100%; background:#000; overflow:hidden; cursor:none; }
@@ -164,6 +165,9 @@ function show(ad, r, my){
     slot.classList.add("on");
     [...stage.children].forEach(c=>{ if(c!==slot){ c.classList.remove("on"); setTimeout(()=>c.remove(),700); } });
   });
+  // tab icon follows the ad on screen (images only; video/audio keep the last icon)
+  if(r.kind==="image"){ const f=$("fav"); const n=f.cloneNode(); n.href=r.url; f.replaceWith(n); }
+  document.title = (ad.advertiser ? ad.advertiser+" – " : "") + "S&K Venture Signs";
   current = { id:ad.id, ad, kind:r.kind, t0:Date.now() };
   window.dispatchEvent(new CustomEvent("ad-shown",{detail:{id:ad.id,advertiser:ad.advertiser,location:ad.location,kind:r.kind,time:new Date().toISOString()}}));
 
