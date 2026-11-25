@@ -1,0 +1,42 @@
+name: Widen S and K layout
+on: push
+permissions:
+  contents: write
+jobs:
+  widen:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply the wide layout on main and Claude-Test
+        env:
+          WIDE_CSS_B64: "OnJvb3R7LS1jb250YWluZXItd2lkdGg6ODB2dyFpbXBvcnRhbnQ7LS11bHRyYS13aWRlLW1heDoxMDAlIWltcG9ydGFudH0KLm1haW4tY29udGFpbmVye3dpZHRoOjgwdnchaW1wb3J0YW50O21heC13aWR0aDpub25lIWltcG9ydGFudDttYXJnaW4tbGVmdDphdXRvIWltcG9ydGFudDttYXJnaW4tcmlnaHQ6YXV0byFpbXBvcnRhbnR9"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for BR in main Claude-Test; do
+            git fetch origin "$BR"
+            git checkout -B "$BR" "origin/$BR"
+            python3 - <<'PYCODE'
+          import os, base64, glob
+          css = base64.b64decode(os.environ['WIDE_CSS_B64']).decode()
+          block = '<style id="wide-layout">\n' + css + '\n</style>\n'
+          n = 0
+          for f in glob.glob('*.html'):
+              s = open(f, encoding='utf-8', errors='ignore').read()
+              if 'id="wide-layout"' in s:
+                  continue
+              i = s.lower().rfind('</head>')
+              if i == -1:
+                  continue
+              open(f, 'w', encoding='utf-8').write(s[:i] + block + s[i:])
+              n += 1
+          print('pages updated:', n)
+          PYCODE
+            if git diff --quiet; then echo "$BR already wide"; continue; fi
+            git add -A
+            git commit -m "Use 80% of the screen width instead of a narrow centred column"
+            git push origin "$BR"
+          done
