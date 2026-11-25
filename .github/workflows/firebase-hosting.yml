@@ -1,4 +1,4 @@
-# Pushes the billboard player to Firebase Hosting (site: skventure)
+# Pushes the billboard player to Firebase Hosting
 # every time Claude-Test or the Firebase config changes on main.
 #
 # One-time setup, in GitHub -> this repo -> Settings -> Secrets and variables -> Actions:
@@ -30,7 +30,7 @@ concurrency:
 
 jobs:
   deploy:
-    name: Push to skventure.web.app
+    name: Push to skventuresigns-c35d5.web.app
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -42,5 +42,4 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           projectId: skventuresigns-c35d5
-          target: skventure
           channelId: live

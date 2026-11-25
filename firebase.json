@@ -1,40 +1,37 @@
 {
-  "hosting": [
-    {
-      "target": "skventure",
-      "public": "Claude-Test",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "headers": [
-        {
-          "source": "**/*.html",
-          "headers": [
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, max-age=0"
-            }
-          ]
-        },
-        {
-          "source": "**/*.@(png|jpg|jpeg|gif|webp|avif|svg|mp4|webm|mov|mp3|wav)",
-          "headers": [
-            {
-              "key": "Cache-Control",
-              "value": "public, max-age=3600"
-            }
-          ]
-        }
-      ],
-      "redirects": [
-        {
-          "source": "/",
-          "destination": "/billboard-firestore.html",
-          "type": 302
-        }
-      ]
-    }
-  ]
+  "hosting": {
+    "public": "Claude-Test",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "headers": [
+      {
+        "source": "**/*.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, max-age=0"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(png|jpg|jpeg|gif|webp|avif|svg|mp4|webm|mov|mp3|wav)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600"
+          }
+        ]
+      }
+    ],
+    "redirects": [
+      {
+        "source": "/",
+        "destination": "/billboard-firestore.html",
+        "type": 302
+      }
+    ]
+  }
 }
