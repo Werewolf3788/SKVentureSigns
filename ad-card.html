@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Advertising card – live ad from the nearest board</title>
+<style>
+  html, body { margin:0; min-height:100%; }
+  body {
+    background:#4a0b0b;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display:flex; align-items:center; justify-content:center; padding:32px 18px;
+  }
+  /* --- the card (every class starts with skvad- so it cannot clash with the site) --- */
+  .skvad-card {
+    width:100%; max-width:430px; background:#fff; border-radius:18px; padding:18px 18px 22px;
+    box-shadow:0 18px 40px rgba(0,0,0,.35); text-align:center; box-sizing:border-box;
+  }
+  .skvad-media {
+    position:relative; width:100%; aspect-ratio:4/3; background:#c9c9c9; border-radius:8px;
+    overflow:hidden; display:flex; align-items:center; justify-content:center;
+  }
+  .skvad-ph { color:#9a9a9a; font-size:clamp(18px,5vw,30px); font-weight:600; letter-spacing:.5px; }
+  .skvad-img { width:100%; height:100%; object-fit:contain; background:#000; }
+  .skvad-caption { min-height:18px; margin:10px 0 0; font-size:12px; color:#8a6a3c; letter-spacing:.2px; }
+  .skvad-title { margin:8px 0 6px; font-family: Georgia, "Times New Roman", serif; font-size:26px; color:#111; }
+  .skvad-sub { margin:0 0 6px; font-size:13.5px; line-height:1.45; color:#7d7d7d; }
+  .skvad-near {
+    border:0; background:none; color:#8a6a3c; font:inherit; font-size:12.5px; text-decoration:underline;
+    cursor:pointer; padding:6px 4px; margin-bottom:8px;
+  }
+  .skvad-near[disabled] { opacity:.6; cursor:default; }
+  .skvad-cta {
+    display:block; margin-top:6px; padding:14px 18px; border-radius:999px;
+    background:#4a0b0b; color:#fff; font-weight:800; font-size:13px; letter-spacing:1.4px;
+    text-decoration:none; border:3px solid #f2c744; box-sizing:border-box;
+  }
+  .skvad-cta:hover { background:#611010; }
+  .note { max-width:430px; color:#f3d9a4; font-size:12.5px; line-height:1.5; margin:18px auto 0; text-align:center; }
+</style>
+</head>
+<body>
+<div style="width:100%;max-width:430px">
+  <!-- This is the whole integration: one div plus one script tag. -->
+  <div id="skv-ad-card"></div>
+  <script src="./ad-card.js" defer></script>
+  <p class="note">Add <code>?town=flora</code> to this address to see a specific board's ad without sharing a location.</p>
+</div>
+</body>
+</html>
