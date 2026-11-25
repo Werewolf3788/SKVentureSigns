@@ -1,24 +1,18 @@
-# Pushes the billboard player to Firebase Hosting
-# every time Claude-Test or the Firebase config changes on main.
+# Deploys the site to Firebase Hosting.
 #
-# One-time setup, in GitHub -> this repo -> Settings -> Secrets and variables -> Actions:
-#   New repository secret
-#   Name:   FIREBASE_SERVICE_ACCOUNT
-#   Value:  the whole service-account .json file, all on one line.
-#           (The same key the Apps Script uses for Firestore / Realtime Database.)
-# Nothing else is needed - no token to copy, no firebase login.
+# MANUAL ONLY: it runs when you start it yourself, from
+#   GitHub -> Actions -> "Deploy player to Firebase Hosting" -> Run workflow.
+# There is no push trigger, so pushing to the repo can never start (or fail) a deploy.
+#
+# To use it, add this repository secret once:
+#   Settings -> Secrets and variables -> Actions -> New repository secret
+#   Name:  FIREBASE_SERVICE_ACCOUNT
+#   Value: the whole service-account .json file, all on one line.
+# Without that secret the run stops with a clear message instead of a raw error.
 
 name: Deploy player to Firebase Hosting
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "Claude-Test/**"
-      - "firebase.json"
-      - ".firebaserc"
-      - ".github/workflows/firebase-hosting.yml"
   workflow_dispatch: {}
 
 permissions:
@@ -35,6 +29,13 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v5
+
+      - name: Check the deploy key is configured
+        run: |
+          if [ -z "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" ]; then
+            echo "::error::No FIREBASE_SERVICE_ACCOUNT secret. Settings -> Secrets and variables -> Actions -> New repository secret, and paste the service-account .json on one line."
+            exit 1
+          fi
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
