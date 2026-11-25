@@ -91,8 +91,16 @@ function tryLoad(url, kind, who){
 async function load(ad){
   const first = guess(ad.imageUrl);
   const order = [first, ...["image","video","audio"].filter(k=>k!==first)];
-  const urls = [resolve(ad.imageUrl, BASE)];
-  if(!/^(https?:)?\/\//i.test(ad.imageUrl) && !BASE) urls.push(resolve(ad.imageUrl, FALLBACK_BASE));
+  // A relative ad path ("./images/Foo.png") is a file in the ads repo, NOT a file next to this
+  // page. Trying the page's own folder first only produced "404" noise in the console.
+  const urls = [];
+  const relative = !/^(https?:)?\/\//i.test(ad.imageUrl) && !/^(data|blob):/i.test(ad.imageUrl);
+  if(relative){
+    if(BASE) urls.push(resolve(ad.imageUrl, BASE));
+    urls.push(resolve(ad.imageUrl, FALLBACK_BASE));
+  } else {
+    urls.push(resolve(ad.imageUrl, BASE));
+  }
   for(const u of urls) for(const k of order){
     try { const r = await tryLoad(u,k,ad.advertiser); r.url=u; return r; } catch(e){}
   }
