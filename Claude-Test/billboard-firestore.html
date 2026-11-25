@@ -147,7 +147,7 @@ async function next(){
     idx = (idx+1) % ads.length;
     const ad = ads[idx];
     let r;
-    try { r = await load(ad); } catch(e){ dbg("skip "+ad.advertiser+": "+e.message); continue; }
+    try { r = await load(ad); } catch(e){ dbg("skip "+ad.advertiser+": "+e.message); beatErr = e.message; continue; }
     if(my!==token) return;
     show(ad, r, my); return;
   }
@@ -216,6 +216,43 @@ else {
     }, err=>{ dbg("Firestore error: "+err.message); if(!ads.length) showMsg("Waiting for connection…", err.code||""); });
   });
 }
+/* ---------- heartbeat: lets BillboardWatchdog.gs see when this board is down ---------- */
+/* Writes a 200-byte "I'm alive" note every 5 minutes to the Realtime Database. When the
+   note stops arriving, the watchdog in Apps Script texts/emails that this screen is down.
+   Nothing secret is written here, so the public write rule on billboardStatus is enough. */
+const RTDB_URL   = "https://skventuresigns-c35d5-default-rtdb.firebaseio.com";
+const STATUS_AT  = "billboardStatus/v1";
+const SCREEN_ID  = (q.get("screen") || q.get("id") || TOWN || "unknown").trim().toLowerCase();
+const BEAT_MS    = 5 * 60 * 1000;
+const BOOTED_AT  = Date.now();
+var beatErr = "", beatsOk = 0, lastBeatAt = 0;   // var: next() can touch beatErr before this line runs
+
+function beat(){
+  const body = {
+    at: Date.now(),
+    screen: SCREEN_ID,
+    town: TOWN,
+    page: location.href.split("?")[0].split("/").pop() || "player",
+    ads: ads.length,
+    ad: current && current.ad ? (current.ad.advertiser || "") : "",
+    adKind: current ? current.kind : "",
+    view: window.screen.width + "x" + window.screen.height,
+    bootAt: BOOTED_AT,
+    error: String(beatErr || "").slice(0, 180),
+    v: 1
+  };
+  fetch(RTDB_URL + "/" + STATUS_AT + "/" + encodeURIComponent(SCREEN_ID) + ".json", {
+    method: "PUT", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body), keepalive: true
+  }).then(r => {
+    if(!r.ok) throw new Error("status "+r.status);
+    beatsOk++; lastBeatAt = Date.now(); dbg("heartbeat ok ("+beatsOk+")");
+  }).catch(e => dbg("heartbeat failed: "+e.message));
+}
+beat();
+setInterval(beat, BEAT_MS);
+window.addEventListener("online", beat);
+
 setTimeout(()=>location.reload(), RELOAD_EVERY_MS);
 </script>
 </body>
