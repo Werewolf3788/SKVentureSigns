@@ -1,14 +1,17 @@
-# Deploys the site to Firebase Hosting.
+# Deploys the site to Firebase Hosting (skventuresigns-c35d5).
 #
-# MANUAL ONLY: it runs when you start it yourself, from
-#   GitHub -> Actions -> "Deploy player to Firebase Hosting" -> Run workflow.
-# There is no push trigger, so pushing to the repo can never start (or fail) a deploy.
+# MANUAL ONLY: GitHub -> Actions -> "Deploy player to Firebase Hosting" -> Run workflow.
 #
-# To use it, add this repository secret once:
+# The deploy key comes from Kevin's Key Vault, not from this repo:
+#   entertainment-71888 RTDB  user_secrets/raykevin71888_at_gmail_com/firebase_skventure_service_account
+#   (fed by the "Keys" Google Sheet, row "Firebase / SKVentureSigns / Service account JSON").
+# Change or replace the key in the Keys sheet only; this job picks up the new one on its next run.
+#
+# GitHub needs ONE key of its own to open the vault (GitHub cannot reach Firebase without one):
 #   Settings -> Secrets and variables -> Actions -> New repository secret
-#   Name:  FIREBASE_SERVICE_ACCOUNT
-#   Value: the whole service-account .json file, all on one line.
-# Without that secret the run stops with a clear message instead of a raw error.
+#   Name:  KEY_VAULT_SERVICE_ACCOUNT
+#   Value: the entertainment-71888 service account .json
+#          (the Keys sheet row "Firebase / entertainment-71888 / Service account JSON").
 
 name: Deploy player to Firebase Hosting
 
@@ -30,17 +33,64 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v5
 
-      - name: Check the deploy key is configured
+      - name: Get the deploy key from the Key Vault
+        id: vault
+        env:
+          VAULT_SA: ${{ secrets.KEY_VAULT_SERVICE_ACCOUNT }}
+          VAULT_DB: https://entertainment-71888-default-rtdb.firebaseio.com
+          VAULT_PATH: user_secrets/raykevin71888_at_gmail_com/firebase_skventure_service_account
         run: |
-          if [ -z "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" ]; then
-            echo "::error::No FIREBASE_SERVICE_ACCOUNT secret. Settings -> Secrets and variables -> Actions -> New repository secret, and paste the service-account .json on one line."
+          if [ -z "$VAULT_SA" ]; then
+            echo "::error::No KEY_VAULT_SERVICE_ACCOUNT secret. Add the entertainment-71888 service account .json under Settings -> Secrets and variables -> Actions."
             exit 1
           fi
+          pip install --quiet google-auth requests
+          python3 - <<'PY'
+          import json, os, sys, uuid
+          import google.auth.transport.requests as gr
+          from google.oauth2 import service_account
+
+          creds = service_account.Credentials.from_service_account_info(
+              json.loads(os.environ["VAULT_SA"]),
+              scopes=["https://www.googleapis.com/auth/firebase.database",
+                      "https://www.googleapis.com/auth/userinfo.email"])
+          creds.refresh(gr.Request())
+
+          import requests
+          url = f'{os.environ["VAULT_DB"]}/{os.environ["VAULT_PATH"]}.json'
+          r = requests.get(url, headers={"Authorization": f"Bearer {creds.token}"}, timeout=30)
+          if r.status_code != 200:
+              print(f"::error::Key Vault refused the read ({r.status_code}): {r.text[:200]}")
+              sys.exit(1)
+          val = r.json()
+          if isinstance(val, dict) and "value" in val and "private_key" not in val:   # vault entry stored as {value: ...}
+              val = val["value"]
+          if isinstance(val, str):
+              val = val.strip()
+              if not val:
+                  val = None
+              else:
+                  val = json.loads(val)
+          if not val or "private_key" not in val:
+              print("::error::firebase_skventure_service_account is empty in the Key Vault. Paste the skventuresigns-c35d5 service account .json into its row in the Keys sheet.")
+              sys.exit(1)
+
+          for line in val["private_key"].splitlines():            # keep the key out of the logs
+              if line.strip():
+                  print(f"::add-mask::{line.strip()}")
+          print(f'::add-mask::{val.get("private_key_id", "")}')
+
+          one_line = json.dumps(val)
+          delim = "EOF_" + uuid.uuid4().hex
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"sa<<{delim}\n{one_line}\n{delim}\n")
+          print("Got the deploy key for project", val.get("project_id"))
+          PY
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          firebaseServiceAccount: ${{ steps.vault.outputs.sa }}
           projectId: skventuresigns-c35d5
           channelId: live
