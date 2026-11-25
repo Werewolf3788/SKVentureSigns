@@ -941,5 +941,215 @@
             lucide.createIcons();
         };
     </script>
+
+    <!--
+        ADD-ON: LOCAL AD CAROUSEL (Advertising card)
+        Replaces the picture on the "Ensure your message reaches the right audience..." card with a
+        rotating slideshow of Scott's live billboard ads, picked by where the visitor's device is.
+        Source: the playlist.json his "Billboard Sync > Publish All Locations to GitHub" button writes.
+        Nothing above this block was changed; it waits for the services cards to load, then swaps that one image.
+    -->
+    <style id="sk-ad-carousel-style">
+        .sk-ad-carousel { position: relative; width: 100%; height: 220px; margin-bottom: 15px; border-radius: 14px; overflow: hidden; background: #000; }
+        .sk-ad-carousel .sk-ad-slide { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 0.8s ease; cursor: zoom-in; margin: 0; }
+        .sk-ad-carousel .sk-ad-slide.on { opacity: 1; }
+        .sk-ad-carousel .sk-ad-where { position: absolute; left: 8px; bottom: 8px; z-index: 2; background: rgba(62,1,0,0.85); color: #FFC627; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; text-shadow: none; }
+        .sk-ad-carousel .sk-ad-dots { position: absolute; right: 8px; bottom: 10px; z-index: 2; display: flex; gap: 4px; }
+        .sk-ad-carousel .sk-ad-dots span { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.4); }
+        .sk-ad-carousel .sk-ad-dots span.on { background: #FFC627; }
+    </style>
+    <script>
+        (function () {
+            const AD_PLAYLIST = 'https://raw.githubusercontent.com/skventuresigns-design/skventuresigns/main/playlist.json';
+            const AD_IMAGE_BASE = 'https://raw.githubusercontent.com/skventuresigns-design/skventuresigns/main/';
+            const AD_NEAR_MILES = 35;   // a visitor within this many miles of a board's town is "in" that board's area
+
+            // One line per Sheet tab (tab name in lower case, exactly as in playlist.json).
+            // "area" groups boards together: a visitor near ANY board in an area sees ALL boards in that area.
+            const AD_BOARDS = {
+                'clay city':  { area: 'Clay County',      lat: 38.6889, lng: -88.3542 },
+                'floratv':    { area: 'Clay County',      lat: 38.6689, lng: -88.4856 },
+                'xenia':      { area: 'Clay County',      lat: 38.6356, lng: -88.6375 },
+                'xeniatv':    { area: 'Clay County',      lat: 38.6356, lng: -88.6375 },
+                'altamont':   { area: 'Effingham County', lat: 39.0620, lng: -88.7484 },
+                'brownstown': { area: 'Fayette County',   lat: 38.9956, lng: -88.9520 },
+                'de soto':    { area: 'Jackson County',   lat: 37.8170, lng: -89.2273 },
+                'oliver':     { area: 'Oliver',           lat: null,    lng: null }     // TODO: set Oliver board's location
+            };
+
+            const CARD_MATCH = card => {
+                const t = (card.textContent || '').toLowerCase();
+                return t.includes('right audience') || !!Array.from(card.querySelectorAll('h3')).find(h => h.textContent.trim().toLowerCase() === 'advertising');
+            };
+
+            function milesBetween(a, b, c, d) {
+                const R = 3958.8, r = x => x * Math.PI / 180;
+                const dLat = r(c - a), dLng = r(d - b);
+                const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a)) * Math.cos(r(c)) * Math.sin(dLng / 2) ** 2;
+                return 2 * R * Math.asin(Math.sqrt(h));
+            }
+
+            // Device location -> area name, or '' if unknown / denied / not near any board.
+            function findVisitorArea() {
+                return new Promise(resolve => {
+                    if (!navigator.geolocation) return resolve('');
+                    navigator.geolocation.getCurrentPosition(pos => {
+                        let best = null;
+                        Object.keys(AD_BOARDS).forEach(k => {
+                            const b = AD_BOARDS[k];
+                            if (b.lat === null) return;
+                            const d = milesBetween(pos.coords.latitude, pos.coords.longitude, b.lat, b.lng);
+                            if (!best || d < best.d) best = { d: d, area: b.area };
+                        });
+                        resolve(best && best.d <= AD_NEAR_MILES ? best.area : '');
+                    }, () => resolve(''), { enableHighAccuracy: false, timeout: 10000, maximumAge: 3600000 });
+                });
+            }
+
+            function adSrc(path) {
+                const p = String(path || '').trim();
+                if (/^https?:\/\//i.test(p)) return p;
+                return AD_IMAGE_BASE + p.replace(/^\.?\//, '').split('/').map(s => { try { s = decodeURIComponent(s); } catch (e) {} return encodeURIComponent(s); }).join('/');
+            }
+
+            function todayISO() {
+                const n = new Date();
+                return n.getFullYear() + '-' + ('0' + (n.getMonth() + 1)).slice(-2) + '-' + ('0' + n.getDate()).slice(-2);
+            }
+
+            function expDateISO(v) {
+                const s = String(v || '').trim();
+                let m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);
+                if (m) return m[3] + '-' + ('0' + m[1]).slice(-2) + '-' + ('0' + m[2]).slice(-2);
+                m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+                return m ? m[0] : '';
+            }
+
+            // Ads for the area (or every board if area is unknown), live today, one copy of each picture.
+            function pickAds(playlist, area) {
+                const today = todayISO();
+                const seen = {};
+                const out = [];
+                Object.keys(playlist.locations || {}).forEach(tab => {
+                    const board = AD_BOARDS[tab];
+                    if (area && (!board || board.area !== area)) return;
+                    (playlist.locations[tab] || []).forEach(ad => {
+                        const path = String(ad.imageUrl || '').trim();
+                        if (!path || /\.html?$/i.test(path)) return;               // pages like ./preview.html are not ads
+                        const exp = expDateISO(ad.expirationDate);
+                        if (exp && exp < today) return;                            // still shows ON its expiration date
+                        const key = path.toLowerCase();
+                        if (seen[key]) return;
+                        seen[key] = true;
+                        out.push({ name: ad.advertiser || '', src: adSrc(path), seconds: Number(ad.duration) > 0 ? Number(ad.duration) : 8, video: /\.(mp4|webm|mov|m4v)$/i.test(path) });
+                    });
+                });
+                return out;
+            }
+
+            function buildCarousel(card, ads, area) {
+                const oldImg = card.querySelector('img');
+                if (!oldImg || !ads.length) return;
+                const box = document.createElement('div');
+                box.className = 'sk-ad-carousel';
+                box.setAttribute('aria-label', 'Ads now running' + (area ? ' in ' + area : ''));
+
+                const slides = ads.map(ad => {
+                    let el;
+                    if (ad.video) {
+                        el = document.createElement('video');
+                        el.muted = true; el.playsInline = true; el.loop = true; el.preload = 'metadata';
+                        el.setAttribute('muted', ''); el.setAttribute('playsinline', '');
+                    } else {
+                        el = document.createElement('img');
+                        el.loading = 'lazy';
+                        el.onclick = () => {
+                            const o = document.getElementById('lightbox-overlay'), i = document.getElementById('lightbox-img');
+                            if (o && i) { i.src = el.src; o.style.display = 'flex'; }
+                        };
+                    }
+                    el.className = 'sk-ad-slide';
+                    el.alt = ad.name;
+                    el.src = ad.src;
+                    el.onerror = () => { el.dataset.bad = '1'; };
+                    box.appendChild(el);
+                    return el;
+                });
+
+                const where = document.createElement('div');
+                where.className = 'sk-ad-where';
+                where.textContent = area ? 'Now showing in ' + area : 'Now showing on our boards';
+                box.appendChild(where);
+
+                const dots = document.createElement('div');
+                dots.className = 'sk-ad-dots';
+                if (ads.length <= 12) ads.forEach(() => dots.appendChild(document.createElement('span')));
+                box.appendChild(dots);
+
+                oldImg.replaceWith(box);
+
+                let i = -1, timer = null;
+                function show(next) {
+                    for (let tries = 0; tries < slides.length; tries++) {      // skip any ad whose file failed to load
+                        if (!slides[next].dataset.bad) break;
+                        next = (next + 1) % slides.length;
+                    }
+                    if (i >= 0) { slides[i].classList.remove('on'); if (slides[i].pause) slides[i].pause(); }
+                    i = next;
+                    slides[i].classList.add('on');
+                    if (slides[i].play) { try { slides[i].currentTime = 0; slides[i].play().catch(() => {}); } catch (e) {} }
+                    Array.from(dots.children).forEach((d, k) => d.classList.toggle('on', k === i));
+                    clearTimeout(timer);
+                    if (slides.length > 1) timer = setTimeout(() => show((i + 1) % slides.length), ads[i].seconds * 1000);
+                }
+                show(0);
+
+                if (typeof gtag === 'function') gtag('event', 'ad_carousel_shown', { ad_area: area || 'all', ad_count: ads.length });
+            }
+
+            let started = false;
+            async function start(card) {
+                if (started) return;
+                started = true;
+                try {
+                    const [playlist, area] = await Promise.all([
+                        fetch(AD_PLAYLIST + '?t=' + Date.now()).then(r => r.json()),
+                        findVisitorArea()
+                    ]);
+                    let ads = pickAds(playlist, area);
+                    if (area && !ads.length) ads = pickAds(playlist, '');     // area has no live ads: show everything
+                    buildCarousel(card, ads, ads.length && area && pickAds(playlist, area).length ? area : '');
+                } catch (e) {
+                    console.warn('Ad carousel unavailable', e);               // card keeps its original picture
+                }
+            }
+
+            // Wait for the services cards (built from the Sheet) to appear, then ask for location
+            // only when the Advertising card is actually scrolled into view.
+            function watchForCard() {
+                const grid = document.getElementById('services-grid');
+                if (!grid) return;
+                const tryFind = () => {
+                    const card = Array.from(grid.querySelectorAll('.service-card')).find(CARD_MATCH);
+                    if (!card) return false;
+                    if ('IntersectionObserver' in window) {
+                        const io = new IntersectionObserver(entries => {
+                            if (entries.some(en => en.isIntersecting)) { io.disconnect(); start(card); }
+                        }, { rootMargin: '200px' });
+                        io.observe(card);
+                    } else {
+                        start(card);
+                    }
+                    return true;
+                };
+                if (tryFind()) return;
+                const mo = new MutationObserver(() => { if (tryFind()) mo.disconnect(); });
+                mo.observe(grid, { childList: true, subtree: true });
+            }
+
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watchForCard);
+            else watchForCard();
+        })();
+    </script>
 </body>
 </html>
