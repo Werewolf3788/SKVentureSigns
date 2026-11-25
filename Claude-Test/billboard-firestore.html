@@ -6,7 +6,12 @@
 <link rel="icon" id="fav" href="data:,">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>
-  html, body { margin:0; height:100%; background:#000; overflow:hidden; cursor:none; }
+  /* The pointer is only hidden while ads are actually playing (body.playing), so the board
+     list stays usable with a mouse. */
+  html, body { margin:0; height:100%; background:#000; overflow:hidden; }
+  body.playing { cursor:none; }
+  body.playing #fs { cursor:pointer; }
+  #pick a { cursor:pointer; }
   #stage { position:fixed; inset:0; background:#000; }
   .slot { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
           opacity:0; transition:opacity .6s ease; background:#000; }
@@ -62,7 +67,8 @@ document.documentElement.style.setProperty("--fit", q.get("fit") === "cover" ? "
 const $ = id => document.getElementById(id);
 const stage = $("stage");
 function dbg(t){ if(!DEBUG) return; const d=$("dbg"); d.style.display="block"; d.textContent=t; }
-function showMsg(a,b){ $("msgText").textContent=a||""; $("msgSub").textContent=b||""; $("msg").style.display="flex"; }
+function showMsg(a,b){ $("msgText").textContent=a||""; $("msgSub").textContent=b||""; $("msg").style.display="flex";
+  document.body.classList.remove("playing"); }        // pointer visible when nothing is playing
 function hideMsg(){ $("msg").style.display="none"; }
 
 /* ---------- full screen (button top-right, or the F key) ---------- */
@@ -175,7 +181,8 @@ function setAds(list, fromCache){
   if(!started){ started=true; next(); }
   else if(was){ const i=ads.findIndex(a=>a.id===was); if(i>=0) idx=i; }
 }
-function stop(){ clearTimeout(timer); token++; started=false; idx=-1; current=null; stage.innerHTML=""; }
+function stop(){ clearTimeout(timer); token++; started=false; idx=-1; current=null; stage.innerHTML="";
+  document.body.classList.remove("playing"); }
 
 async function next(){
   if(!ads.length) return;
@@ -194,6 +201,7 @@ async function next(){
 }
 
 function show(ad, r, my){
+  document.body.classList.add("playing");            // hide the pointer only once an ad is on screen
   const slot = document.createElement("div"); slot.className="slot";
   if(r.kind==="audio"){
     const d=document.createElement("div"); d.className="audio"; d.textContent=ad.advertiser||""; slot.appendChild(d); slot.appendChild(r.el);
