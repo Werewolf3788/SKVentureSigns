@@ -313,7 +313,7 @@
             padding-top: calc(var(--header-height) + 60px);
             padding-bottom: 60px;
             background-color: var(--sk-maroon);
-            background-image: linear-gradient(rgba(62, 1, 0, 0.8), rgba(62, 1, 0, 0.9)), url('https://i0.wp.com/skventuresigns.com/wp-content/uploads/2026/04/EFF-fair-locations.png?v=10.7');
+            background-image: linear-gradient(rgba(62, 1, 0, 0.8), rgba(62, 1, 0, 0.9)), url('https://skventuresigns.com/images/EFF-fair-locations.png');
             background-size: cover;
             background-position: center;
             text-align: center;
@@ -528,7 +528,7 @@
         <div class="main-container flex items-center justify-between h-full px-4 lg:px-0">
             <div class="flex-shrink-0 z-[1001]">
                 <a href="./index.html" target="_blank">
-                    <img src="https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png?v=10.15" alt="S&K" id="header-logo" />
+                    <img src="https://skventuresigns.com/images/S%26K-Sign-White.png?v=10.15" alt="S&K" id="header-logo" />
                 </a>
             </div>
 
@@ -566,7 +566,7 @@
             <div class="main-container">
                 <div class="flex flex-col lg:flex-row gap-16 items-center">
                     <div class="lg:w-1/2 w-full">
-                        <img src="https://i0.wp.com/skventuresigns.com/wp-content/uploads/2026/04/EFF-fair-locations.png?v=10.7" alt="Fairgrounds Map" class="w-full rounded-3xl shadow-2xl border-4 border-[#FFC627] cursor-zoom-in" onclick="openLightbox(this.src)">
+                        <img src="https://skventuresigns.com/images/EFF-fair-locations.png" alt="Fairgrounds Map" class="w-full rounded-3xl shadow-2xl border-4 border-[#FFC627] cursor-zoom-in" onclick="openLightbox(this.src)">
                     </div>
                     <div class="lg:w-1/2 w-full">
                         <h2 class="text-4xl lg:text-5xl font-['Abril_Fatface'] text-[var(--sk-maroon)] dark:text-[var(--sk-gold)] mb-8 leading-tight">5 Digital Advertising Locations</h2>
@@ -940,7 +940,7 @@
         }
 
         function downloadSKContact() {
-            const PHOTO_URL = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-Black.png";
+            const PHOTO_URL = "https://skventuresigns.com/images/S%26K-Sign-Black.png";
             const vcard = "BEGIN:VCARD\nVERSION:3.0\nFN:Scott Robinson\nORG:S&K Venture Signs\nTEL;TYPE=WORK,VOICE:" + (siteData.phones[1] || "844-907-4450") + "\nTEL;TYPE=CELL,VOICE:" + (siteData.phones[0] || "618-708-4450") + "\nEMAIL;TYPE=PREF,INTERNET:" + siteData.email + "\nADR;TYPE=WORK:;;" + siteData.addressStreet + ";" + siteData.addressCity.split(' ')[0] + ";IL;" + siteData.addressCity.split(' ').pop() + ";USA\nURL:https://skventuresigns.com/\nPHOTO;VALUE=URI:" + PHOTO_URL + "\nEND:VCARD";
             const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
             const url = window.URL.createObjectURL(blob);
@@ -988,7 +988,7 @@
             const header = document.getElementById('main-header');
             const logo = document.getElementById('header-logo');
             if (header.classList.contains('header-scrolled')) {
-                logo.src = (targetMode === 'dark') ? "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png" : "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-Black.png";
+                logo.src = (targetMode === 'dark') ? "https://skventuresigns.com/images/S%26K-Sign-White.png" : "https://skventuresigns.com/images/S%26K-Sign-Black.png";
             }
 
             document.cookie = `theme=${mode};max-age=31536000;path=/`;
@@ -1064,10 +1064,10 @@
 
             if (window.scrollY > 50) {
                 header.classList.add('header-scrolled');
-                logo.src = isDark ? "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png" : "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-Black.png";
+                logo.src = isDark ? "https://skventuresigns.com/images/S%26K-Sign-White.png" : "https://skventuresigns.com/images/S%26K-Sign-Black.png";
             } else {
                 header.classList.remove('header-scrolled');
-                logo.src = "https://skventuresigns.com/wp-content/uploads/2025/03/SK-Sign-White.png";
+                logo.src = "https://skventuresigns.com/images/S%26K-Sign-White.png";
             }
         });
 
