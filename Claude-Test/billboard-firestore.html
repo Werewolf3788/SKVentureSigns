@@ -19,12 +19,20 @@
   #pick a { color:#7cf; margin:1vmin 2vmin; font-size:3vmin; }
   #dbg { position:fixed; left:0; bottom:0; right:0; background:rgba(0,0,0,.8); color:#0f0;
          font:12px monospace; padding:6px 10px; display:none; z-index:9; cursor:default; }
+  /* Full screen button: small, dim, out of the way of the ads. Esc also exits. */
+  #fs { position:fixed; top:10px; right:10px; z-index:20; cursor:pointer;
+        font:600 12px system-ui,sans-serif; color:#fff; background:rgba(0,0,0,.45);
+        border:1px solid rgba(255,255,255,.35); border-radius:8px; padding:6px 10px;
+        opacity:.25; transition:opacity .2s ease; }
+  #fs:hover, #fs:focus { opacity:1; outline:none; }
+  #fs:fullscreen { display:none; }
 </style>
 </head>
 <body>
 <div id="stage"></div>
 <div id="msg"><div id="msgText"></div><small id="msgSub"></small><div id="pick"></div></div>
 <div id="dbg"></div>
+<button id="fs" title="Full screen (F)" aria-label="Full screen">⛶ Full screen</button>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -56,6 +64,28 @@ const stage = $("stage");
 function dbg(t){ if(!DEBUG) return; const d=$("dbg"); d.style.display="block"; d.textContent=t; }
 function showMsg(a,b){ $("msgText").textContent=a||""; $("msgSub").textContent=b||""; $("msg").style.display="flex"; }
 function hideMsg(){ $("msg").style.display="none"; }
+
+/* ---------- full screen (button top-right, or the F key) ---------- */
+const fsBtn = $("fs");
+function toggleFullScreen(){
+  const el = document.documentElement;
+  if(document.fullscreenElement || document.webkitFullscreenElement){
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  } else {
+    const go = el.requestFullscreen || el.webkitRequestFullscreen;
+    if(go) go.call(el).catch(()=>{});
+  }
+}
+function fsLabel(){
+  const on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  fsBtn.textContent = on ? "✕ Exit full screen" : "⛶ Full screen";
+}
+fsBtn.addEventListener("click", toggleFullScreen);
+document.addEventListener("fullscreenchange", fsLabel);
+document.addEventListener("webkitfullscreenchange", fsLabel);
+window.addEventListener("keydown", e => {
+  if(e.key === "f" || e.key === "F"){ toggleFullScreen(); }
+});
 
 /* ---------- media (any format: guess by extension, then fall back) ---------- */
 const EXT = {
@@ -201,7 +231,7 @@ const app = initializeApp(FIREBASE_CONFIG);
 const db  = getFirestore(app);
 
 async function boardPicker(){
-  showMsg("Choose a board","Add ?town=name to the address to skip this screen");
+  showMsg("Choose a board","Add ?town=name to the address to skip this screen.  Press F (or the button, top right) for full screen.");
   try {
     const snap = await getDocs(collection(db, PREFIX+"locations"));
     const names = snap.docs.map(d=>d.data().name || d.id).sort();
