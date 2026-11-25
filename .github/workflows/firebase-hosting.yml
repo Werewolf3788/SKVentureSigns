@@ -1,0 +1,46 @@
+# Pushes the billboard player to Firebase Hosting (site: skventure)
+# every time Claude-Test or the Firebase config changes on main.
+#
+# One-time setup, in GitHub -> this repo -> Settings -> Secrets and variables -> Actions:
+#   New repository secret
+#   Name:   FIREBASE_SERVICE_ACCOUNT
+#   Value:  the whole service-account .json file, all on one line.
+#           (The same key the Apps Script uses for Firestore / Realtime Database.)
+# Nothing else is needed - no token to copy, no firebase login.
+
+name: Deploy player to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "Claude-Test/**"
+      - "firebase.json"
+      - ".firebaserc"
+      - ".github/workflows/firebase-hosting.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firebase-hosting-live
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Push to skventure.web.app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: skventuresigns-c35d5
+          target: skventure
+          channelId: live

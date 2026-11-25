@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "skventuresigns-c35d5"
+  },
+  "targets": {
+    "skventuresigns-c35d5": {
+      "hosting": {
+        "skventure": [
+          "skventure"
+        ]
+      }
+    }
+  }
+}
