@@ -92,6 +92,19 @@ document.addEventListener("webkitfullscreenchange", fsLabel);
 window.addEventListener("keydown", e => {
   if(e.key === "f" || e.key === "F"){ toggleFullScreen(); }
 });
+/* Arriving with ?fs=1 (that is what the site's Billboards link uses): browsers only allow full
+   screen after a click or key press, so try right away and otherwise take the first one.
+   Clicking the button itself is skipped, or it would toggle straight back out. */
+const WANT_FS = q.has("fs") || q.has("fullscreen");
+if(WANT_FS){
+  const tryFs = ev => {
+    if(document.fullscreenElement || document.webkitFullscreenElement) return;
+    if(ev && ev.target && ev.target.closest && ev.target.closest("#fs")) return;
+    toggleFullScreen();
+  };
+  ["pointerdown","keydown","touchstart"].forEach(t => window.addEventListener(t, tryFs, { capture:true, once:true }));
+  tryFs();                                  // works when the browser allows it without a gesture
+}
 
 /* ---------- media (any format: guess by extension, then fall back) ---------- */
 const EXT = {
@@ -243,7 +256,8 @@ async function boardPicker(){
   try {
     const snap = await getDocs(collection(db, PREFIX+"locations"));
     const names = snap.docs.map(d=>d.data().name || d.id).sort();
-    $("pick").innerHTML = names.map(n=>`<a href="?town=${encodeURIComponent(n.toLowerCase())}">${n}</a>`).join("");
+    const fs = WANT_FS ? "&fs=1" : "";        // keep full screen after a board is picked
+    $("pick").innerHTML = names.map(n=>`<a href="?town=${encodeURIComponent(n.toLowerCase())}${fs}">${n}</a>`).join("");
   } catch(e){ $("msgSub").textContent = "Could not load boards: "+e.message; }
 }
 
