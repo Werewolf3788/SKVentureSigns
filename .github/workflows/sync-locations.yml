@@ -1,0 +1,35 @@
+name: sync-locations
+on:
+  push:
+    paths:
+      - .github/workflows/sync-locations.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pull the deployed page and its data script
+        run: |
+          curl -fsSL "https://skventuresigns-c35d5.web.app/Locations.html" -o Locations.html
+          curl -fsSL "https://skventuresigns-c35d5.web.app/locations-live.js" -o locations-live.js
+          ls -l Locations.html locations-live.js
+      - name: Commit when something changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Locations.html locations-live.js
+          if git diff --cached --quiet; then
+            echo "already up to date"
+          else
+            git commit -m "Locations: drop the ad card and restore the descriptions lightbox"
+            git push
+          fi
+      - name: Remove this temporary job
+        run: |
+          git rm .github/workflows/sync-locations.yml
+          git commit -m "Remove the temporary sync job now that it has run"
+          git push
