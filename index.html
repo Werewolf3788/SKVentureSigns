@@ -16,6 +16,7 @@
         ADD (10.15): Advertising card picture is now a slideshow of the live billboard ads. Visitors near a
                      board see only their area's boards (Clay County, Effingham County, ...); everyone else,
                      or anyone who doesn't allow location, sees the ads from all boards.
+                     Videos play all the way through before the next ad; pictures use their Sheet Duration.
     -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -1061,7 +1062,7 @@
                     let el;
                     if (ad.video) {
                         el = document.createElement('video');
-                        el.muted = true; el.playsInline = true; el.loop = true; el.preload = 'metadata';
+                        el.muted = true; el.playsInline = true; el.loop = false; el.preload = 'auto';
                         el.setAttribute('muted', ''); el.setAttribute('playsinline', '');
                     } else {
                         el = document.createElement('img');
@@ -1100,10 +1101,27 @@
                     if (i >= 0) { slides[i].classList.remove('on'); if (slides[i].pause) slides[i].pause(); }
                     i = next;
                     slides[i].classList.add('on');
-                    if (slides[i].play) { try { slides[i].currentTime = 0; slides[i].play().catch(() => {}); } catch (e) {} }
+                    const cur = slides[i];
+                    if (cur.play) { try { cur.currentTime = 0; cur.play().catch(() => {}); } catch (e) {} }
                     Array.from(dots.children).forEach((d, k) => d.classList.toggle('on', k === i));
                     clearTimeout(timer);
-                    if (slides.length > 1) timer = setTimeout(() => show((i + 1) % slides.length), ads[i].seconds * 1000);
+                    if (slides.length < 2) { if (cur.play) cur.loop = true; return; }
+                    const next1 = () => { if (slides[i] === cur) show((i + 1) % slides.length); };
+                    if (cur.play) {
+                        // Videos play all the way through, then the next ad comes up.
+                        cur.onended = next1;
+                        cur.onerror = () => { cur.dataset.bad = '1'; next1(); };
+                        // Safety net if a video stalls: its own length + 5 s, or 2 minutes if the length isn't known yet.
+                        const backup = () => {
+                            const len = isFinite(cur.duration) && cur.duration > 0 ? cur.duration : 0;
+                            clearTimeout(timer);
+                            timer = setTimeout(next1, (len ? len + 5 : 120) * 1000);
+                        };
+                        backup();
+                        cur.onloadedmetadata = backup;
+                    } else {
+                        timer = setTimeout(next1, ads[i].seconds * 1000);   // pictures stay up for their Duration from the Sheet
+                    }
                 }
                 show(0);
                 box._skStop = () => { clearTimeout(timer); slides.forEach(sl => { if (sl.pause) sl.pause(); }); };
