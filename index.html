@@ -1048,8 +1048,9 @@
             }
 
             function buildCarousel(card, ads, area) {
-                const oldImg = card.querySelector('img');
+                const oldImg = card.querySelector('.sk-ad-carousel') || card.querySelector('img');
                 if (!oldImg || !ads.length) return;
+                if (oldImg._skStop) oldImg._skStop();                      // replacing an earlier slideshow: stop its timer
                 const box = document.createElement('div');
                 box.className = 'sk-ad-carousel';
                 box.setAttribute('aria-label', 'Ads now running' + (area ? ' in ' + area : ''));
@@ -1103,6 +1104,7 @@
                     if (slides.length > 1) timer = setTimeout(() => show((i + 1) % slides.length), ads[i].seconds * 1000);
                 }
                 show(0);
+                box._skStop = () => { clearTimeout(timer); slides.forEach(sl => { if (sl.pause) sl.pause(); }); };
 
                 if (typeof gtag === 'function') gtag('event', 'ad_carousel_shown', { ad_area: area || 'all', ad_count: ads.length });
             }
@@ -1111,17 +1113,20 @@
             async function start(card) {
                 if (started) return;
                 started = true;
+                let playlist;
                 try {
-                    const [playlist, area] = await Promise.all([
-                        fetch(AD_PLAYLIST + '?t=' + Date.now()).then(r => r.json()),
-                        findVisitorArea()
-                    ]);
-                    let ads = pickAds(playlist, area);
-                    if (area && !ads.length) ads = pickAds(playlist, '');     // area has no live ads: show everything
-                    buildCarousel(card, ads, ads.length && area && pickAds(playlist, area).length ? area : '');
+                    playlist = await fetch(AD_PLAYLIST + '?t=' + Date.now()).then(r => r.json());
                 } catch (e) {
                     console.warn('Ad carousel unavailable', e);               // card keeps its original picture
+                    return;
                 }
+                // 1) Show every board's ads right away, so the card is never stuck waiting on the location prompt.
+                buildCarousel(card, pickAds(playlist, ''), '');
+                // 2) When (if) the visitor allows location, switch to just their area's boards.
+                const area = await findVisitorArea();
+                if (!area) return;
+                const local = pickAds(playlist, area);
+                if (local.length) buildCarousel(card, local, area);
             }
 
             // Wait for the services cards (built from the Sheet) to appear, then ask for location
