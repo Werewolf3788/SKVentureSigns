@@ -6,17 +6,13 @@
         ADMIN: Kevin (DJ Werewolf) - Admin
         CLIENT: Scott (S&K Venture Signs)
         STANDARDS: Responsive, No-Minify, G-Tag Integrated, GitHack Compatible
-        VERSION: 10.15 (Local Ad Slideshow)
+        VERSION: 10.14 (Strict Same-Tab Navigation)
         TECHNICAL: Precision Integration, Auto-Night Mode, High-Contrast Outlines, Dual-Column Mapping
-        TIMESTAMP: November 25, 2026
+        TIMESTAMP: May 13, 2026
         
         NO STRIPPING, NO COMPRESSING, DON'T CHANGE WHAT I DIDN'T SAY TO CHANGE.
         FIX: Completely stripped cross-tab switching logic.
         FIX: All links now strictly force same-tab loading via window.location.href.
-        ADD (10.15): Advertising card picture is now a slideshow of the live billboard ads. Visitors near a
-                     board see only their area's boards (Clay County, Effingham County, ...); everyone else,
-                     or anyone who doesn't allow location, sees the ads from all boards.
-                     Videos play all the way through before the next ad; pictures use their Sheet Duration.
     -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -653,6 +649,27 @@
         const SYNC_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZY38nsz_aJDO3cdtAwv4w359jK1aMt1rhBwZ3LAGarLyddtbBowFZv6mjlpnR1eGdNCpFhat8FuKp/pub?output=csv";
         const SERVICES_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9HBnWuIELZ5IxaTxuCpNgs5ep7Tz4NpaU8__laH9a1DK52CreOSM8IqQxUK95CMyzsmTmkHoTgc1b/pub?output=csv";
 
+        /**
+         * V10.14a: SERVICE CARD ARTWORK
+         * The image links in the services sheet point at the old WordPress media
+         * library, which now returns 404. Each card falls back to a bundled image
+         * of the same service when the sheet link is missing or unreachable.
+         */
+        const SERVICE_IMAGE_MAP = [
+            { match: ['advertising', 'billboard'], file: './images/S%26K-Sign-in-Sky.png' },
+            { match: ['rental', 'leasing'], file: './images/signs2.PNG' },
+            { match: ['installation'], file: './images/signs1.PNG' },
+            { match: ['sales'], file: './images/sales.png' },
+            { match: ['maintenance', 'repair'], file: './images/signs1.PNG' }
+        ];
+        function resolveServiceImage(raw, titleLower) {
+            const url = (raw || '').trim();
+            const isDeadLink = !url || /i0\.wp\.com|wp-content/i.test(url);
+            if (!isDeadLink) return url;
+            const hit = SERVICE_IMAGE_MAP.find(m => m.match.some(k => titleLower.includes(k)));
+            return hit ? hit.file : './images/S%26K-Sign-in-Sky.png';
+        }
+
         let siteData = { nav: [], phones: [], email: "", addressStreet: "", addressCity: "" };
 
         /**
@@ -791,7 +808,7 @@
                     // Stripped cross-tab check class injections to prevent confusing button states
                     grid.innerHTML += `
                         <div class="service-card ${isEven ? 'bg-[var(--card-bg)]' : 'bg-[#DAA421]'}">
-                            <img src="${imgs[i]?.trim()}?v=10.10" class="lightbox-trigger" onerror="this.src='https://via.placeholder.com/400x220?text=S%26K+Venture+Signs'">
+                            <img src="${resolveServiceImage(imgs[i], titleLower)}?v=10.11" ${titleLower.includes('advertising') ? 'data-ad-card="1"' : ''} class="lightbox-trigger" onerror="this.src='https://via.placeholder.com/400x220?text=S%26K+Venture+Signs'">
                             <div class="text-center mt-4 flex-grow">
                                 <h3 class="text-2xl mb-2 ${customTitleColor}" style="font-family:'Abril Fatface', cursive;">${titleText}</h3>
                                 <p class="text-sm mb-6 ${isEven ? 'text-[var(--text-primary)] opacity-70' : 'text-[#3E0100]'} font-medium">${descs[i]}</p>
@@ -945,237 +962,6 @@
             lucide.createIcons();
         };
     </script>
-
-    <!--
-        ADD-ON: LOCAL AD CAROUSEL (Advertising card)
-        Replaces the picture on the "Ensure your message reaches the right audience..." card with a
-        rotating slideshow of Scott's live billboard ads, picked by where the visitor's device is.
-        Source: the playlist.json his "Billboard Sync > Publish All Locations to GitHub" button writes.
-        Nothing above this block was changed; it waits for the services cards to load, then swaps that one image.
-    -->
-    <style id="sk-ad-carousel-style">
-        .sk-ad-carousel { position: relative; width: 100%; height: 220px; margin-bottom: 15px; border-radius: 14px; overflow: hidden; background: #000; }
-        .sk-ad-carousel .sk-ad-slide { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 0.8s ease; cursor: zoom-in; margin: 0; }
-        .sk-ad-carousel .sk-ad-slide.on { opacity: 1; }
-        .sk-ad-carousel .sk-ad-where { position: absolute; left: 8px; bottom: 8px; z-index: 2; background: rgba(62,1,0,0.85); color: #FFC627; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; text-shadow: none; }
-        .sk-ad-carousel .sk-ad-dots { position: absolute; right: 8px; bottom: 10px; z-index: 2; display: flex; gap: 4px; }
-        .sk-ad-carousel .sk-ad-dots span { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.4); }
-        .sk-ad-carousel .sk-ad-dots span.on { background: #FFC627; }
-    </style>
-    <script>
-        (function () {
-            const AD_PLAYLIST = 'https://raw.githubusercontent.com/skventuresigns-design/skventuresigns/main/playlist.json';
-            const AD_IMAGE_BASE = 'https://raw.githubusercontent.com/skventuresigns-design/skventuresigns/main/';
-            const AD_NEAR_MILES = 35;   // a visitor within this many miles of a board's town is "in" that board's area
-
-            // One line per Sheet tab (tab name in lower case, exactly as in playlist.json).
-            // "area" groups boards together: a visitor near ANY board in an area sees ALL boards in that area.
-            const AD_BOARDS = {
-                'clay city':  { area: 'Clay County',      lat: 38.6889, lng: -88.3542 },
-                'floratv':    { area: 'Clay County',      lat: 38.6689, lng: -88.4856 },
-                'xenia':      { area: 'Clay County',      lat: 38.6356, lng: -88.6375 },
-                'xeniatv':    { area: 'Clay County',      lat: 38.6356, lng: -88.6375 },
-                'altamont':   { area: 'Effingham County', lat: 39.0620, lng: -88.7484 },
-                'brownstown': { area: 'Fayette County',   lat: 38.9956, lng: -88.9520 },
-                'de soto':    { area: 'Jackson County',   lat: 37.8170, lng: -89.2273 },
-                'oliver':     { area: 'Oliver',           lat: null,    lng: null }     // TODO: set Oliver board's location
-            };
-
-            const CARD_MATCH = card => {
-                const t = (card.textContent || '').toLowerCase();
-                return t.includes('right audience') || !!Array.from(card.querySelectorAll('h3')).find(h => h.textContent.trim().toLowerCase() === 'advertising');
-            };
-
-            function milesBetween(a, b, c, d) {
-                const R = 3958.8, r = x => x * Math.PI / 180;
-                const dLat = r(c - a), dLng = r(d - b);
-                const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a)) * Math.cos(r(c)) * Math.sin(dLng / 2) ** 2;
-                return 2 * R * Math.asin(Math.sqrt(h));
-            }
-
-            // Device location -> area name, or '' if unknown / denied / not near any board.
-            function findVisitorArea() {
-                return new Promise(resolve => {
-                    if (!navigator.geolocation) return resolve('');
-                    navigator.geolocation.getCurrentPosition(pos => {
-                        let best = null;
-                        Object.keys(AD_BOARDS).forEach(k => {
-                            const b = AD_BOARDS[k];
-                            if (b.lat === null) return;
-                            const d = milesBetween(pos.coords.latitude, pos.coords.longitude, b.lat, b.lng);
-                            if (!best || d < best.d) best = { d: d, area: b.area };
-                        });
-                        resolve(best && best.d <= AD_NEAR_MILES ? best.area : '');
-                    }, () => resolve(''), { enableHighAccuracy: false, timeout: 10000, maximumAge: 3600000 });
-                });
-            }
-
-            function adSrc(path) {
-                const p = String(path || '').trim();
-                if (/^https?:\/\//i.test(p)) return p;
-                return AD_IMAGE_BASE + p.replace(/^\.?\//, '').split('/').map(s => { try { s = decodeURIComponent(s); } catch (e) {} return encodeURIComponent(s); }).join('/');
-            }
-
-            function todayISO() {
-                const n = new Date();
-                return n.getFullYear() + '-' + ('0' + (n.getMonth() + 1)).slice(-2) + '-' + ('0' + n.getDate()).slice(-2);
-            }
-
-            function expDateISO(v) {
-                const s = String(v || '').trim();
-                let m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);
-                if (m) return m[3] + '-' + ('0' + m[1]).slice(-2) + '-' + ('0' + m[2]).slice(-2);
-                m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
-                return m ? m[0] : '';
-            }
-
-            // Ads for the area (or every board if area is unknown), live today, one copy of each picture.
-            function pickAds(playlist, area) {
-                const today = todayISO();
-                const seen = {};
-                const out = [];
-                Object.keys(playlist.locations || {}).forEach(tab => {
-                    const board = AD_BOARDS[tab];
-                    if (area && (!board || board.area !== area)) return;
-                    (playlist.locations[tab] || []).forEach(ad => {
-                        const path = String(ad.imageUrl || '').trim();
-                        if (!path || /\.html?$/i.test(path)) return;               // pages like ./preview.html are not ads
-                        const exp = expDateISO(ad.expirationDate);
-                        if (exp && exp < today) return;                            // still shows ON its expiration date
-                        const key = path.toLowerCase();
-                        if (seen[key]) return;
-                        seen[key] = true;
-                        out.push({ name: ad.advertiser || '', src: adSrc(path), seconds: Number(ad.duration) > 0 ? Number(ad.duration) : 8, video: /\.(mp4|webm|mov|m4v)$/i.test(path) });
-                    });
-                });
-                return out;
-            }
-
-            function buildCarousel(card, ads, area) {
-                const oldImg = card.querySelector('.sk-ad-carousel') || card.querySelector('img');
-                if (!oldImg || !ads.length) return;
-                if (oldImg._skStop) oldImg._skStop();                      // replacing an earlier slideshow: stop its timer
-                const box = document.createElement('div');
-                box.className = 'sk-ad-carousel';
-                box.setAttribute('aria-label', 'Ads now running' + (area ? ' in ' + area : ''));
-
-                const slides = ads.map(ad => {
-                    let el;
-                    if (ad.video) {
-                        el = document.createElement('video');
-                        el.muted = true; el.playsInline = true; el.loop = false; el.preload = 'auto';
-                        el.setAttribute('muted', ''); el.setAttribute('playsinline', '');
-                    } else {
-                        el = document.createElement('img');
-                        el.loading = 'lazy';
-                        el.onclick = () => {
-                            const o = document.getElementById('lightbox-overlay'), i = document.getElementById('lightbox-img');
-                            if (o && i) { i.src = el.src; o.style.display = 'flex'; }
-                        };
-                    }
-                    el.className = 'sk-ad-slide';
-                    el.alt = ad.name;
-                    el.src = ad.src;
-                    el.onerror = () => { el.dataset.bad = '1'; };
-                    box.appendChild(el);
-                    return el;
-                });
-
-                const where = document.createElement('div');
-                where.className = 'sk-ad-where';
-                where.textContent = area ? 'Now showing in ' + area : 'Now showing on our boards';
-                box.appendChild(where);
-
-                const dots = document.createElement('div');
-                dots.className = 'sk-ad-dots';
-                if (ads.length <= 12) ads.forEach(() => dots.appendChild(document.createElement('span')));
-                box.appendChild(dots);
-
-                oldImg.replaceWith(box);
-
-                let i = -1, timer = null;
-                function show(next) {
-                    for (let tries = 0; tries < slides.length; tries++) {      // skip any ad whose file failed to load
-                        if (!slides[next].dataset.bad) break;
-                        next = (next + 1) % slides.length;
-                    }
-                    if (i >= 0) { slides[i].classList.remove('on'); if (slides[i].pause) slides[i].pause(); }
-                    i = next;
-                    slides[i].classList.add('on');
-                    const cur = slides[i];
-                    if (cur.play) { try { cur.currentTime = 0; cur.play().catch(() => {}); } catch (e) {} }
-                    Array.from(dots.children).forEach((d, k) => d.classList.toggle('on', k === i));
-                    clearTimeout(timer);
-                    if (slides.length < 2) { if (cur.play) cur.loop = true; return; }
-                    const next1 = () => { if (slides[i] === cur) show((i + 1) % slides.length); };
-                    if (cur.play) {
-                        // Videos play all the way through, then the next ad comes up.
-                        cur.onended = next1;
-                        cur.onerror = () => { cur.dataset.bad = '1'; next1(); };
-                        // Safety net if a video stalls: its own length + 5 s, or 2 minutes if the length isn't known yet.
-                        const backup = () => {
-                            const len = isFinite(cur.duration) && cur.duration > 0 ? cur.duration : 0;
-                            clearTimeout(timer);
-                            timer = setTimeout(next1, (len ? len + 5 : 120) * 1000);
-                        };
-                        backup();
-                        cur.onloadedmetadata = backup;
-                    } else {
-                        timer = setTimeout(next1, ads[i].seconds * 1000);   // pictures stay up for their Duration from the Sheet
-                    }
-                }
-                show(0);
-                box._skStop = () => { clearTimeout(timer); slides.forEach(sl => { if (sl.pause) sl.pause(); }); };
-
-                if (typeof gtag === 'function') gtag('event', 'ad_carousel_shown', { ad_area: area || 'all', ad_count: ads.length });
-            }
-
-            let started = false;
-            async function start(card) {
-                if (started) return;
-                started = true;
-                let playlist;
-                try {
-                    playlist = await fetch(AD_PLAYLIST + '?t=' + Date.now()).then(r => r.json());
-                } catch (e) {
-                    console.warn('Ad carousel unavailable', e);               // card keeps its original picture
-                    return;
-                }
-                // 1) Show every board's ads right away, so the card is never stuck waiting on the location prompt.
-                buildCarousel(card, pickAds(playlist, ''), '');
-                // 2) When (if) the visitor allows location, switch to just their area's boards.
-                const area = await findVisitorArea();
-                if (!area) return;
-                const local = pickAds(playlist, area);
-                if (local.length) buildCarousel(card, local, area);
-            }
-
-            // Wait for the services cards (built from the Sheet) to appear, then ask for location
-            // only when the Advertising card is actually scrolled into view.
-            function watchForCard() {
-                const grid = document.getElementById('services-grid');
-                if (!grid) return;
-                const tryFind = () => {
-                    const card = Array.from(grid.querySelectorAll('.service-card')).find(CARD_MATCH);
-                    if (!card) return false;
-                    if ('IntersectionObserver' in window) {
-                        const io = new IntersectionObserver(entries => {
-                            if (entries.some(en => en.isIntersecting)) { io.disconnect(); start(card); }
-                        }, { rootMargin: '200px' });
-                        io.observe(card);
-                    } else {
-                        start(card);
-                    }
-                    return true;
-                };
-                if (tryFind()) return;
-                const mo = new MutationObserver(() => { if (tryFind()) mo.disconnect(); });
-                mo.observe(grid, { childList: true, subtree: true });
-            }
-
-            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watchForCard);
-            else watchForCard();
-        })();
-    </script>
+    <script src="./ad-slideshow.js?v=2"></script>
 </body>
 </html>
