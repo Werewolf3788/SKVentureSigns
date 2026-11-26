@@ -6,9 +6,9 @@
         ADMIN: Kevin (DJ Werewolf) - Admin
         CLIENT: Scott (S&K Venture Signs)
         STANDARDS: Responsive, No-Minify, G-Tag Integrated, GitHack Compatible
-        VERSION: 10.16 (Dark Mode Elevation Color Update)
+        VERSION: 10.17 (Firebase Inventory)
         TECHNICAL: Precision Integration, Auto-Night Mode, Dual-Column Mapping, Empty Slot Hiding
-        TIMESTAMP: May 7, 2026 - 9:41 PM EDT (New York Time)
+        TIMESTAMP: November 25, 2026 (New York Time)
         Nesting Code: Header/Footer Primary Wrapper replaced in Locations Portal
         
         NO STRIPPING, NO COMPRESSING, DON'T CHANGE WHAT I DIDN'T SAY TO CHANGE.
@@ -18,6 +18,8 @@
         FIX: Applied Inter-Tab Communication (ITC) with Cross-Tab State Sync to ALL links (Nav, CTAs, Maps, PDFs, Modals).
         FIX: Added .adaptive-dashed-box to make the "Seeking new locations" and "Regional High-Traffic Impact" boxes sync with Dark Mode.
         FIX: Removed KF Signature Watermark while preserving both G-Tags for tracking.
+        FIX (10.17): Inventory now comes from Firebase (Realtime Database billboard/v1/towns) instead of the
+                     retired Google Sheet. Same layout and cards; empty fields still hide themselves.
     -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -682,7 +684,8 @@
          * V10.15 Update: Global Inter-Tab Communication (ITC) & Adaptive Dashed Boxes.
          */
         const SITE_DATA_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZY38nsz_aJDO3cdtAwv4w359jK1aMt1rhBwZ3LAGarLyddtbBowFZv6mjlpnR1eGdNCpFhat8FuKp/pub?output=csv";
-        const INVENTORY_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRIkCZ_6qzk9T82iPH1DcZFplAdev1n_kSasC_QKO1v1zfcGorTHN6MKjCtOcOOk_j2Txx481WB2LB3/pub?output=csv";
+        // V10.17: Billboard inventory lives in Firebase now (the old inventory Google Sheet is retired).
+        const INVENTORY_FIREBASE_URL = "https://skventuresigns-c35d5-default-rtdb.firebaseio.com/billboard/v1/towns.json";
         
         let siteData = { 
             nav: [], 
@@ -1181,18 +1184,65 @@
             lucide.createIcons();
         }
 
+        /**
+         * V10.17: Turn the Firebase towns into the same card records the Google Sheet used to give,
+         * so renderGrid() and openSpecs() work exactly as before.
+         *   billboard/v1/towns/{town}: county, screens[] (id, side, size, matrix, pitch, adSeconds, address, lat, lng)
+         * Optional town fields (price, special, info, pdf, traffic, viewingDistance, cost1/cost2/cost4,
+         * lighted, slots, runtime, fileType, img1/img2) show up automatically if they are ever added.
+         */
+        function firebaseTownsToCards(towns) {
+            const list = [];
+            const pick = (...vals) => vals.find(v => isValidData(v));
+            const uniqVals = arr => arr.filter((v, i) => isValidData(v) && arr.indexOf(v) === i);
+            Object.keys(towns || {}).forEach(key => {
+                const t = towns[key] || {};
+                const screens = (Array.isArray(t.screens) ? t.screens : Object.values(t.screens || {})).filter(Boolean);
+                const s1 = screens[0] || {}, s2 = screens[1] || {};
+                const signLabel = s => isValidData(s.id) ? (s.id + (isValidData(s.side) ? ` (${s.side})` : '')) : '';
+                const sides = uniqVals(screens.map(s => s.side));
+                const seconds = uniqVals(screens.map(s => s.adSeconds));
+                const townName = pick(t.name, t.town) || key.replace(/\b\w/g, c => c.toUpperCase());
+                list.push({
+                    town: townName,
+                    price: pick(t.price),
+                    timesYear: pick(t.special, t.timesYear, t.currentSpecial),
+                    long_col: pick(s1.lng, s1.long, t.lng),
+                    lat_col: pick(s1.lat, t.lat),
+                    info: pick(t.info, t.description),
+                    pdf: pick(t.pdf),
+                    county: pick(t.county),
+                    size: uniqVals(screens.map(s => s.size)).join(' / '),
+                    address: pick(...screens.map(s => s.address), t.address),
+                    id1: signLabel(s1), id2: signLabel(s2),
+                    lighted: pick(t.lighted),
+                    matrix: pick(...screens.map(s => s.pitch), t.pitch),
+                    creativeMatrix: uniqVals(screens.map(s => s.matrix)).join(' / '),
+                    sides: screens.length ? `${screens.length}${sides.length ? ' (' + sides.join(', ') + ')' : ''}` : '',
+                    fileType: pick(t.fileType),
+                    runtime: pick(t.runtime),
+                    adTime: seconds.length ? seconds.join(' / ') + ' sec' : '',
+                    slots: pick(t.slots),
+                    cost1: pick(t.cost1), cost2: pick(t.cost2), cost4: pick(t.cost4),
+                    img1: pick(s1.image, s1.img, t.img1), img2: pick(s2.image, s2.img, t.img2),
+                    traffic: pick(t.traffic), viewingDistance: pick(t.viewingDistance)
+                });
+            });
+            return list.sort((a, b) => String(a.town).localeCompare(String(b.town)));
+        }
+
         async function fetchInventoryData(isAutoRefresh = false) {
             const bar = document.getElementById('refresh-bar');
             if (isAutoRefresh && bar) { bar.style.width = '100%'; setTimeout(() => { bar.style.width = '0'; }, 1000); }
             try {
-                const res = await fetch(`${INVENTORY_CSV_URL}&t=${Date.now()}`);
-                const text = await res.text();
-                const newData = parseInventoryCSV(text);
+                const res = await fetch(`${INVENTORY_FIREBASE_URL}?t=${Date.now()}`, { cache: 'no-store' });
+                if (!res.ok) throw new Error('Firebase ' + res.status);
+                const newData = firebaseTownsToCards(await res.json());
                 if (JSON.stringify(newData) !== JSON.stringify(billboards)) { 
                     billboards = newData; 
                     renderGrid(); 
                 }
-            } catch (e) { console.warn("Sync failed."); }
+            } catch (e) { console.warn("Sync failed.", e); }
         }
 
         /* =========================================================
