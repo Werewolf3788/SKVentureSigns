@@ -1,18 +1,34 @@
 /*
  * locations-live.js  --  puts the live Firebase town data on the Locations page.
  *
- * This uses the same information the /billboard/v1/towns tree holds in the Realtime Database:
- * every town, its county, each board (ID, side, size, pixel pitch, creative matrix, ad length,
- * street address, coordinates) and the ads currently in that town's rotation.
+ * Two Firebase sources are read together:
  *
- * The page already looks for a Google Sheet inventory feed that no longer exists, so until this
- * script runs it shows "Live Locations Are Being Updated". This fills the same #grid-root with the
- * Firebase data instead, using the page's own card styles so nothing looks out of place.
+ *  Realtime Database  /billboard/v1/towns
+ *      the structure of the world: every town, its county, and each board there
+ *      (ID, side, size, pixel pitch, creative matrix, ad length, street address,
+ *      latitude and longitude).
  *
- * Nothing else on the page is touched: the fallback stays as the backup if the fetch fails.
+ *  Firestore  skventure_ads
+ *      the advertising side: every ad record with its advertiser, creative URL,
+ *      status and expiration date.
+ *
+ * The town and board list comes from the Realtime Database. Ads running in each
+ * town are the union of that town's Realtime Database rotation and its active
+ * Firestore records, so a town looks complete whether it was last updated by the
+ * spreadsheet pusher or the sign player. If the Realtime Database cannot be
+ * reached at all, the page still builds itself from the Firestore ads so the
+ * location list is never blank.
+ *
+ * The page already looks for a Google Sheet inventory feed that no longer exists,
+ * so until this script runs it shows "Live Locations Are Being Updated". This
+ * fills the same #grid-root with Firebase data, using the page's own card styles.
  */
+
 (function () {
   var RTDB = "https://skventuresigns-c35d5-default-rtdb.firebaseio.com/billboard/v1/towns.json";
+  var FS = "https://firestore.googleapis.com/v1/projects/skventuresigns-c35d5/databases/(default)" +
+           "/documents/skventure_ads?pageSize=300" +
+           "&key=AIzaSyCVff98TiQjhjSFrLm_0kMGZ5NlrVTPM7g";
   var PLAYER = "./Claude-Test/billboard-firestore.html";
 
   function esc(s) {
@@ -27,11 +43,21 @@
     return out;
   }
 
+  function slug(s) {
+    return String(s == null ? "" : s).toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+
+  function titleCase(key) {
+    return String(key || "").replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+
+  function isLive(status) {
+    var s = String(status || "").toLowerCase();
+    return s !== "inactive" && s !== "retired" && s !== "paused" && s !== "expired";
+  }
+
   function activeAds(ads) {
-    return (ads || []).filter(function (a) {
-      return String(a.status || "").toLowerCase() !== "inactive" &&
-             String(a.status || "").toLowerCase() !== "retired";
-    });
+    return (ads || []).filter(function (a) { return a && isLive(a.status); });
   }
 
   function coords(screens) {
@@ -45,17 +71,69 @@
     return null;
   }
 
-  function card(key, town) {
+  /* ---------- Firestore ---------- */
+
+  function fsText(fields, name) {
+    var f = fields && fields[name];
+    if (!f) return "";
+    if (f.stringValue != null) return f.stringValue;
+    if (f.integerValue != null) return String(f.integerValue);
+    if (f.booleanValue != null) return String(f.booleanValue);
+    return "";
+  }
+
+  function expired(dateText) {
+    if (!dateText) return false;
+    var t = Date.parse(dateText);
+    return !isNaN(t) && t < Date.now();
+  }
+
+  // Firestore records grouped by town key: { xenia: [ {advertiser, url, status} ] }
+  function groupFirestore(docs) {
+    var byTown = {};
+    (docs || []).forEach(function (doc) {
+      var f = doc.fields || {};
+      var town = slug(fsText(f, "location") || fsText(f, "sheetName") || fsText(f, "town"));
+      if (!town) return;
+      if (!isLive(fsText(f, "status"))) return;
+      if (f.removedFromSheet && f.removedFromSheet.booleanValue === true) return;  // taken off the sheet, not running
+      if (expired(fsText(f, "expirationDate"))) return;
+      var advertiser = fsText(f, "advertiser") || "Ad";
+      var url = fsText(f, "imageSrc") || fsText(f, "imageUrl") || fsText(f, "url");
+      var key = slug(advertiser) + "|" + slug(url);
+      byTown[town] = byTown[town] || [];
+      var dup = byTown[town].some(function (a) { return slug(a.advertiser) + "|" + slug(a.url) === key; });
+      if (!dup) byTown[town].push({ advertiser: advertiser, url: url, status: fsText(f, "status") || "active", source: "firestore" });
+    });
+    return byTown;
+  }
+
+  function mergeAds(rtdbAds, fsAds) {
+    var out = activeAds(rtdbAds).map(function (a) {
+      return { advertiser: a.advertiser, url: a.url, status: a.status, startDate: a.startDate, endDate: a.endDate };
+    });
+    (fsAds || []).forEach(function (a) {
+      var key = slug(a.advertiser) + "|" + slug(a.url);
+      var dup = out.some(function (b) { return slug(b.advertiser) + "|" + slug(b.url) === key; }) ||
+                out.some(function (b) { return a.advertiser && slug(b.advertiser) === slug(a.advertiser); });
+      if (!dup) out.push(a);
+    });
+    return out;
+  }
+
+  /* ---------- Card ---------- */
+
+  function card(key, town, fsAds) {
     var screens = town.screens || [];
-    var ads = activeAds(town.ads);
+    var ads = mergeAds(town.ads, fsAds);
     var first = screens[0] || {};
     var pos = coords(screens);
     var address = uniq(screens.map(function (s) { return s.address; }))[0] || "";
-    var townName = town.name || key.replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+    var townName = town.name || titleCase(key);
 
     var mapQuery = pos
       ? pos.lat + "," + pos.lng
-      : encodeURIComponent(address + " " + townName + " IL");
+      : encodeURIComponent((address || townName + ", IL"));
     var mapEmbed = "https://maps.google.com/maps?q=" + mapQuery + "&t=k&z=16&output=embed";
     var mapLink = "https://www.google.com/maps/search/?api=1&query=" + mapQuery;
 
@@ -86,10 +164,15 @@
     var adRows = ads.length
       ? ads.map(function (a) {
           var when = [a.startDate, a.endDate].filter(Boolean).join(" → ");
-          var live = String(a.status || "").toLowerCase() === "active" ? "running" : esc(a.status || "");
+          var live = "running";
           return "<li><strong>" + esc(a.advertiser || "Ad") + "</strong> &middot; " + esc(live) + (when ? " &middot; " + esc(when) : "") + "</li>";
         }).join("")
       : '<li class="skvl-empty">No ad booked in this town right now &mdash; the spot is open.</li>';
+
+    // Latitude and longitude stay pinned on the map image itself, not just under it.
+    var coordLine = pos
+      ? '<div class="coord-display">Lat: ' + pos.lat.toFixed(5) + " | Long: " + pos.lng.toFixed(5) + "</div>"
+      : "";
 
     return '\n<div class="advertising-card-box" data-skvl-card="' + esc(key) + '">\n' +
       '  <div class="card-top-row">\n' +
@@ -97,8 +180,9 @@
       '      <div class="horizontal-map-container">\n' +
       '        <iframe class="w-full h-full opacity-100" src="' + mapEmbed + '" loading="lazy" title="Map of ' + esc(townName) + '"></iframe>\n' +
       '        <a href="' + mapLink + '" target="_blank" rel="noopener" class="absolute bottom-4 right-4 bg-white text-black p-3 rounded-full shadow-2xl hover:scale-110 transition-transform"><i data-lucide="navigation" class="w-6 h-6"></i></a>\n' +
+      (pos ? '        <span class="skvl-coord" title="Latitude and longitude of this board">' + pos.lat.toFixed(5) + ", " + pos.lng.toFixed(5) + "</span>\n" : "") +
       '      </div>\n' +
-      (pos ? '<div class="coord-display">Lat: ' + pos.lat.toFixed(5) + " | Long: " + pos.lng.toFixed(5) + "</div>" : "") +
+      coordLine +
       '    </div>\n' +
       '    <div class="card-primary-info">\n' +
       '      <h2 class="town-title">' + esc(townName) + "</h2>\n" +
@@ -119,7 +203,7 @@
       "</div>\n";
   }
 
-  function render(towns) {
+  function render(towns, fsByTown) {
     var grid = document.getElementById("grid-root");
     if (!grid) return;
     var keys = Object.keys(towns).sort(function (a, b) {
@@ -127,13 +211,23 @@
       return an.localeCompare(bn);
     });
     grid.innerHTML = keys.filter(function (k) { return towns[k] && typeof towns[k] === "object"; })
-                        .map(function (k) { return card(k, towns[k]); }).join("");
+                        .map(function (k) { return card(k, towns[k], fsByTown[slug(k)] || fsByTown[k]); }).join("");
     grid.classList.remove("hidden");
     grid.dataset.skvl = "1";
     grid.dataset.fallback = "1";          // stops the "being updated" card from replacing this
     var spinner = document.getElementById("loading-spinner");
     if (spinner) spinner.classList.add("hidden");
     if (typeof lucide !== "undefined") lucide.createIcons();
+  }
+
+  // Rebuild a town list from Firestore alone, used only when the Realtime Database is unreachable.
+  function townsFromFirestore(fsByTown) {
+    var towns = {};
+    Object.keys(fsByTown).forEach(function (key) {
+      if (!fsByTown[key].length) return;
+      towns[key] = { name: titleCase(key), ads: fsByTown[key], screens: [] };
+    });
+    return towns;
   }
 
   function style() {
@@ -149,7 +243,11 @@
       ".skvl-col ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}" +
       ".skvl-col li{opacity:.92;line-height:1.45}" +
       ".skvl-col li strong{opacity:1}" +
-      ".skvl-empty{opacity:.6;font-style:italic}";
+      ".skvl-empty{opacity:.6;font-style:italic}" +
+      ".skvl-coord{position:absolute;left:10px;bottom:10px;z-index:2;pointer-events:none;" +
+      "background:rgba(0,0,0,.66);color:#fff;font-family:Georgia,serif;font-size:11px;font-weight:600;" +
+      "letter-spacing:.3px;padding:4px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.3);" +
+      "text-shadow:0 1px 2px rgba(0,0,0,.8)}";
     document.head.appendChild(s);
   }
 
@@ -157,9 +255,9 @@
     style();
     var grid = document.getElementById("grid-root");
     if (grid) grid.dataset.fallback = "1";       // never draw the "updating" card while we load
-    var towns = null;
+    var towns = null, fsByTown = {};
 
-    function paint() { if (towns) render(towns); }
+    function paint() { if (towns) render(towns, fsByTown); }
 
     // If anything else (the old feed code, an auto-refresh) rewrites the grid, put ours back.
     var gridEl = document.getElementById("grid-root");
@@ -174,21 +272,31 @@
       }).observe(gridEl, { childList: true });
     }
 
-    fetch(RTDB, { cache: "no-store" })
-      .then(function (r) { if (!r.ok) throw new Error("rtdb " + r.status); return r.json(); })
-      .then(function (data) {
-        if (!data || !Object.keys(data).length) throw new Error("no towns in the database");
-        towns = data;
-        paint();
-      })
-      .catch(function (e) {
-        // leave the page's own "being updated" message in place
-        var g = document.getElementById("grid-root");
-        if (g) g.dataset.fallback = "0";
-        var sp = document.getElementById("loading-spinner");
-        if (sp) sp.classList.add("hidden");
-        console.warn("Live town list unavailable:", e.message);
-      });
+    // Firestore first: it loads fast and holds the ad list.
+    var fsReady = fetch(FS, { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("firestore " + r.status); return r.json(); })
+      .then(function (data) { fsByTown = groupFirestore(data && data.documents); })
+      .catch(function (e) { console.warn("Firestore ads unavailable:", e.message); });
+
+    fsReady.then(function () {
+      fetch(RTDB, { cache: "no-store" })
+        .then(function (r) { if (!r.ok) throw new Error("rtdb " + r.status); return r.json(); })
+        .then(function (data) {
+          if (!data || !Object.keys(data).length) throw new Error("no towns in the database");
+          towns = data;
+          paint();
+        })
+        .catch(function (e) {
+          // Realtime Database is down: keep the page useful with the Firestore towns we know about.
+          console.warn("Live town list unavailable:", e.message);
+          var fromFs = townsFromFirestore(fsByTown);
+          if (Object.keys(fromFs).length) { towns = fromFs; paint(); return; }
+          var g = document.getElementById("grid-root");
+          if (g) g.dataset.fallback = "0";
+          var sp = document.getElementById("loading-spinner");
+          if (sp) sp.classList.add("hidden");
+        });
+    });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);

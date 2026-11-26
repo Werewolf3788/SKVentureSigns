@@ -590,6 +590,11 @@
         </div>
     </div>
 
+    <!-- Advertising card: a real ad from the board nearest the visitor -->
+    <section class="w-full pt-10 pb-2 px-6 flex justify-center">
+        <div id="skv-ad-card" data-skv-ad-card style="width:100%;max-width:430px"></div>
+    </section>
+
     <!-- Live Inventory Section -->
     <main id="billboard-container" class="w-full py-16 bg-white-to-dark">
         <div class="max-w-[1500px] mx-auto px-6">
@@ -1065,6 +1070,9 @@
         }
 
         function parseInventoryCSV(text) {
+            // A deleted / unpublished Google Sheet answers with an HTML error page
+            // (HTTP 410 "file has been deleted"). That must never be parsed as inventory.
+            if (!text || /^\s*</.test(text)) return [];
             const rows = []; let row = []; let cell = ''; let inQuotes = false;
             for (let i = 0; i < text.length; i++) {
                 const char = text[i];
@@ -1087,6 +1095,8 @@
             const list = [];
             for (let i = 1; i < rows.length; i++) {
                 const d = rows[i]; if (!d || d.length < 5) continue;
+                // Skip rows that came from markup instead of real data
+                if (!d[0] || d[0].indexOf('<') !== -1) continue;
                 list.push({
                     town: d[0], price: d[1], timesYear: d[2], long_col: d[3], lat_col: d[4],
                     info: d[5], pdf: d[6], county: d[7], size: d[8], address: d[9],
@@ -1103,7 +1113,9 @@
             const grid = document.getElementById('grid-root');
             const spinner = document.getElementById('loading-spinner');
             if (!grid) return;
+            if (!billboards.length) { showInventoryFallback(); return; }
             grid.innerHTML = '';
+            grid.dataset.fallback = '0';
             
             billboards.forEach((item, index) => {
                 const rawLat = String(item.lat_col).trim();
@@ -1127,7 +1139,9 @@
                 // V10.15: Apply ITC Smart Tab Focus to dynamic map links and PDF links inside the grid
                 const targetMapName = `tab_sk_map_${index}`;
                 const targetPdfName = `tab_sk_pdf_${index}`;
-                const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${long}`;
+                const mapLinkUrl = (isNaN(lat) || isNaN(long))
+                    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address + ' ' + item.town + ' IL')}`
+                    : `https://www.google.com/maps/search/?api=1&query=${lat},${long}`;
 
                 grid.innerHTML += `
                 <div class="advertising-card-box">
@@ -1181,18 +1195,60 @@
             lucide.createIcons();
         }
 
+        function showInventoryFallback() {
+            const grid = document.getElementById('grid-root');
+            const spinner = document.getElementById('loading-spinner');
+            if (spinner) spinner.classList.add('hidden');
+            if (!grid || grid.dataset.fallback === '1') return;
+
+            // Keep any locations that are already on screen; only show this when the list is empty.
+            if (billboards.length > 0) return;
+
+            grid.dataset.fallback = '1';
+            grid.innerHTML = `
+            <div class="advertising-card-box" style="max-width:920px;width:100%;margin:0 auto;">
+                <div class="p-8 md:p-12 text-center flex flex-col items-center gap-6">
+                    <h2 class="town-title text-white" style="margin:0;">Live Locations Are Being Updated</h2>
+                    <p class="description-tag text-white" style="margin:0;max-width:640px;">
+                        Our billboard inventory feed is temporarily offline, so the interactive map list cannot load right now.
+                        Availability and pricing for every location are still being handled in person &mdash; call or email us and
+                        we will send the current list for your area.
+                    </p>
+                    <div class="flex flex-wrap items-center justify-center gap-4">
+                        <span class="view-specs-btn" onclick="openPhoneSmartActions('844-907-4450')">
+                            <i data-lucide="phone" class="w-4 h-4"></i> Call 844-907-4450
+                        </span>
+                        <span class="view-specs-btn" onclick="openEmailSmartActions('Scott.Robinson@skventuresigns.com', 'Location Availability')">
+                            <i data-lucide="mail" class="w-4 h-4"></i> Email for Availability
+                        </span>
+                    </div>
+                </div>
+            </div>`;
+            grid.classList.remove('hidden');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
         async function fetchInventoryData(isAutoRefresh = false) {
             const bar = document.getElementById('refresh-bar');
             if (isAutoRefresh && bar) { bar.style.width = '100%'; setTimeout(() => { bar.style.width = '0'; }, 1000); }
             try {
-                const res = await fetch(`${INVENTORY_CSV_URL}&t=${Date.now()}`);
+                const res = await fetch(`${INVENTORY_CSV_URL}&t=${Date.now()}`, { cache: 'no-store' });
+                const type = res.headers.get('content-type') || '';
                 const text = await res.text();
-                const newData = parseInventoryCSV(text);
-                if (JSON.stringify(newData) !== JSON.stringify(billboards)) { 
-                    billboards = newData; 
-                    renderGrid(); 
+                // Deleted / unpublished sheet: Google replies 410 (or 404) with an HTML page.
+                if (!res.ok || type.indexOf('text/html') !== -1 || /^\s*</.test(text)) {
+                    throw new Error(`inventory feed responded ${res.status}`);
                 }
-            } catch (e) { console.warn("Sync failed."); }
+                const newData = parseInventoryCSV(text);
+                if (!newData.length) throw new Error('inventory feed contained no locations');
+                if (JSON.stringify(newData) !== JSON.stringify(billboards)) {
+                    billboards = newData;
+                    renderGrid();
+                }
+            } catch (e) {
+                console.warn('Inventory sync failed:', e.message);
+                showInventoryFallback();
+            }
         }
 
         /* =========================================================
@@ -1254,5 +1310,7 @@
             }
         });
     </script>
+    <script src="./ad-card.js?v=2"></script>
+    <script src="./locations-live.js?v=3"></script>
 </body>
 </html>
