@@ -1,0 +1,30 @@
+name: sync-services
+on:
+  push:
+    paths:
+      - .github/workflows/sync-services.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pull deployed files
+        run: |
+          set -e
+          curl -fsSL -o index.html https://skventuresigns-c35d5.web.app/index.html
+          mkdir -p images
+          curl -fsSL -o images/sales.png https://skventuresigns-c35d5.web.app/images/sales.png
+          ls -l index.html images/sales.png
+          git config user.name "sync-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html images/sales.png
+          if git diff --cached --quiet; then echo "no changes"; else git commit -m "Fix broken service card images"; git push; fi
+      - name: Remove temp workflow
+        run: |
+          git rm .github/workflows/sync-services.yml
+          git commit -m "Remove temp sync workflow"
+          git push
