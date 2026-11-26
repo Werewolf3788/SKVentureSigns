@@ -6,9 +6,9 @@
         ADMIN: Kevin (DJ Werewolf) - Admin
         CLIENT: Scott (S&K Venture Signs)
         STANDARDS: Responsive, No-Minify, G-Tag Integrated, GitHack Compatible
-        VERSION: 10.16 (Dark Mode Elevation Color Update)
+        VERSION: 10.17 (Firebase Inventory)
         TECHNICAL: Precision Integration, Auto-Night Mode, Dual-Column Mapping, Empty Slot Hiding
-        TIMESTAMP: May 7, 2026 - 9:41 PM EDT (New York Time)
+        TIMESTAMP: November 25, 2026 (New York Time)
         Nesting Code: Header/Footer Primary Wrapper replaced in Locations Portal
         
         NO STRIPPING, NO COMPRESSING, DON'T CHANGE WHAT I DIDN'T SAY TO CHANGE.
@@ -18,6 +18,8 @@
         FIX: Applied Inter-Tab Communication (ITC) with Cross-Tab State Sync to ALL links (Nav, CTAs, Maps, PDFs, Modals).
         FIX: Added .adaptive-dashed-box to make the "Seeking new locations" and "Regional High-Traffic Impact" boxes sync with Dark Mode.
         FIX: Removed KF Signature Watermark while preserving both G-Tags for tracking.
+        FIX (10.17): Inventory now comes from Firebase (Realtime Database billboard/v1/towns) instead of the
+                     retired Google Sheet. Same layout and cards; empty fields still hide themselves.
     -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -682,7 +684,8 @@
          * V10.15 Update: Global Inter-Tab Communication (ITC) & Adaptive Dashed Boxes.
          */
         const SITE_DATA_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZY38nsz_aJDO3cdtAwv4w359jK1aMt1rhBwZ3LAGarLyddtbBowFZv6mjlpnR1eGdNCpFhat8FuKp/pub?output=csv";
-        const INVENTORY_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRIkCZ_6qzk9T82iPH1DcZFplAdev1n_kSasC_QKO1v1zfcGorTHN6MKjCtOcOOk_j2Txx481WB2LB3/pub?output=csv";
+        // V10.17: Billboard inventory lives in Firebase now (the old inventory Google Sheet is retired).
+        const INVENTORY_FIREBASE_URL = "https://skventuresigns-c35d5-default-rtdb.firebaseio.com/billboard/v1/towns.json";
         
         let siteData = { 
             nav: [], 
@@ -1065,9 +1068,6 @@
         }
 
         function parseInventoryCSV(text) {
-            // A deleted / unpublished Google Sheet answers with an HTML error page
-            // (HTTP 410 "file has been deleted"). That must never be parsed as inventory.
-            if (!text || /^\s*</.test(text)) return [];
             const rows = []; let row = []; let cell = ''; let inQuotes = false;
             for (let i = 0; i < text.length; i++) {
                 const char = text[i];
@@ -1090,8 +1090,6 @@
             const list = [];
             for (let i = 1; i < rows.length; i++) {
                 const d = rows[i]; if (!d || d.length < 5) continue;
-                // Skip rows that came from markup instead of real data
-                if (!d[0] || d[0].indexOf('<') !== -1) continue;
                 list.push({
                     town: d[0], price: d[1], timesYear: d[2], long_col: d[3], lat_col: d[4],
                     info: d[5], pdf: d[6], county: d[7], size: d[8], address: d[9],
@@ -1108,9 +1106,7 @@
             const grid = document.getElementById('grid-root');
             const spinner = document.getElementById('loading-spinner');
             if (!grid) return;
-            if (!billboards.length) { showInventoryFallback(); return; }
             grid.innerHTML = '';
-            grid.dataset.fallback = '0';
             
             billboards.forEach((item, index) => {
                 const rawLat = String(item.lat_col).trim();
@@ -1134,9 +1130,7 @@
                 // V10.15: Apply ITC Smart Tab Focus to dynamic map links and PDF links inside the grid
                 const targetMapName = `tab_sk_map_${index}`;
                 const targetPdfName = `tab_sk_pdf_${index}`;
-                const mapLinkUrl = (isNaN(lat) || isNaN(long))
-                    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address + ' ' + item.town + ' IL')}`
-                    : `https://www.google.com/maps/search/?api=1&query=${lat},${long}`;
+                const mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${long}`;
 
                 grid.innerHTML += `
                 <div class="advertising-card-box">
@@ -1190,60 +1184,65 @@
             lucide.createIcons();
         }
 
-        function showInventoryFallback() {
-            const grid = document.getElementById('grid-root');
-            const spinner = document.getElementById('loading-spinner');
-            if (spinner) spinner.classList.add('hidden');
-            if (!grid || grid.dataset.fallback === '1') return;
-
-            // Keep any locations that are already on screen; only show this when the list is empty.
-            if (billboards.length > 0) return;
-
-            grid.dataset.fallback = '1';
-            grid.innerHTML = `
-            <div class="advertising-card-box" style="max-width:920px;width:100%;margin:0 auto;">
-                <div class="p-8 md:p-12 text-center flex flex-col items-center gap-6">
-                    <h2 class="town-title text-white" style="margin:0;">Live Locations Are Being Updated</h2>
-                    <p class="description-tag text-white" style="margin:0;max-width:640px;">
-                        Our billboard inventory feed is temporarily offline, so the interactive map list cannot load right now.
-                        Availability and pricing for every location are still being handled in person &mdash; call or email us and
-                        we will send the current list for your area.
-                    </p>
-                    <div class="flex flex-wrap items-center justify-center gap-4">
-                        <span class="view-specs-btn" onclick="openPhoneSmartActions('844-907-4450')">
-                            <i data-lucide="phone" class="w-4 h-4"></i> Call 844-907-4450
-                        </span>
-                        <span class="view-specs-btn" onclick="openEmailSmartActions('Scott.Robinson@skventuresigns.com', 'Location Availability')">
-                            <i data-lucide="mail" class="w-4 h-4"></i> Email for Availability
-                        </span>
-                    </div>
-                </div>
-            </div>`;
-            grid.classList.remove('hidden');
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+        /**
+         * V10.17: Turn the Firebase towns into the same card records the Google Sheet used to give,
+         * so renderGrid() and openSpecs() work exactly as before.
+         *   billboard/v1/towns/{town}: county, screens[] (id, side, size, matrix, pitch, adSeconds, address, lat, lng)
+         * Optional town fields (price, special, info, pdf, traffic, viewingDistance, cost1/cost2/cost4,
+         * lighted, slots, runtime, fileType, img1/img2) show up automatically if they are ever added.
+         */
+        function firebaseTownsToCards(towns) {
+            const list = [];
+            const pick = (...vals) => vals.find(v => isValidData(v));
+            const uniqVals = arr => arr.filter((v, i) => isValidData(v) && arr.indexOf(v) === i);
+            Object.keys(towns || {}).forEach(key => {
+                const t = towns[key] || {};
+                const screens = (Array.isArray(t.screens) ? t.screens : Object.values(t.screens || {})).filter(Boolean);
+                const s1 = screens[0] || {}, s2 = screens[1] || {};
+                const signLabel = s => isValidData(s.id) ? (s.id + (isValidData(s.side) ? ` (${s.side})` : '')) : '';
+                const sides = uniqVals(screens.map(s => s.side));
+                const seconds = uniqVals(screens.map(s => s.adSeconds));
+                const townName = pick(t.name, t.town) || key.replace(/\b\w/g, c => c.toUpperCase());
+                list.push({
+                    town: townName,
+                    price: pick(t.price),
+                    timesYear: pick(t.special, t.timesYear, t.currentSpecial),
+                    long_col: pick(s1.lng, s1.long, t.lng),
+                    lat_col: pick(s1.lat, t.lat),
+                    info: pick(t.info, t.description),
+                    pdf: pick(t.pdf),
+                    county: pick(t.county),
+                    size: uniqVals(screens.map(s => s.size)).join(' / '),
+                    address: pick(...screens.map(s => s.address), t.address),
+                    id1: signLabel(s1), id2: signLabel(s2),
+                    lighted: pick(t.lighted),
+                    matrix: pick(...screens.map(s => s.pitch), t.pitch),
+                    creativeMatrix: uniqVals(screens.map(s => s.matrix)).join(' / '),
+                    sides: screens.length ? `${screens.length}${sides.length ? ' (' + sides.join(', ') + ')' : ''}` : '',
+                    fileType: pick(t.fileType),
+                    runtime: pick(t.runtime),
+                    adTime: seconds.length ? seconds.join(' / ') + ' sec' : '',
+                    slots: pick(t.slots),
+                    cost1: pick(t.cost1), cost2: pick(t.cost2), cost4: pick(t.cost4),
+                    img1: pick(s1.image, s1.img, t.img1), img2: pick(s2.image, s2.img, t.img2),
+                    traffic: pick(t.traffic), viewingDistance: pick(t.viewingDistance)
+                });
+            });
+            return list.sort((a, b) => String(a.town).localeCompare(String(b.town)));
         }
 
         async function fetchInventoryData(isAutoRefresh = false) {
             const bar = document.getElementById('refresh-bar');
             if (isAutoRefresh && bar) { bar.style.width = '100%'; setTimeout(() => { bar.style.width = '0'; }, 1000); }
             try {
-                const res = await fetch(`${INVENTORY_CSV_URL}&t=${Date.now()}`, { cache: 'no-store' });
-                const type = res.headers.get('content-type') || '';
-                const text = await res.text();
-                // Deleted / unpublished sheet: Google replies 410 (or 404) with an HTML page.
-                if (!res.ok || type.indexOf('text/html') !== -1 || /^\s*</.test(text)) {
-                    throw new Error(`inventory feed responded ${res.status}`);
+                const res = await fetch(`${INVENTORY_FIREBASE_URL}?t=${Date.now()}`, { cache: 'no-store' });
+                if (!res.ok) throw new Error('Firebase ' + res.status);
+                const newData = firebaseTownsToCards(await res.json());
+                if (JSON.stringify(newData) !== JSON.stringify(billboards)) { 
+                    billboards = newData; 
+                    renderGrid(); 
                 }
-                const newData = parseInventoryCSV(text);
-                if (!newData.length) throw new Error('inventory feed contained no locations');
-                if (JSON.stringify(newData) !== JSON.stringify(billboards)) {
-                    billboards = newData;
-                    renderGrid();
-                }
-            } catch (e) {
-                console.warn('Inventory sync failed:', e.message);
-                showInventoryFallback();
-            }
+            } catch (e) { console.warn("Sync failed.", e); }
         }
 
         /* =========================================================
@@ -1305,6 +1304,5 @@
             }
         });
     </script>
-    <script src="./locations-live.js?v=4"></script>
 </body>
 </html>
