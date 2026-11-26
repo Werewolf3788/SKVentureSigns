@@ -123,6 +123,9 @@
 
   /* ---------- Card ---------- */
 
+  // Every town that is on screen, so the descriptions lightbox can fill itself from live data.
+  var CARDS = {};
+
   function card(key, town, fsAds) {
     var screens = town.screens || [];
     var ads = mergeAds(town.ads, fsAds);
@@ -174,6 +177,11 @@
       ? '<div class="coord-display">Lat: ' + pos.lat.toFixed(5) + " | Long: " + pos.lng.toFixed(5) + "</div>"
       : "";
 
+    CARDS[key] = {
+      name: townName, town: town, screens: screens, ads: ads, pos: pos,
+      address: address, county: town.county || "", mapEmbed: mapEmbed, mapLink: mapLink
+    };
+
     return '\n<div class="advertising-card-box" data-skvl-card="' + esc(key) + '">\n' +
       '  <div class="card-top-row">\n' +
       '    <div class="flex flex-col items-center">\n' +
@@ -192,6 +200,7 @@
       (specs.length ? '      <p class="description-tag">' + specs.join(" &middot; ") + "</p>\n" : "") +
       '    </div>\n' +
       '    <div class="card-right-sidebar">\n' +
+      '      <button type="button" class="view-specs-btn" onclick="skvlShowSpecs(\'' + esc(key) + '\')"><i data-lucide="layout-list" class="w-4 h-4"></i> View descriptions</button>\n' +
       '      <a class="view-specs-btn" href="' + PLAYER + "?town=" + encodeURIComponent(key) + '&fs=1" target="_blank" rel="noopener"><i data-lucide="play" class="w-4 h-4"></i> Watch This Board</a>\n' +
       '      <span class="view-specs-btn" style="cursor:pointer" onclick="openEmailSmartActions(\'Scott.Robinson@skventuresigns.com\', \'Location Availability - ' + esc(townName) + '\')"><i data-lucide="mail" class="w-4 h-4"></i> Email for Availability</span>\n' +
       '    </div>\n' +
@@ -202,6 +211,96 @@
       '  </div>\n' +
       "</div>\n";
   }
+
+  /* ---------- Descriptions lightbox (the popup the page was built with) ---------- */
+
+  function specItem(label, value) {
+    if (!value) return "";
+    return '<div class="modal-spec-item"><span class="modal-spec-label">' + esc(label) +
+           '</span><span class="modal-spec-value">' + value + "</span></div>";
+  }
+
+  window.skvlShowSpecs = function (key) {
+    var entry = CARDS[key];
+    if (!entry) return;
+
+    var overlay = document.getElementById("lightbox-overlay");
+    var img = document.getElementById("lightbox-image");
+    var modal = document.getElementById("specs-modal");
+    var root = document.getElementById("specs-content-root");
+    if (!overlay || !modal || !root) return;  // page markup changed, do nothing quietly
+
+    var screens = entry.screens || [];
+    var first = screens[0] || {};
+    var pos = entry.pos;
+    var sizes = uniq(screens.map(function (s) { return s.size; }));
+    var seconds = uniq(screens.map(function (s) { return s.adSeconds; })).filter(Boolean);
+
+    var html = "";
+
+    // The location's map, enlarged, with the latitude and longitude still pinned on it.
+    html += '<div style="position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:16px;overflow:hidden;margin-bottom:14px">' +
+            '<iframe src="' + entry.mapEmbed + '" style="width:100%;height:100%;border:0" loading="lazy" title="Map of ' + esc(entry.name) + '"></iframe>' +
+            (pos ? '<span class="skvl-coord">' + pos.lat.toFixed(5) + ", " + pos.lng.toFixed(5) + "</span>" : "") +
+            "</div>";
+
+    if (pos) {
+      html += '<div class="coord-display" style="margin:0 0 16px">Lat: ' + pos.lat.toFixed(5) + " | Long: " + pos.lng.toFixed(5) + "</div>";
+    }
+
+    var props = [];
+    if (entry.address) props.push(['Address', esc(entry.address)]);
+    if (entry.county) props.push(['County', esc(entry.county) + " County, IL"]);
+    if (screens.length) props.push(['Boards here', String(screens.length)]);
+    if (sizes.length) props.push(['Size', esc(sizes.join(" / "))]);
+    if (seconds.length) props.push(['Ad Length', esc(seconds.join(" / ")) + " sec"]);
+    if (first.pitch) props.push(['Pixel Pitch', esc(first.pitch)]);
+    if (first.matrix) props.push(['Creative Matrix', esc(first.matrix) + " px"]);
+
+    if (props.length) {
+      html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-10 mb-6 w-full">' +
+              props.map(function (p) { return specItem(p[0], p[1]); }).join("") +
+              "</div>";
+    }
+
+    if (screens.length) {
+      var rows = screens.map(function (s) {
+        return "<div>" + esc(s.id || "—") + (s.side ? " &middot; " + esc(s.side) + " side" : "") +
+               (s.size ? " &middot; " + esc(s.size) : "") + (s.matrix ? " &middot; " + esc(s.matrix) : "") +
+               (s.adSeconds ? " &middot; " + s.adSeconds + " sec" : "") + "</div>";
+      }).join("");
+      html += '<div class="modal-row-bottom" style="grid-template-columns:1fr;margin-top:0">' +
+              '<div class="modal-spec-item"><span class="modal-spec-label">Boards at this location</span>' +
+              '<span class="modal-spec-value" style="font-weight:500;line-height:1.8">' + rows + "</span></div></div>";
+    }
+
+    // The billboards themselves: every ad in rotation. Click one to open it full size.
+    if (entry.ads.length) {
+      var ads = entry.ads.map(function (a) {
+        var url = a.url || "";
+        return '<div class="modal-spec-item">' +
+               '<span class="modal-spec-label">' + esc(a.advertiser || "Ad") + "</span>" +
+               (url
+                 ? '<img src="' + esc(url) + '" alt="' + esc(a.advertiser || "Billboard ad") + '" class="modal-thumb" style="object-fit:contain;background:#000" onclick="openLightbox(\'' + esc(url) + '\')">'
+                 : '<span class="modal-spec-value" style="font-weight:500">Creative coming soon</span>') +
+               "</div>";
+      }).join("");
+      html += '<div class="modal-row" style="grid-template-columns:1fr 1fr;margin-top:6px">' + ads + "</div>";
+    } else {
+      html += '<p style="opacity:.6;font-style:italic">No ad is booked in this town right now &mdash; the spot is open.</p>';
+    }
+
+    root.innerHTML = html;
+
+    var heading = modal.querySelector("h3");
+    if (heading) heading.textContent = entry.name + " — technical descriptions";
+
+    if (img) img.style.display = "none";
+    modal.style.display = "block";
+    overlay.style.display = "flex";
+    document.body.style.overflow = "hidden";
+    if (typeof lucide !== "undefined") lucide.createIcons();
+  };
 
   function render(towns, fsByTown) {
     var grid = document.getElementById("grid-root");
